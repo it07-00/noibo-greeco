@@ -267,16 +267,19 @@ final class DailyReportModuleTest extends TestCase
         $staff = User::factory()->create();
         $staff->assignRole(RoleEnum::IT->value);
 
+        $date1 = now()->subDay()->toDateString();
+        $date2 = now()->toDateString();
+
         // Create reports
         DailyReport::create([
             'user_id' => $staff->id,
-            'report_date' => '2026-06-01',
+            'report_date' => $date1,
             'work_done' => 'Công việc thiết kế database',
         ]);
 
         DailyReport::create([
             'user_id' => $staff->id,
-            'report_date' => '2026-06-02',
+            'report_date' => $date2,
             'work_done' => 'Công việc lập trình frontend',
         ]);
 
@@ -291,9 +294,9 @@ final class DailyReportModuleTest extends TestCase
 
         // 2. Date filter
         Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
-            ->set('filterDate', '2026-06-01')
+            ->set('filterDate', $date1)
             ->assertViewHas('reports', function ($reports) {
-                return $reports->count() === 1 && $reports->first()->report_date->toDateString() === '2026-06-01';
+                return $reports->count() === 1 && str_contains($reports->first()->work_done, 'database');
             });
     }
 

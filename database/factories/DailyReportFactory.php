@@ -46,9 +46,9 @@ final class DailyReportFactory extends Factory
         return [
             'user_id' => User::factory(),
             'report_date' => now()->toDateString(),
-            'work_done' => $this->faker->randomElement($works),
-            'plan_tomorrow' => $this->faker->randomElement($plans),
-            'issues' => $this->faker->optional(0.3)->randomElement($issues), // 30% chance of issues
+            'work_done' => fake()->randomElement($works),
+            'plan_tomorrow' => fake()->randomElement($plans),
+            'issues' => fake()->optional(0.3)->randomElement($issues), // 30% chance of issues
         ];
     }
 }

@@ -39,17 +39,17 @@ final class DutyScheduleFactory extends Factory
 
         $colors = ['primary', 'success', 'warning', 'danger', 'info', 'purple'];
 
-        $start = $this->faker->dateTimeBetween('-5 days', '+5 days');
+        $start = fake()->dateTimeBetween('-5 days', '+5 days');
         $end = (clone $start)->modify('+1 hour');
 
         return [
-            'title' => $this->faker->randomElement($titles),
-            'description' => $this->faker->sentence(),
-            'location' => $this->faker->randomElement($locations),
+            'title' => fake()->randomElement($titles),
+            'description' => fake()->sentence(),
+            'location' => fake()->randomElement($locations),
             'start_at' => $start,
             'end_at' => $end,
-            'label_color' => $this->faker->randomElement($colors),
-            'is_private' => $this->faker->boolean(20), // 20% chance of being private
+            'label_color' => fake()->randomElement($colors),
+            'is_private' => fake()->boolean(20), // 20% chance of being private
             'created_by' => User::factory(),
         ];
     }
