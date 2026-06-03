@@ -1,0 +1,78 @@
+.greeco-sidebar-brand {
+    height: var(--app-header-height) !important;
+    justify-content: center;
+    overflow: hidden;
+    padding: 4px 14px;
+}
+
+.greeco-sidebar-brand a {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.greeco-sidebar-brand .navbar-brand-mini {
+    flex: 0 1 auto;
+    justify-content: center;
+}
+
+.greeco-logo-text {
+    display: block;
+    width: auto;
+    object-fit: contain;
+}
+
+.greeco-logo-text {
+    height: 62px;
+    max-width: 215px;
+}
+
+[data-app-sidebar=mini] .greeco-sidebar-brand {
+    justify-content: center;
+    padding: 8px;
+}
+
+[data-app-sidebar=mini] .app-menubar .app-navbar-brand .navbar-brand-mini {
+    display: inline-flex;
+}
+
+[data-app-sidebar=mini] .greeco-logo-text {
+    width: 64px;
+    height: auto;
+    max-width: 64px;
+}
+
+@media (max-width: 1199.98px) {
+    .app-menubar {
+        --app-mobile-sidebar-width: min(290px, 100vw);
+        left: calc(var(--app-mobile-sidebar-width) * -1);
+        width: var(--app-mobile-sidebar-width);
+        z-index: 100001;
+    }
+
+    .app-menubar.open {
+        left: 0;
+    }
+
+    .app-menubar .app-navbar,
+    .app-menubar .app-navbar-brand {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .app-toggler.active {
+        position: fixed;
+        top: 20px;
+        left: calc(var(--app-mobile-sidebar-width, min(290px, 100vw)) - 46px);
+        margin: 0;
+    }
+
+    .app-toggler.active span {
+        position: relative;
+        z-index: 100002;
+    }
+
+    .app-toggler.active::after {
+        z-index: 100000;
+    }
+}
