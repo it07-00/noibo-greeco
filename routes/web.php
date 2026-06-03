@@ -53,3 +53,17 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/profile', \App\Livewire\Profile\ProfileEdit::class)
         ->name('profile.edit');
 });
+
+// Custom storage route fallback for hosting that blocks symlinks
+Route::get('/storage/{path}', function (string $path) {
+    $filePath = 'public/' . $path;
+
+    if (!\Illuminate\Support\Facades\Storage::exists($filePath)) {
+        abort(404);
+    }
+
+    $file = \Illuminate\Support\Facades\Storage::get($filePath);
+    $type = \Illuminate\Support\Facades\Storage::mimeType($filePath);
+
+    return \Illuminate\Support\Facades\Response::make($file, 200)->header("Content-Type", $type);
+})->where('path', '.*');
