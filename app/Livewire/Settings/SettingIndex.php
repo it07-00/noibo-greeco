@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Settings;
 
+use App\Models\ActivityLog;
 use App\Models\Setting;
+use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
@@ -32,10 +34,10 @@ final class SettingIndex extends Component
     {
         Gate::authorize('viewAny', Setting::class);
 
-        $this->website_name = (string) Setting::get('website_name', 'Greeco');
-        $this->contact_email = (string) Setting::get('contact_email', 'admin@example.com');
-        $this->timezone = (string) Setting::get('timezone', 'Asia/Ho_Chi_Minh');
-        $this->language = (string) Setting::get('language', 'vi');
+        $this->website_name = Setting::get('website_name', 'GREECO');
+        $this->contact_email = Setting::get('contact_email', '');
+        $this->timezone = Setting::get('timezone', 'Asia/Ho_Chi_Minh');
+        $this->language = Setting::get('language', 'vi');
     }
 
     public function save(): void
@@ -54,7 +56,7 @@ final class SettingIndex extends Component
         Setting::set('timezone', $this->timezone);
         Setting::set('language', $this->language);
 
-        \App\Support\ActivityLogger::log('update_settings', 'Đã cập nhật cấu hình hệ thống');
+        ActivityLogger::log('update_settings', 'Đã cập nhật cấu hình hệ thống');
 
         $this->successMessage = 'Lưu cấu hình hệ thống thành công!';
         $this->dispatch('swal:alert', [
@@ -122,7 +124,7 @@ final class SettingIndex extends Component
             $filepath = $backupDir . '/' . $filename;
             file_put_contents($filepath, $sql);
 
-            \App\Support\ActivityLogger::log('backup_db', 'Đã tải bản sao lưu cơ sở dữ liệu (SQL)');
+            ActivityLogger::log('backup_db', 'Đã tải bản sao lưu cơ sở dữ liệu (SQL)');
 
             return response()->download($filepath);
         } catch (\Exception $e) {
@@ -137,7 +139,7 @@ final class SettingIndex extends Component
         $settings = Setting::all()->pluck('value', 'key')->toArray();
         $json = json_encode($settings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-        \App\Support\ActivityLogger::log('export_settings', 'Đã xuất cấu hình hệ thống (JSON)');
+        ActivityLogger::log('export_settings', 'Đã xuất cấu hình hệ thống (JSON)');
 
         return response()->streamDownload(function () use ($json) {
             echo $json;
@@ -225,7 +227,7 @@ final class SettingIndex extends Component
                 'text' => 'Tạo bản sao lưu mã nguồn thành công. Bắt đầu tải về!',
             ]);
 
-            \App\Support\ActivityLogger::log('backup_source', 'Đã tải bản sao lưu mã nguồn (ZIP)');
+            ActivityLogger::log('backup_source', 'Đã tải bản sao lưu mã nguồn (ZIP)');
 
             return response()->download($filepath)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
@@ -247,7 +249,7 @@ final class SettingIndex extends Component
             Artisan::call('route:clear');
             Artisan::call('config:clear');
 
-            \App\Support\ActivityLogger::log('clear_cache', 'Đã xóa bộ nhớ đệm hệ thống');
+            ActivityLogger::log('clear_cache', 'Đã xóa bộ nhớ đệm hệ thống');
 
             $this->successMessage = 'Xóa toàn bộ cache hệ thống (Cache, View, Route, Config) thành công!';
             $this->dispatch('swal:alert', [
@@ -267,7 +269,7 @@ final class SettingIndex extends Component
 
     public function render(): View
     {
-        $logs = \App\Models\ActivityLog::query()
+        $logs = ActivityLog::query()
             ->with('user')
             ->latest()
             ->take(50)
