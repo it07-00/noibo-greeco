@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\DailyReportDTO;
+use App\Enums\RoleEnum;
 use App\Models\DailyReport;
+use App\Models\User;
+use App\Notifications\DailyReportSubmitted;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 final class DailyReportService
 {
@@ -55,7 +59,7 @@ final class DailyReportService
 
     public function createReport(DailyReportDTO $dto): DailyReport
     {
-        return DB::transaction(function () use ($dto): DailyReport {
+        $report = DB::transaction(function () use ($dto): DailyReport {
             return DailyReport::create([
                 'user_id'       => $dto->userId,
                 'report_date'   => $dto->reportDate,
@@ -64,6 +68,10 @@ final class DailyReportService
                 'issues'        => $dto->issues,
             ]);
         });
+
+        $this->notifyDirectors($report);
+
+        return $report;
     }
 
     public function updateReport(DailyReport $report, DailyReportDTO $dto): DailyReport
@@ -94,5 +102,20 @@ final class DailyReportService
             ->whereDate('report_date', $date)
             ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
             ->exists();
+    }
+
+    /**
+     * Notify all users with Director role about a new daily report.
+     */
+    private function notifyDirectors(DailyReport $report): void
+    {
+        $report->loadMissing('user');
+        $reporterName = $report->user?->name ?? 'N/A';
+
+        $directors = User::role(RoleEnum::Director->value)->get();
+
+        if ($directors->isNotEmpty()) {
+            Notification::send($directors, new DailyReportSubmitted($report, $reporterName));
+        }
     }
 }

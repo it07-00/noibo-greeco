@@ -13,16 +13,6 @@
                 </button>
                 <input type="text" class="form-control rounded-5 ps-5" placeholder="Tìm kiếm mọi thứ..." data-bs-toggle="modal" data-bs-target="#searchResultsModal">
             </form>
-            <ul class="navbar-nav gap-4 flex-row d-none d-xxl-flex">
-                @if (auth()->user()?->can('dashboard.view'))
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('dashboard') }}">Báo cáo & Phân tích</a>
-                    </li>
-                @endif
-                <li class="nav-item">
-                    <a class="nav-link" href="javascript:void(0)">Hỗ trợ</a>
-                </li>
-            </ul>
         </div>
 
         <div class="app-header-end">
@@ -52,12 +42,7 @@
             </div>
             <div class="vr my-3"></div>
             <div class="d-flex align-items-center gap-sm-2 gap-0 px-lg-4 px-sm-2 px-1">
-                <button type="button" class="btn btn-icon btn-action-gray rounded-circle waves-effect waves-light position-relative">
-                    <i class="fi fi-rr-bell"></i>
-                    <span class="position-absolute top-0 end-0 p-1 mt-1 me-1 bg-danger border border-3 border-light rounded-circle">
-                        <span class="visually-hidden">New alerts</span>
-                    </span>
-                </button>
+                @livewire('notifications.notification-bell')
 
                 @php
                     $currentUser = auth()->user();

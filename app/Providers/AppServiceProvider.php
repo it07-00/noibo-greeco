@@ -27,9 +27,36 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        if (config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(\Spatie\Permission\Models\Role::class, \App\Policies\RolePolicy::class);
         Gate::policy(\App\Models\DailyReport::class, \App\Policies\DailyReportPolicy::class);
+
+        // Register authentication activity logging
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Login::class,
+            static function (\Illuminate\Auth\Events\Login $event): void {
+                \App\Support\ActivityLogger::log('login', 'Đăng nhập thành công', $event->user);
+            }
+        );
+
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Failed::class,
+            static function (\Illuminate\Auth\Events\Failed $event): void {
+                $username = $event->credentials['username'] ?? $event->credentials['email'] ?? 'Không rõ';
+                \App\Support\ActivityLogger::log('failed_login', "Đăng nhập thất bại (tài khoản: $username)");
+            }
+        );
+
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Logout::class,
+            static function (\Illuminate\Auth\Events\Logout $event): void {
+                \App\Support\ActivityLogger::log('logout', 'Đăng xuất', $event->user);
+            }
+        );
 
 
         if (!$this->app->runningInConsole()) {

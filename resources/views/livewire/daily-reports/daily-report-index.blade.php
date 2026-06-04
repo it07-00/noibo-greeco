@@ -258,7 +258,7 @@
 
     <div :class="viewType === 'calendar' ? '' : 'd-none'" wire:ignore>
         <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
+            <div class="card-body p-4 calendar-scroll-wrapper">
                 <div class="d-flex flex-wrap gap-3 mb-3 small">
                     <span class="d-flex align-items-center">
                         <span class="d-inline-block rounded-circle bg-success-subtle border border-success me-2" style="width: 12px; height: 12px; flex-shrink: 0;"></span> Báo cáo hoàn thành tốt

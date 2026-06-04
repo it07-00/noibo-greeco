@@ -53,7 +53,7 @@
         <div class="col-12">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-0">
-                    <div class="p-4" wire:ignore>
+                    <div class="p-4 calendar-scroll-wrapper" wire:ignore>
                         <div id="calendar"></div>
                     </div>
                 </div>
@@ -327,8 +327,8 @@
                             @foreach ($daySchedules as $schedule)
                                 <div class="card border border-light-subtle shadow-sm mb-0">
                                     <div class="card-body p-3">
-                                        <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <div class="d-flex align-items-center gap-2">
+                                        <div class="d-flex align-items-start justify-content-between mb-2">
+                                            <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-1 gap-sm-2">
                                                 <span class="badge 
                                                     @if($schedule['label_color'] === 'success') bg-success-subtle text-success border border-success
                                                     @elseif($schedule['label_color'] === 'warning') bg-warning-subtle text-warning border border-warning

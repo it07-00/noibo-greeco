@@ -307,10 +307,11 @@ final class MailImapService
      */
     private function parseBody(string $rawBody, array $headers): array
     {
-        $contentType = strtolower($headers['content-type'] ?? 'text/plain');
+        $contentTypeRaw = $headers['content-type'] ?? 'text/plain';
+        $contentType = strtolower($contentTypeRaw);
 
         if (str_contains($contentType, 'multipart/')) {
-            return $this->parseMultipartBody($rawBody, $contentType);
+            return $this->parseMultipartBody($rawBody, $contentTypeRaw);
         }
 
         $decoded = $this->decodeBodyPart($rawBody, $headers);
@@ -337,9 +338,9 @@ final class MailImapService
     /**
      * @return array{html: string, text: string, is_html: bool, attachments: array<int, string>}
      */
-    private function parseMultipartBody(string $rawBody, string $contentType): array
+    private function parseMultipartBody(string $rawBody, string $contentTypeRaw): array
     {
-        if (preg_match('/boundary="?([^";]+)"?/i', $contentType, $matches) !== 1) {
+        if (preg_match('/boundary="?([^";]+)"?/i', $contentTypeRaw, $matches) !== 1) {
             $text = trim($rawBody);
 
             return [
@@ -351,7 +352,7 @@ final class MailImapService
         }
 
         $boundary = $matches[1];
-        $sections = preg_split('/--'.preg_quote($boundary, '/').'(--)?\r?\n/', $rawBody) ?: [];
+        $sections = preg_split('/^--'.preg_quote($boundary, '/').'(--)?\s*$/m', $rawBody) ?: [];
         $plain = '';
         $html = '';
         $attachments = [];
@@ -365,7 +366,9 @@ final class MailImapService
 
             [$partHeadersRaw, $partBodyRaw] = $this->splitHeadersAndBody($section);
             $partHeaders = $this->parseHeaders($partHeadersRaw);
-            $partContentType = strtolower($partHeaders['content-type'] ?? 'text/plain');
+            
+            $partContentTypeRaw = $partHeaders['content-type'] ?? 'text/plain';
+            $partContentType = strtolower($partContentTypeRaw);
             $partDisposition = strtolower($partHeaders['content-disposition'] ?? '');
 
             if (str_contains($partDisposition, 'attachment')) {
@@ -375,7 +378,7 @@ final class MailImapService
             }
 
             if (str_contains($partContentType, 'multipart/')) {
-                $nested = $this->parseMultipartBody($partBodyRaw, $partContentType);
+                $nested = $this->parseMultipartBody($partBodyRaw, $partContentTypeRaw);
                 $plain = $plain !== '' ? $plain : $nested['text'];
                 $html = $html !== '' ? $html : $nested['html'];
                 $attachments = array_merge($attachments, $nested['attachments']);

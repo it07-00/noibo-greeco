@@ -154,11 +154,11 @@
                                 @forelse ($recentSchedules as $schedule)
                                     <a href="{{ route('duty-schedules.index') }}" class="d-flex align-items-start gap-3 p-3 rounded-3 bg-light bg-opacity-50 mb-2 text-body transition-hover">
                                         <span class="avatar avatar-sm bg-{{ $schedule['color'] }}-subtle text-{{ $schedule['color'] }} rounded-circle">
-                                            <i class="fi fi-rr-calendar-event"></i>
+                                            <i class="fi fi-rr-calendar"></i>
                                         </span>
                                         <span class="flex-grow-1 min-w-0">
                                             <span class="d-flex align-items-center justify-content-between gap-2">
-                                                <strong class="text-truncate">
+                                                <strong class="text-truncate min-w-0">
                                                     @if ($schedule['is_private'])
                                                         <i class="fi fi-rr-lock me-1"></i>
                                                     @endif
@@ -194,7 +194,7 @@
                                         </span>
                                         <span class="flex-grow-1 min-w-0">
                                             <span class="d-flex align-items-center justify-content-between gap-2">
-                                                <strong class="text-truncate">{{ $report['user'] }}</strong>
+                                                <strong class="text-truncate min-w-0">{{ $report['user'] }}</strong>
                                                 <small class="text-muted text-nowrap">{{ $report['date'] }}</small>
                                             </span>
                                             <small class="text-muted d-block text-truncate">{{ $report['summary'] }}</small>

@@ -6,7 +6,10 @@ namespace App\Services;
 
 use App\DTOs\DutyScheduleDTO;
 use App\Models\DutySchedule;
+use App\Models\User;
+use App\Notifications\DutyScheduleAssigned;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Notification;
 
 final class DutyScheduleService
 {
@@ -38,7 +41,7 @@ final class DutyScheduleService
 
     public function create(DutyScheduleDTO $dto): DutySchedule
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($dto): DutySchedule {
+        $schedule = \Illuminate\Support\Facades\DB::transaction(function () use ($dto): DutySchedule {
             $schedule = DutySchedule::create([
                 'title' => $dto->title,
                 'description' => $dto->description,
@@ -54,11 +57,17 @@ final class DutyScheduleService
 
             return $schedule;
         });
+
+        $this->notifyAssignedUsers($schedule, $dto->userIds);
+
+        return $schedule;
     }
 
     public function update(DutySchedule $schedule, DutyScheduleDTO $dto): DutySchedule
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($schedule, $dto): DutySchedule {
+        $previousUserIds = $schedule->users()->pluck('users.id')->toArray();
+
+        $schedule = \Illuminate\Support\Facades\DB::transaction(function () use ($schedule, $dto): DutySchedule {
             $schedule->update([
                 'title' => $dto->title,
                 'description' => $dto->description,
@@ -73,10 +82,41 @@ final class DutyScheduleService
 
             return $schedule->refresh();
         });
+
+        // Only notify newly assigned users
+        $newUserIds = array_diff($dto->userIds, $previousUserIds);
+        if (!empty($newUserIds)) {
+            $this->notifyAssignedUsers($schedule, $newUserIds);
+        }
+
+        return $schedule;
     }
 
     public function delete(DutySchedule $schedule): void
     {
         $schedule->delete();
+    }
+
+    /**
+     * Notify assigned users about a duty schedule (excluding the creator).
+     *
+     * @param array<int> $userIds
+     */
+    private function notifyAssignedUsers(DutySchedule $schedule, array $userIds): void
+    {
+        if (empty($userIds)) {
+            return;
+        }
+
+        $creatorId = $schedule->created_by;
+        $creatorName = $schedule->creator?->name ?? auth()->user()?->name ?? 'N/A';
+
+        $usersToNotify = User::whereIn('id', $userIds)
+            ->where('id', '!=', $creatorId)
+            ->get();
+
+        if ($usersToNotify->isNotEmpty()) {
+            Notification::send($usersToNotify, new DutyScheduleAssigned($schedule, $creatorName));
+        }
     }
 }
