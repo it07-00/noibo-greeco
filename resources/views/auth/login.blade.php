@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="page-layout">
-        <div class="auth-wrapper min-vh-100 px-2" style="background-image: linear-gradient(90deg, rgba(49, 106, 255, .88), rgba(111, 66, 193, .72)), url('{{ asset('images/preview.png') }}'); background-size: cover; background-position: center;">
+        <div class="auth-wrapper min-vh-100 px-2" style="background-image: linear-gradient(135deg, rgba(12, 36, 60, 0.6), rgba(49, 106, 255, 0.3)), url('{{ asset('images/preview.png') }}'); background-size: cover; background-position: center;">
             <div class="row g-0 min-vh-100">
                 <div class="col-xl-5 col-lg-6 ms-auto px-sm-4 align-self-center py-4">
                     <div class="card card-body p-4 p-sm-5 maxw-450px m-auto rounded-4 auth-card">
