@@ -248,8 +248,8 @@
                     <div class="col-xl-8">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header border-0 pb-0">
-                                <h5 class="card-title mb-1">Cấu hình gửi/nhận email</h5>
-                                <small class="text-muted">Dùng thông tin mailbox domain email DigitalOcean cung cấp.</small>
+                                <h5 class="card-title mb-1">Cấu hình hòm thư cá nhân</h5>
+                                <small class="text-muted">Mỗi người dùng nhập username/password mailbox riêng của mình.</small>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -356,7 +356,7 @@
                                     <div class="col-md-8 mb-3 d-flex align-items-end">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" role="switch" id="mailEnabled" wire:model="enabled">
-                                            <label class="form-check-label fw-semibold" for="mailEnabled">Bật cấu hình email hệ thống</label>
+                                            <label class="form-check-label fw-semibold" for="mailEnabled">Bật hòm thư cá nhân</label>
                                         </div>
                                     </div>
                                 </div>

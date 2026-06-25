@@ -52,6 +52,7 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::ReportView->value,
             PermissionEnum::MailView->value,
             PermissionEnum::MailSend->value,
+            PermissionEnum::MailUpdate->value,
         ];
 
         $staffPermissions = [
@@ -65,6 +66,7 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::ReportUpdate->value,
             PermissionEnum::MailView->value,
             PermissionEnum::MailSend->value,
+            PermissionEnum::MailUpdate->value,
         ];
 
         $director->syncPermissions($directorPermissions);

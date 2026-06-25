@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Livewire\Mail\MailCenterIndex;
 use App\Mail\ComposedMail;
-use App\Enums\PermissionEnum;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\MailSettingsService;
 use Database\Seeders\PermissionSeeder;
@@ -70,9 +71,11 @@ final class MailModuleTest extends TestCase
             ->call('saveSettings')
             ->assertHasNoErrors();
 
-        $this->assertSame('mail.greeco.vn', Setting::get('mail.imap_host'));
-        $this->assertNotSame('imap-secret', Setting::get('mail.imap_password'));
-        $this->assertNotSame('smtp-secret', Setting::get('mail.smtp_password'));
+        $prefix = 'mail.users.'.$admin->id.'.';
+
+        $this->assertSame('mail.greeco.vn', Setting::get($prefix.'imap_host'));
+        $this->assertNotSame('imap-secret', Setting::get($prefix.'imap_password'));
+        $this->assertNotSame('smtp-secret', Setting::get($prefix.'smtp_password'));
 
         $settings = app(MailSettingsService::class)->load();
 
@@ -134,6 +137,135 @@ final class MailModuleTest extends TestCase
             ->assertSet('from_address', 'alice@greeco.vn')
             ->assertSet('imap_username', 'alice@greeco.vn')
             ->assertSet('smtp_username', 'alice@greeco.vn');
+    }
+
+    public function test_default_mail_users_can_configure_their_own_mailbox(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $staff = User::factory()->create([
+            'name' => 'Staff Mail',
+            'email' => 'staff@greeco.vn',
+        ]);
+        $staff->assignRole(RoleEnum::IT->value);
+
+        $this->actingAs($staff);
+
+        Livewire::test(MailCenterIndex::class)
+            ->call('showTab', 'settings')
+            ->assertSet('activeTab', 'settings')
+            ->set('enabled', false)
+            ->set('from_name', 'Staff Mail')
+            ->set('from_address', 'staff@greeco.vn')
+            ->set('imap_host', 'mail.greeco.vn')
+            ->set('imap_port', 993)
+            ->set('imap_encryption', 'ssl')
+            ->set('imap_username', 'staff@greeco.vn')
+            ->set('imap_password', 'staff-imap-secret')
+            ->set('smtp_host', 'mail.greeco.vn')
+            ->set('smtp_port', 465)
+            ->set('smtp_encryption', 'ssl')
+            ->set('smtp_username', 'staff@greeco.vn')
+            ->set('smtp_password', 'staff-smtp-secret')
+            ->call('saveSettings')
+            ->assertHasNoErrors();
+    }
+
+    public function test_mail_users_can_configure_their_own_mailbox_without_mail_update_permission(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $user = User::factory()->create([
+            'name' => 'Sales Mail',
+            'email' => 'sales@greeco.vn',
+        ]);
+        $user->givePermissionTo(
+            PermissionEnum::MailView->value,
+            PermissionEnum::MailSend->value,
+        );
+
+        $this->actingAs($user);
+
+        Livewire::test(MailCenterIndex::class)
+            ->assertSee('Cấu hình')
+            ->call('showTab', 'settings')
+            ->assertSet('activeTab', 'settings')
+            ->assertSee('Cấu hình hòm thư cá nhân')
+            ->set('enabled', false)
+            ->set('from_name', 'Sales Mail')
+            ->set('from_address', 'sales@greeco.vn')
+            ->set('imap_host', 'mail.greeco.vn')
+            ->set('imap_port', 993)
+            ->set('imap_encryption', 'ssl')
+            ->set('imap_username', 'sales@greeco.vn')
+            ->set('imap_password', 'sales-imap-secret')
+            ->set('smtp_host', 'mail.greeco.vn')
+            ->set('smtp_port', 465)
+            ->set('smtp_encryption', 'ssl')
+            ->set('smtp_username', 'sales@greeco.vn')
+            ->set('smtp_password', 'sales-smtp-secret')
+            ->call('saveSettings')
+            ->assertHasNoErrors();
+    }
+
+    public function test_sending_mail_uses_the_authenticated_users_mailbox_login(): void
+    {
+        Mail::fake();
+        $this->seed(PermissionSeeder::class);
+
+        $alice = User::factory()->create([
+            'name' => 'Alice Green',
+            'email' => 'alice@greeco.vn',
+        ]);
+        $alice->givePermissionTo(
+            PermissionEnum::MailView->value,
+            PermissionEnum::MailSend->value,
+            PermissionEnum::MailUpdate->value,
+        );
+
+        $bob = User::factory()->create([
+            'name' => 'Bob Green',
+            'email' => 'bob@greeco.vn',
+        ]);
+        $bob->givePermissionTo(
+            PermissionEnum::MailView->value,
+            PermissionEnum::MailSend->value,
+            PermissionEnum::MailUpdate->value,
+        );
+
+        $this->actingAs($alice);
+        Livewire::test(MailCenterIndex::class)
+            ->set('from_name', 'Alice Green')
+            ->set('from_address', 'alice@greeco.vn')
+            ->set('imap_username', 'alice@greeco.vn')
+            ->set('imap_password', 'alice-imap-secret')
+            ->set('smtp_username', 'alice@greeco.vn')
+            ->set('smtp_password', 'alice-smtp-secret')
+            ->call('saveSettings')
+            ->assertHasNoErrors();
+
+        $this->actingAs($bob);
+        Livewire::test(MailCenterIndex::class)
+            ->set('from_name', 'Bob Green')
+            ->set('from_address', 'bob@greeco.vn')
+            ->set('imap_username', 'bob@greeco.vn')
+            ->set('imap_password', 'bob-imap-secret')
+            ->set('smtp_username', 'bob@greeco.vn')
+            ->set('smtp_password', 'bob-smtp-secret')
+            ->call('saveSettings')
+            ->assertHasNoErrors();
+
+        Livewire::test(MailCenterIndex::class)
+            ->set('compose_to', 'recipient@example.com')
+            ->set('compose_subject', 'Test subject')
+            ->set('compose_body', 'Test body')
+            ->call('sendMail')
+            ->assertHasNoErrors()
+            ->assertSet('successMessage', 'Đã gửi email thành công.');
+
+        $this->assertSame('bob@greeco.vn', config('mail.mailers.smtp.username'));
+        $this->assertSame('bob-smtp-secret', config('mail.mailers.smtp.password'));
+        Mail::assertSent(ComposedMail::class);
     }
 
     public function test_user_with_mail_send_permission_can_send_email_from_compose_form(): void
