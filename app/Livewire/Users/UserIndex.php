@@ -9,7 +9,9 @@ use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
@@ -69,7 +71,7 @@ final class UserIndex extends Component
 
     public function sortBy(string $field): void
     {
-        if (! in_array($field, ['name', 'email', 'created_at'], true)) {
+        if (! in_array($field, ['name', 'username', 'email', 'created_at'], true)) {
             return;
         }
 
@@ -87,6 +89,40 @@ final class UserIndex extends Component
     public function refreshList(): void
     {
         $this->resetPage();
+    }
+
+    public function lock(int $userId): void
+    {
+        $user = $this->users->find($userId);
+        Gate::authorize('update', $user);
+
+        $actor = Auth::user();
+
+        try {
+            $this->users->lock($user, $actor instanceof User ? $actor : null);
+        } catch (ValidationException $exception) {
+            $this->dispatch('swal:alert', [
+                'icon' => 'error',
+                'title' => 'Không thể khóa tài khoản',
+                'text' => collect($exception->errors())->flatten()->first(),
+            ]);
+
+            return;
+        }
+
+        session()->flash('status', 'Đã khóa tài khoản người dùng.');
+        $this->dispatch('users:refresh');
+    }
+
+    public function unlock(int $userId): void
+    {
+        $user = $this->users->find($userId);
+        Gate::authorize('update', $user);
+
+        $this->users->unlock($user);
+
+        session()->flash('status', 'Đã mở khóa tài khoản người dùng.');
+        $this->dispatch('users:refresh');
     }
 
     public function render(): View

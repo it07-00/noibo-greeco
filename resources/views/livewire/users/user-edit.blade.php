@@ -26,6 +26,12 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label class="form-label" for="edit-username">Username</label>
+                                <input id="edit-username" type="text" class="form-control @error('username') is-invalid @enderror" wire:model.defer="username" autocomplete="username">
+                                @error('username') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label" for="edit-email">Địa chỉ Email</label>
                                 <input id="edit-email" type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email">
                                 @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -33,13 +39,23 @@
 
                             <div class="col-md-6">
                                 <label class="form-label" for="edit-password">Mật khẩu mới</label>
-                                <input id="edit-password" type="password" class="form-control @error('password') is-invalid @enderror" wire:model.defer="password">
-                                @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <div class="input-group">
+                                    <input id="edit-password" type="password" class="form-control @error('password') is-invalid @enderror" wire:model.defer="password">
+                                    <button type="button" class="btn btn-outline-secondary" data-password-toggle="#edit-password" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
+                                        <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                    </button>
+                                </div>
+                                @error('password') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label" for="edit-password-confirmation">Xác nhận mật khẩu mới</label>
-                                <input id="edit-password-confirmation" type="password" class="form-control" wire:model.defer="password_confirmation">
+                                <div class="input-group">
+                                    <input id="edit-password-confirmation" type="password" class="form-control" wire:model.defer="password_confirmation">
+                                    <button type="button" class="btn btn-outline-secondary" data-password-toggle="#edit-password-confirmation" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
+                                        <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="col-12">

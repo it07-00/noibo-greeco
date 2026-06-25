@@ -40,16 +40,27 @@
 
                             <div class="mb-4">
                                 <label class="form-label" for="password">Mật khẩu</label>
-                                <input
-                                    type="password"
-                                    class="form-control @error('password') is-invalid @enderror"
-                                    id="password"
-                                    name="password"
-                                    placeholder="••••••••"
-                                    required
-                                >
+                                <div class="input-group">
+                                    <input
+                                        type="password"
+                                        class="form-control @error('password') is-invalid @enderror"
+                                        id="password"
+                                        name="password"
+                                        placeholder="••••••••"
+                                        required
+                                    >
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary"
+                                        data-password-toggle="#password"
+                                        title="Hiện mật khẩu"
+                                        aria-label="Hiện mật khẩu"
+                                    >
+                                        <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                    </button>
+                                </div>
                                 @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
 

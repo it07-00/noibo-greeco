@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Livewire\Profile\ProfileEdit;
 use App\Models\User;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -44,14 +44,16 @@ final class ProfileModuleTest extends TestCase
 
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Profile\ProfileEdit::class)
+        Livewire::test(ProfileEdit::class)
             ->assertSet('name', 'Old Name')
             ->assertSet('email', 'old@greeco.com')
             ->set('name', 'New Name')
             ->set('email', 'new@greeco.com')
             ->set('dob', '1995-05-15')
             ->set('address', '123 Greeco Street')
+            ->set('current_password', 'password')
             ->set('password', 'newpassword123')
+            ->set('password_confirmation', 'newpassword123')
             ->call('save')
             ->assertHasNoErrors()
             ->assertSet('successMessage', 'Cập nhật thông tin cá nhân thành công!');
@@ -64,6 +66,17 @@ final class ProfileModuleTest extends TestCase
         $this->assertTrue(Hash::check('newpassword123', $user->password));
     }
 
+    public function test_user_without_uploaded_avatar_uses_name_initial(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Nguyen Van An',
+            'avatar_path' => null,
+        ]);
+
+        $this->assertNull($user->avatar_url);
+        $this->assertSame('N', $user->avatar_initials);
+    }
+
     public function test_user_can_upload_avatar(): void
     {
         Storage::fake('public');
@@ -73,7 +86,7 @@ final class ProfileModuleTest extends TestCase
 
         $file = UploadedFile::fake()->image('avatar.png', 100, 100);
 
-        Livewire::test(\App\Livewire\Profile\ProfileEdit::class)
+        Livewire::test(ProfileEdit::class)
             ->set('avatarUpload', $file)
             ->call('save')
             ->assertHasNoErrors()
@@ -90,12 +103,30 @@ final class ProfileModuleTest extends TestCase
 
         $this->actingAs($user);
 
-        Livewire::test(\App\Livewire\Profile\ProfileEdit::class)
+        Livewire::test(ProfileEdit::class)
             ->set('name', '')
             ->set('email', 'invalid-email')
             ->set('password', 'short')
             ->call('save')
-            ->assertHasErrors(['name', 'email', 'password']);
+            ->assertHasErrors(['name', 'email', 'password', 'current_password']);
+    }
+
+    public function test_user_must_enter_current_password_to_change_password(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('old-password'),
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(ProfileEdit::class)
+            ->set('current_password', 'wrong-password')
+            ->set('password', 'newpassword123')
+            ->set('password_confirmation', 'newpassword123')
+            ->call('save')
+            ->assertHasErrors(['current_password']);
+
+        $this->assertTrue(Hash::check('old-password', $user->refresh()->password));
     }
 
     public function test_profile_email_must_be_unique(): void
@@ -105,7 +136,7 @@ final class ProfileModuleTest extends TestCase
 
         $this->actingAs($user1);
 
-        Livewire::test(\App\Livewire\Profile\ProfileEdit::class)
+        Livewire::test(ProfileEdit::class)
             ->set('email', 'user2@greeco.com')
             ->call('save')
             ->assertHasErrors(['email']);

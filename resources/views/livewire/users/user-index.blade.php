@@ -21,7 +21,7 @@
                         <input
                             type="search"
                             class="form-control ps-5"
-                            placeholder="Tìm kiếm theo tên hoặc email..."
+                            placeholder="Tìm kiếm theo tên, username hoặc email..."
                             wire:model.live.debounce.400ms="search"
                         >
                     </div>
@@ -68,7 +68,16 @@
                                     @endif
                                 </button>
                             </th>
+                            <th scope="col">
+                                <button type="button" class="btn btn-link p-0 text-body fw-semibold" wire:click="sortBy('username')">
+                                    Username
+                                    @if ($sortField === 'username')
+                                        <i class="fi fi-rr-angle-{{ $sortDirection === 'asc' ? 'small-up' : 'small-down' }}"></i>
+                                    @endif
+                                </button>
+                            </th>
                             <th scope="col">Vai trò</th>
+                            <th scope="col">Trạng thái</th>
                             <th scope="col">
                                 <button type="button" class="btn btn-link p-0 text-body fw-semibold" wire:click="sortBy('created_at')">
                                     Ngày tạo
@@ -92,6 +101,7 @@
                                     </div>
                                 </td>
                                 <td>{{ $user->email }}</td>
+                                <td>{{ $user->username }}</td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">
                                         @forelse ($user->roles as $roleItem)
@@ -101,32 +111,75 @@
                                         @endforelse
                                     </div>
                                 </td>
+                                <td>
+                                    @if ($user->isLocked())
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            <i class="fi fi-rr-lock me-1"></i> Đã khóa
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success-subtle text-success">
+                                            <i class="fi fi-rr-check me-1"></i> Hoạt động
+                                        </span>
+                                    @endif
+                                </td>
                                 <td>{{ $user->created_at?->format('Y-m-d H:i') }}</td>
                                 <td class="text-end">
-                                    @if (auth()->user()?->can('user.update'))
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-primary"
-                                            wire:click="$dispatchTo('users.user-edit', 'user-edit:open', { userId: {{ $user->id }} })"
-                                        >
-                                            Sửa
-                                        </button>
-                                    @endif
+                                    <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+                                        @if (auth()->user()?->can('user.update'))
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                wire:click="$dispatchTo('users.user-edit', 'user-edit:open', { userId: {{ $user->id }} })"
+                                            >
+                                                <i class="fi fi-rr-edit me-1"></i> Sửa
+                                            </button>
 
-                                    @if (auth()->user()?->can('user.delete'))
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            wire:click="$dispatchTo('users.user-delete', 'user-delete:open', { userId: {{ $user->id }} })"
-                                        >
-                                            Xóa
-                                        </button>
-                                    @endif
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                wire:click="$dispatchTo('users.user-reset-password', 'user-reset-password:open', { userId: {{ $user->id }} })"
+                                            >
+                                                <i class="fi fi-rr-key me-1"></i> Reset
+                                            </button>
+
+                                            @if ($user->id !== auth()->id())
+                                                @if ($user->isLocked())
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        wire:click="unlock({{ $user->id }})"
+                                                        wire:confirm="Bạn có chắc chắn muốn mở khóa tài khoản này?"
+                                                    >
+                                                        <i class="fi fi-rr-unlock me-1"></i> Mở khóa
+                                                    </button>
+                                                @else
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-warning"
+                                                        wire:click="lock({{ $user->id }})"
+                                                        wire:confirm="Bạn có chắc chắn muốn khóa tài khoản này?"
+                                                    >
+                                                        <i class="fi fi-rr-lock me-1"></i> Khóa
+                                                    </button>
+                                                @endif
+                                            @endif
+                                        @endif
+
+                                        @if (auth()->user()?->can('user.delete'))
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                wire:click="$dispatchTo('users.user-delete', 'user-delete:open', { userId: {{ $user->id }} })"
+                                            >
+                                                <i class="fi fi-rr-trash me-1"></i> Xóa
+                                            </button>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
+                                <td colspan="7" class="text-center py-5 text-muted">
                                     Không tìm thấy người dùng nào.
                                 </td>
                             </tr>
@@ -143,5 +196,6 @@
 
     <livewire:users.user-create />
     <livewire:users.user-edit />
+    <livewire:users.user-reset-password />
     <livewire:users.user-delete />
 </div>

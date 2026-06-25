@@ -21,6 +21,8 @@ final class UserCreate extends Component
 
     public string $name = '';
 
+    public string $username = '';
+
     public string $email = '';
 
     public string $password = '';
@@ -80,6 +82,7 @@ final class UserCreate extends Component
     private function resetForm(): void
     {
         $this->name = '';
+        $this->username = '';
         $this->email = '';
         $this->password = '';
         $this->password_confirmation = '';

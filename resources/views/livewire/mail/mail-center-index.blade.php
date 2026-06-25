@@ -295,8 +295,13 @@
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-semibold">IMAP password</label>
-                                        <input type="password" wire:model="imap_password" class="form-control @error('imap_password') is-invalid @enderror" placeholder="Để trống nếu không đổi">
-                                        @error('imap_password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        <div class="input-group">
+                                            <input id="imap-password" type="password" wire:model="imap_password" class="form-control @error('imap_password') is-invalid @enderror" placeholder="Để trống nếu không đổi">
+                                            <button type="button" class="btn btn-outline-secondary" data-password-toggle="#imap-password" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
+                                                <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                            </button>
+                                        </div>
+                                        @error('imap_password') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                 </div>
 
@@ -332,8 +337,13 @@
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-semibold">SMTP password</label>
-                                        <input type="password" wire:model="smtp_password" class="form-control @error('smtp_password') is-invalid @enderror" placeholder="Để trống nếu không đổi">
-                                        @error('smtp_password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        <div class="input-group">
+                                            <input id="smtp-password" type="password" wire:model="smtp_password" class="form-control @error('smtp_password') is-invalid @enderror" placeholder="Để trống nếu không đổi">
+                                            <button type="button" class="btn btn-outline-secondary" data-password-toggle="#smtp-password" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
+                                                <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                            </button>
+                                        </div>
+                                        @error('smtp_password') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                     </div>
                                 </div>
 
@@ -408,20 +418,3 @@
         @endcan
     @endif
 </div>
-
-@push('styles')
-    <style>
-        .mail-message-body {
-            overflow-wrap: anywhere;
-        }
-
-        .mail-message-body img {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .mail-message-body table {
-            max-width: 100%;
-        }
-    </style>
-@endpush

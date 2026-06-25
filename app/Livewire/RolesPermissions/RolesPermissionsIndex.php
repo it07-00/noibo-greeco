@@ -74,15 +74,7 @@ final class RolesPermissionsIndex extends Component
             return;
         }
 
-        $permissions = $role->permissions->pluck('name')->toArray();
-
-        if (in_array($permissionName, $permissions, true)) {
-            $permissions = array_diff($permissions, [$permissionName]);
-        } else {
-            $permissions[] = $permissionName;
-        }
-
-        $service->syncPermissions($role, $permissions);
+        $service->togglePermission($role, $permissionName);
 
         $this->dispatch('swal:alert', [
             'icon' => 'success',
@@ -129,11 +121,11 @@ final class RolesPermissionsIndex extends Component
 
         $role = Role::findOrFail($roleId);
 
-        if ($role->name === RoleEnum::SuperAdmin->value) {
+        if (RoleEnum::isSystemRole($role->name)) {
             $this->dispatch('swal:alert', [
                 'icon' => 'error',
                 'title' => 'Không thể xóa!',
-                'text' => 'Vai trò Super Admin không thể bị xóa khỏi hệ thống.',
+                'text' => 'Vai trò hệ thống không thể bị xóa.',
             ]);
 
             return;
@@ -176,7 +168,7 @@ final class RolesPermissionsIndex extends Component
 
         $role = Role::findOrFail($this->editingRoleId);
 
-        if ($role->name === RoleEnum::SuperAdmin->value) {
+        if (RoleEnum::isSystemRole($role->name)) {
             $this->dispatch('swal:alert', [
                 'icon' => 'error',
                 'title' => 'Không thể chỉnh sửa!',

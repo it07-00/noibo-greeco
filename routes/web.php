@@ -7,10 +7,13 @@ use App\Http\Controllers\DashboardController;
 use App\Livewire\DailyReports\DailyReportIndex;
 use App\Livewire\DutySchedules\DutyScheduleIndex;
 use App\Livewire\Mail\MailCenterIndex;
+use App\Livewire\Profile\ProfileEdit;
 use App\Livewire\RolesPermissions\RolesPermissionsIndex;
 use App\Livewire\Settings\SettingIndex;
 use App\Livewire\Users\UserIndex;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::redirect('/', '/dashboard');
 
@@ -19,7 +22,7 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 });
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     Route::get('/dashboard', DashboardController::class)
@@ -50,20 +53,20 @@ Route::middleware('auth')->group(function (): void {
         ->middleware('can:mail.view')
         ->name('mail.index');
 
-    Route::get('/profile', \App\Livewire\Profile\ProfileEdit::class)
+    Route::get('/profile', ProfileEdit::class)
         ->name('profile.edit');
 });
 
 // Custom storage route fallback for hosting that blocks symlinks
 Route::get('/storage/{path}', function (string $path) {
-    $filePath = 'public/' . $path;
+    $filePath = 'public/'.$path;
 
-    if (!\Illuminate\Support\Facades\Storage::exists($filePath)) {
+    if (! Storage::exists($filePath)) {
         abort(404);
     }
 
-    $file = \Illuminate\Support\Facades\Storage::get($filePath);
-    $type = \Illuminate\Support\Facades\Storage::mimeType($filePath);
+    $file = Storage::get($filePath);
+    $type = Storage::mimeType($filePath);
 
-    return \Illuminate\Support\Facades\Response::make($file, 200)->header("Content-Type", $type);
+    return Response::make($file, 200)->header('Content-Type', $type);
 })->where('path', '.*');

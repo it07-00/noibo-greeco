@@ -104,6 +104,7 @@
     @endif
 
     @livewireScripts
+    @include('partials.password-toggle-script')
     <script>
         (() => {
             if (window.greecoBootstrapModalBridgeInitialized) {
@@ -201,6 +202,8 @@
                 'user-create:hide': ['userCreateModal', 'hide'],
                 'user-edit:show':   ['userEditModal',   'show'],
                 'user-edit:hide':   ['userEditModal',   'hide'],
+                'user-reset-password:show': ['userResetPasswordModal', 'show'],
+                'user-reset-password:hide': ['userResetPasswordModal', 'hide'],
                 'user-delete:show': ['userDeleteModal', 'show'],
                 'user-delete:hide': ['userDeleteModal', 'hide'],
                 'role-create:hide': ['addRoleModal',      'hide'],

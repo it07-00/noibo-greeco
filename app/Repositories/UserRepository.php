@@ -20,6 +20,7 @@ final class UserRepository
             ->when($filter->search, function ($query, string $search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                 });
             })
@@ -36,7 +37,7 @@ final class UserRepository
     }
 
     /**
-     * @param  array{name: string, email: string, password: string}  $attributes
+     * @param  array{name: string, username: string, email: string, password: string}  $attributes
      */
     public function create(array $attributes): User
     {
@@ -44,7 +45,7 @@ final class UserRepository
     }
 
     /**
-     * @param  array{name?: string, email?: string, password?: string}  $attributes
+     * @param  array{name?: string, username?: string, email?: string, password?: string, locked_at?: mixed}  $attributes
      */
     public function update(User $user, array $attributes): User
     {

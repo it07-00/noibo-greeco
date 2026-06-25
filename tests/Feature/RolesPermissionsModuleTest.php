@@ -6,8 +6,8 @@ namespace Tests\Feature;
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Livewire\RolesPermissions\RolesPermissionsIndex;
 use App\Models\User;
-use App\Services\RolePermissionService;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -60,7 +60,7 @@ final class RolesPermissionsModuleTest extends TestCase
 
         $firstRole = Role::query()->orderBy('id')->first();
 
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
+        Livewire::test(RolesPermissionsIndex::class)
             ->assertSet('activeRoleId', $firstRole->id);
     }
 
@@ -76,7 +76,7 @@ final class RolesPermissionsModuleTest extends TestCase
         $roles = Role::query()->orderBy('id')->get();
         $secondRole = $roles[1];
 
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
+        Livewire::test(RolesPermissionsIndex::class)
             ->call('selectRole', $secondRole->id)
             ->assertSet('activeRoleId', $secondRole->id);
     }
@@ -91,13 +91,13 @@ final class RolesPermissionsModuleTest extends TestCase
         $this->actingAs($admin);
 
         // Test validation empty name
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
+        Livewire::test(RolesPermissionsIndex::class)
             ->set('newRoleName', '')
             ->call('createRole')
             ->assertHasErrors(['newRoleName' => 'required']);
 
         // Test creation success
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
+        Livewire::test(RolesPermissionsIndex::class)
             ->set('newRoleName', 'Custom Editor')
             ->set('newRoleDescription', 'Custom role description')
             ->call('createRole')
@@ -122,21 +122,89 @@ final class RolesPermissionsModuleTest extends TestCase
         $itRole = Role::findByName(RoleEnum::IT->value);
 
         // Mount and toggle ScheduleCreate permission
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
+        Livewire::test(RolesPermissionsIndex::class)
             ->call('selectRole', $itRole->id)
-            ->call('togglePermission', app(RolePermissionService::class), PermissionEnum::ScheduleCreate->value)
+            ->call('togglePermission', PermissionEnum::ScheduleCreate->value)
             ->assertHasNoErrors();
 
         // Since it starts assigned in the seeder, toggling it should remove it
         $this->assertFalse($itRole->refresh()->hasPermissionTo(PermissionEnum::ScheduleCreate->value));
 
         // Toggle again to add it back
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
+        Livewire::test(RolesPermissionsIndex::class)
             ->call('selectRole', $itRole->id)
-            ->call('togglePermission', app(RolePermissionService::class), PermissionEnum::ScheduleCreate->value)
+            ->call('togglePermission', PermissionEnum::ScheduleCreate->value)
             ->assertHasNoErrors();
 
         $this->assertTrue($itRole->refresh()->hasPermissionTo(PermissionEnum::ScheduleCreate->value));
+    }
+
+    public function test_permission_toggles_keep_required_view_permissions_consistent(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $admin = User::factory()->create();
+        $admin->assignRole(RoleEnum::SuperAdmin->value);
+
+        $this->actingAs($admin);
+
+        $role = Role::create([
+            'name' => 'Project Coordinator',
+            'guard_name' => 'web',
+        ]);
+
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('selectRole', $role->id)
+            ->call('togglePermission', PermissionEnum::ScheduleCreate->value)
+            ->assertHasNoErrors();
+
+        $role->refresh();
+        $this->assertTrue($role->hasPermissionTo(PermissionEnum::ScheduleView->value));
+        $this->assertTrue($role->hasPermissionTo(PermissionEnum::ScheduleCreate->value));
+
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('selectRole', $role->id)
+            ->call('togglePermission', PermissionEnum::ScheduleView->value)
+            ->assertHasNoErrors();
+
+        $role->refresh();
+        $this->assertFalse($role->hasPermissionTo(PermissionEnum::ScheduleView->value));
+        $this->assertFalse($role->hasPermissionTo(PermissionEnum::ScheduleCreate->value));
+    }
+
+    public function test_module_permissions_keep_dashboard_access_consistent(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $admin = User::factory()->create();
+        $admin->assignRole(RoleEnum::SuperAdmin->value);
+
+        $this->actingAs($admin);
+
+        $role = Role::create([
+            'name' => 'Mail Operator',
+            'guard_name' => 'web',
+        ]);
+
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('selectRole', $role->id)
+            ->call('togglePermission', PermissionEnum::MailSend->value)
+            ->assertHasNoErrors();
+
+        $role->refresh();
+        $this->assertTrue($role->hasPermissionTo(PermissionEnum::DashboardView->value));
+        $this->assertTrue($role->hasPermissionTo(PermissionEnum::MailView->value));
+        $this->assertTrue($role->hasPermissionTo(PermissionEnum::MailSend->value));
+
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('selectRole', $role->id)
+            ->call('togglePermission', PermissionEnum::DashboardView->value)
+            ->assertHasNoErrors();
+
+        $role->refresh();
+        $this->assertFalse($role->hasPermissionTo(PermissionEnum::DashboardView->value));
+        $this->assertFalse($role->hasPermissionTo(PermissionEnum::MailView->value));
+        $this->assertFalse($role->hasPermissionTo(PermissionEnum::MailSend->value));
     }
 
     public function test_cannot_toggle_super_admin_permissions(): void
@@ -150,9 +218,9 @@ final class RolesPermissionsModuleTest extends TestCase
 
         $superAdminRole = Role::findByName(RoleEnum::SuperAdmin->value);
 
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
+        Livewire::test(RolesPermissionsIndex::class)
             ->call('selectRole', $superAdminRole->id)
-            ->call('togglePermission', app(RolePermissionService::class), PermissionEnum::UserCreate->value)
+            ->call('togglePermission', PermissionEnum::UserCreate->value)
             ->assertHasNoErrors();
 
         // Super Admin still retains the permission
@@ -175,8 +243,8 @@ final class RolesPermissionsModuleTest extends TestCase
         ]);
 
         // Delete custom role
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
-            ->call('deleteRole', app(RolePermissionService::class), $customRole->id)
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('deleteRole', $customRole->id)
             ->assertHasNoErrors();
 
         $this->assertDatabaseMissing('roles', ['id' => $customRole->id]);
@@ -184,11 +252,43 @@ final class RolesPermissionsModuleTest extends TestCase
         // Attempt delete Super Admin
         $superAdminRole = Role::findByName(RoleEnum::SuperAdmin->value);
 
-        Livewire::test(\App\Livewire\RolesPermissions\RolesPermissionsIndex::class)
-            ->call('deleteRole', app(RolePermissionService::class), $superAdminRole->id)
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('deleteRole', $superAdminRole->id)
             ->assertHasNoErrors();
 
         // Super Admin role must still exist
         $this->assertDatabaseHas('roles', ['id' => $superAdminRole->id]);
+    }
+
+    public function test_builtin_roles_cannot_be_renamed_or_deleted(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $admin = User::factory()->create();
+        $admin->assignRole(RoleEnum::SuperAdmin->value);
+
+        $this->actingAs($admin);
+
+        $directorRole = Role::findByName(RoleEnum::Director->value);
+
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('openEditModal', $directorRole->id)
+            ->set('editRoleName', 'Executive')
+            ->call('updateRole')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('roles', [
+            'id' => $directorRole->id,
+            'name' => RoleEnum::Director->value,
+        ]);
+
+        Livewire::test(RolesPermissionsIndex::class)
+            ->call('deleteRole', $directorRole->id)
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('roles', [
+            'id' => $directorRole->id,
+            'name' => RoleEnum::Director->value,
+        ]);
     }
 }

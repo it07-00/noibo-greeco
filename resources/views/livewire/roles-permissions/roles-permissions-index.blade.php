@@ -44,7 +44,7 @@
                                         {{ $role->name }}
                                     </button>
                                     {{-- Edit button only for non-system roles --}}
-                                    @if ($role->name !== \App\Enums\RoleEnum::SuperAdmin->value)
+                                    @if (! \App\Enums\RoleEnum::isSystemRole($role->name))
                                         <button
                                             type="button"
                                             class="btn btn-sm btn-link p-0 ms-1 text-muted"
@@ -71,7 +71,7 @@
                             </div>
                             
                             <div class="d-flex gap-2">
-                                @if ($activeRole->name !== \App\Enums\RoleEnum::SuperAdmin->value)
+                                @if (! \App\Enums\RoleEnum::isSystemRole($activeRole->name))
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-outline-secondary waves-effect"
@@ -81,7 +81,7 @@
                                     </button>
                                 @endif
 
-                                @if ($activeRole->name !== \App\Enums\RoleEnum::SuperAdmin->value)
+                                @if (! \App\Enums\RoleEnum::isSystemRole($activeRole->name))
                                     <button
                                         type="button"
                                         class="btn btn-sm btn-outline-danger waves-effect"

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Users;
 
-use App\DTOs\UserDTO;
 use App\Services\UserService;
-use App\Support\UserValidationRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -14,7 +12,7 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
-final class UserEdit extends Component
+final class UserResetPassword extends Component
 {
     public bool $isOpen = false;
 
@@ -22,18 +20,9 @@ final class UserEdit extends Component
 
     public string $name = '';
 
-    public string $username = '';
-
     public string $email = '';
 
-    public string $password = '';
-
-    public string $password_confirmation = '';
-
-    /**
-     * @var list<string>
-     */
-    public array $roles = [];
+    public string $defaultPassword = UserService::DEFAULT_RESET_PASSWORD;
 
     private UserService $users;
 
@@ -42,7 +31,7 @@ final class UserEdit extends Component
         $this->users = $users;
     }
 
-    #[On('user-edit:open')]
+    #[On('user-reset-password:open')]
     public function open(int $userId): void
     {
         $user = $this->users->find($userId);
@@ -51,20 +40,16 @@ final class UserEdit extends Component
         $this->resetValidation();
         $this->userId = $user->id;
         $this->name = $user->name;
-        $this->username = $user->username;
         $this->email = $user->email;
-        $this->password = '';
-        $this->password_confirmation = '';
-        $this->roles = $user->roles->pluck('name')->values()->all();
         $this->isOpen = true;
-        $this->dispatch('user-edit:show');
+        $this->dispatch('user-reset-password:show');
     }
 
     public function close(): void
     {
         $this->isOpen = false;
         $this->resetValidation();
-        $this->dispatch('user-edit:hide');
+        $this->dispatch('user-reset-password:hide');
     }
 
     public function save(): void
@@ -74,20 +59,16 @@ final class UserEdit extends Component
         $user = $this->users->find($this->userId);
         Gate::authorize('update', $user);
 
-        $validated = $this->validate(UserValidationRules::update($user));
-
-        $this->users->update($user, UserDTO::fromArray($validated));
+        $this->users->resetPasswordToDefault($user);
 
         $this->isOpen = false;
-        $this->dispatch('user-edit:hide');
+        $this->dispatch('user-reset-password:hide');
         $this->dispatch('users:refresh');
-        session()->flash('status', 'User updated successfully.');
+        session()->flash('status', 'Đã đặt lại mật khẩu người dùng về mật khẩu mặc định.');
     }
 
     public function render(): View
     {
-        return view('livewire.users.user-edit', [
-            'roleOptions' => $this->users->roleOptions(),
-        ]);
+        return view('livewire.users.user-reset-password');
     }
 }

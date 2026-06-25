@@ -18,26 +18,24 @@ final class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $loginInput = $request->input('username');
-
-        // Resolve email if username was provided (part before @)
-        if (filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
-            $email = $loginInput;
-        } else {
-            $user = \App\Models\User::query()
-                ->where('email', 'like', $loginInput . '@%')
-                ->first();
-            $email = $user ? $user->email : $loginInput;
-        }
-
         $credentials = [
-            'email' => $email,
+            'username' => strtolower(trim((string) $request->input('username'))),
             'password' => $request->input('password'),
         ];
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'username' => __('auth.failed'),
+            ]);
+        }
+
+        if ($request->user()?->isLocked()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            throw ValidationException::withMessages([
+                'username' => 'Tài khoản của bạn đang bị khóa.',
             ]);
         }
 

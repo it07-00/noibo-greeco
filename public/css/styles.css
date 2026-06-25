@@ -20553,4 +20553,18 @@ span.flatpickr-weekday {
     border-color: rgba(147, 51, 234, 0.3) !important;
 }
 
+/* Mail Center overrides */
+.mail-message-body {
+    overflow-wrap: anywhere;
+}
+
+.mail-message-body img {
+    max-width: 100%;
+    height: auto;
+}
+
+.mail-message-body table {
+    max-width: 100%;
+}
+
 /*# sourceMappingURL=styles.css.map */

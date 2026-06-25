@@ -21,31 +21,37 @@ final class SampleDataSeeder extends Seeder
         $roleUsers = [
             RoleEnum::Director->value => [
                 'name' => 'Nguyễn Giám Đốc',
+                'username' => 'giamdoc',
                 'email' => 'giamdoc@example.com',
             ],
             RoleEnum::IT->value => [
                 'name' => 'Trần Kỹ Thuật (IT)',
+                'username' => 'it',
                 'email' => 'it@example.com',
             ],
             RoleEnum::Sales->value => [
                 'name' => 'Lê Kinh Doanh',
+                'username' => 'sales',
                 'email' => 'sales@example.com',
             ],
             RoleEnum::Accountant->value => [
                 'name' => 'Phạm Kế Toán',
+                'username' => 'ketoan',
                 'email' => 'ketoan@example.com',
             ],
             RoleEnum::Consultant->value => [
                 'name' => 'Hoàng Tư Vấn',
+                'username' => 'tuvan',
                 'email' => 'tuvan@example.com',
             ],
         ];
 
         foreach ($roleUsers as $roleName => $data) {
             $user = User::query()->firstOrCreate(
-                ['email' => $data['email']],
+                ['username' => $data['username']],
                 [
                     'name' => $data['name'],
+                    'email' => $data['email'],
                     'password' => Hash::make('password'),
                 ]
             );
@@ -56,7 +62,7 @@ final class SampleDataSeeder extends Seeder
         }
 
         // Fetch super admin if exists
-        $superAdmin = User::query()->where('email', 'superadmin@example.com')->first();
+        $superAdmin = User::query()->where('username', 'superadmin')->first();
         if ($superAdmin) {
             $users[] = $superAdmin;
         }
@@ -64,7 +70,7 @@ final class SampleDataSeeder extends Seeder
         // 2. Generate daily reports for the past 7 days
         // Staff users can create reports. Directors do not need to.
         $staffUsers = array_filter($users, function (User $u) {
-            return !$u->hasRole(RoleEnum::Director->value);
+            return ! $u->hasRole(RoleEnum::Director->value);
         });
 
         foreach ($staffUsers as $user) {

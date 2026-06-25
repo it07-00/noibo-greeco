@@ -7,7 +7,7 @@ namespace Tests\Feature;
 use App\Enums\RoleEnum;
 use App\Livewire\Mail\MailCenterIndex;
 use App\Mail\ComposedMail;
-use App\Models\Setting;
+use App\Enums\PermissionEnum;
 use App\Models\User;
 use App\Services\MailSettingsService;
 use Database\Seeders\PermissionSeeder;
@@ -78,6 +78,62 @@ final class MailModuleTest extends TestCase
 
         $this->assertSame('imap-secret', $settings->imapPassword);
         $this->assertSame('smtp-secret', $settings->smtpPassword);
+    }
+
+    public function test_mail_settings_are_scoped_to_the_authenticated_user(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $alice = User::factory()->create([
+            'name' => 'Alice Green',
+            'email' => 'alice@greeco.vn',
+        ]);
+        $alice->givePermissionTo(
+            PermissionEnum::MailView->value,
+            PermissionEnum::MailUpdate->value,
+        );
+
+        $bob = User::factory()->create([
+            'name' => 'Bob Green',
+            'email' => 'bob@greeco.vn',
+        ]);
+        $bob->givePermissionTo(
+            PermissionEnum::MailView->value,
+            PermissionEnum::MailUpdate->value,
+        );
+
+        $this->actingAs($alice);
+
+        Livewire::test(MailCenterIndex::class)
+            ->set('enabled', false)
+            ->set('from_name', 'Alice Green')
+            ->set('from_address', 'alice@greeco.vn')
+            ->set('imap_host', 'mail.greeco.vn')
+            ->set('imap_port', 993)
+            ->set('imap_encryption', 'ssl')
+            ->set('imap_username', 'alice@greeco.vn')
+            ->set('imap_password', 'alice-imap-secret')
+            ->set('smtp_host', 'mail.greeco.vn')
+            ->set('smtp_port', 465)
+            ->set('smtp_encryption', 'ssl')
+            ->set('smtp_username', 'alice@greeco.vn')
+            ->set('smtp_password', 'alice-smtp-secret')
+            ->call('saveSettings')
+            ->assertHasNoErrors();
+
+        Livewire::actingAs($bob)
+            ->test(MailCenterIndex::class)
+            ->assertSet('from_name', 'Bob Green')
+            ->assertSet('from_address', 'bob@greeco.vn')
+            ->assertSet('imap_username', '')
+            ->assertSet('smtp_username', '');
+
+        Livewire::actingAs($alice)
+            ->test(MailCenterIndex::class)
+            ->assertSet('from_name', 'Alice Green')
+            ->assertSet('from_address', 'alice@greeco.vn')
+            ->assertSet('imap_username', 'alice@greeco.vn')
+            ->assertSet('smtp_username', 'alice@greeco.vn');
     }
 
     public function test_user_with_mail_send_permission_can_send_email_from_compose_form(): void

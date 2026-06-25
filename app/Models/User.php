@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -23,8 +24,6 @@ class User extends Authenticatable
     use Notifiable;
     use SoftDeletes;
 
-    private const DEFAULT_AVATAR_PATH = 'images/avatar2.webp';
-
     /**
      * The attributes that are mass assignable.
      *
@@ -32,11 +31,13 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
         'dob',
         'address',
         'avatar_path',
+        'locked_at',
     ];
 
     /**
@@ -60,7 +61,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'dob' => 'date',
+            'locked_at' => 'datetime',
         ];
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked_at !== null;
     }
 
     /**
@@ -71,12 +78,23 @@ class User extends Authenticatable
         return $this->belongsToMany(DutySchedule::class, 'duty_schedule_user');
     }
 
-    public function getAvatarUrlAttribute(): string
+    public function getAvatarUrlAttribute(): ?string
     {
         if ($this->avatar_path && Storage::disk('public')->exists($this->avatar_path)) {
             return asset('storage/'.ltrim($this->avatar_path, '/'));
         }
 
-        return asset(self::DEFAULT_AVATAR_PATH);
+        return null;
+    }
+
+    public function getAvatarInitialsAttribute(): string
+    {
+        $name = trim($this->name);
+
+        if ($name === '') {
+            return 'U';
+        }
+
+        return Str::upper(Str::substr($name, 0, 1));
     }
 }

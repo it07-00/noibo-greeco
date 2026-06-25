@@ -24,7 +24,11 @@ final class ProfileEdit extends Component
 
     public string $email = '';
 
+    public string $current_password = '';
+
     public string $password = '';
+
+    public string $password_confirmation = '';
 
     public string $dob = '';
 
@@ -59,7 +63,8 @@ final class ProfileEdit extends Component
             ],
             'dob' => ['nullable', 'date'],
             'address' => ['nullable', 'string', 'max:255'],
-            'password' => ['nullable', 'string', 'min:8'],
+            'current_password' => ['required_with:password', 'nullable', 'current_password'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'avatarUpload' => ['nullable', 'image', 'max:2048'],
         ]);
 
@@ -83,6 +88,7 @@ final class ProfileEdit extends Component
         }
 
         $user->update($attributes);
+        $user->refresh();
 
         if ($newAvatarPath !== null) {
             if ($oldAvatarPath && $oldAvatarPath !== $newAvatarPath) {
@@ -90,9 +96,9 @@ final class ProfileEdit extends Component
             }
 
             $this->avatarUpload = null;
-            $user->refresh();
-            $this->dispatch('profile-avatar:updated', url: $user->avatar_url);
         }
+
+        $this->dispatch('profile-avatar:updated', url: $user->avatar_url, initials: $user->avatar_initials);
 
         $this->successMessage = 'Cập nhật thông tin cá nhân thành công!';
         $this->dispatch('swal:alert', [
@@ -100,7 +106,9 @@ final class ProfileEdit extends Component
             'title' => 'Thành công!',
             'text' => $this->successMessage,
         ]);
+        $this->current_password = '';
         $this->password = '';
+        $this->password_confirmation = '';
     }
 
     public function render(): View

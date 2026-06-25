@@ -7,7 +7,9 @@ namespace App\Livewire\DutySchedules;
 use App\DTOs\DutyScheduleDTO;
 use App\Enums\RoleEnum;
 use App\Models\DutySchedule;
+use App\Models\User;
 use App\Services\DutyScheduleService;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -22,6 +24,7 @@ final class DutyScheduleIndex extends Component
 
     // Day schedules view properties (for Director/non-creators)
     public string $selectedDateStr = '';
+
     public array $daySchedules = [];
 
     // Filters
@@ -104,40 +107,40 @@ final class DutyScheduleIndex extends Component
 
         return $events->map(function (DutySchedule $event) {
             $isCreator = auth()->id() === $event->created_by;
-            $isSuperAdmin = auth()->user()?->hasRole('Super Admin') ?? false;
+            $isSuperAdmin = auth()->user()?->hasRole(RoleEnum::SuperAdmin->value) ?? false;
             $isDirector = auth()->user()?->hasRole(RoleEnum::Director->value) ?? false;
             $isParticipant = $event->users->contains(auth()->id());
             $canSeeDetails = $isCreator || $isSuperAdmin || $isDirector || $isParticipant;
 
             $isPrivate = (bool) $event->is_private;
             $titlePrefix = $isPrivate ? '🔒 ' : '';
-            $rawTitle = $isPrivate && !$canSeeDetails ? 'Lịch riêng tư' : $event->title;
-            
+            $rawTitle = $isPrivate && ! $canSeeDetails ? 'Lịch riêng tư' : $event->title;
+
             // Format verbose title for FullCalendar grid
-            if ($isPrivate && !$canSeeDetails) {
-                $title = $titlePrefix . $rawTitle;
+            if ($isPrivate && ! $canSeeDetails) {
+                $title = $titlePrefix.$rawTitle;
             } else {
                 $creatorName = $event->creator?->name ?? 'N/A';
                 $participantsStr = '';
                 if ($event->users->isNotEmpty()) {
                     $participantsNames = $event->users->pluck('name')->toArray();
-                    $participantsStr = ' (với ' . implode(', ', $participantsNames) . ')';
+                    $participantsStr = ' (với '.implode(', ', $participantsNames).')';
                 }
-                $title = $titlePrefix . "{$creatorName}: {$rawTitle}{$participantsStr}";
+                $title = $titlePrefix."{$creatorName}: {$rawTitle}{$participantsStr}";
             }
 
-            $description = $isPrivate && !$canSeeDetails ? null : $event->description;
-            $location = $isPrivate && !$canSeeDetails ? null : $event->location;
+            $description = $isPrivate && ! $canSeeDetails ? null : $event->description;
+            $location = $isPrivate && ! $canSeeDetails ? null : $event->location;
 
             return [
                 'id' => $event->id,
                 'title' => $title,
-                'raw_title' => $titlePrefix . $rawTitle,
+                'raw_title' => $titlePrefix.$rawTitle,
                 'start' => $event->start_at->toIso8601String(),
                 'end' => $event->end_at?->toIso8601String(),
                 'description' => $description,
                 'location' => $location,
-                'classNames' => $this->getEventClasses($isPrivate && !$canSeeDetails ? 'private' : $event->label_color),
+                'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
                 'label_color' => $event->label_color,
                 'creator_name' => $event->creator?->name ?? 'N/A',
                 'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
@@ -173,6 +176,7 @@ final class DutyScheduleIndex extends Component
                 'title' => 'Thao tác không hợp lệ',
                 'text' => 'Không thể tạo lịch công tác cho ngày trong quá khứ!',
             ]);
+
             return;
         }
 
@@ -273,27 +277,27 @@ final class DutyScheduleIndex extends Component
     {
         Gate::authorize('viewAny', DutySchedule::class);
 
-        $this->selectedDateStr = \Carbon\Carbon::parse($dateStr)->format('d/m/Y');
-        
-        $start = $dateStr . ' 00:00:00';
-        $end = $dateStr . ' 23:59:59';
-        
+        $this->selectedDateStr = Carbon::parse($dateStr)->format('d/m/Y');
+
+        $start = $dateStr.' 00:00:00';
+        $end = $dateStr.' 23:59:59';
+
         $schedules = $this->scheduleService->getEventsInRange($start, $end, $this->filterUserId ?: null);
-        
+
         $this->daySchedules = $schedules->map(function (DutySchedule $event) {
             $isCreator = auth()->id() === $event->created_by;
-            $isSuperAdmin = auth()->user()?->hasRole('Super Admin') ?? false;
+            $isSuperAdmin = auth()->user()?->hasRole(RoleEnum::SuperAdmin->value) ?? false;
             $isDirector = auth()->user()?->hasRole(RoleEnum::Director->value) ?? false;
             $isParticipant = $event->users->contains(auth()->id());
             $canSeeDetails = $isCreator || $isSuperAdmin || $isDirector || $isParticipant;
 
             $isPrivate = (bool) $event->is_private;
             $titlePrefix = $isPrivate ? '🔒 ' : '';
-            $title = $isPrivate && !$canSeeDetails ? 'Lịch riêng tư' : $event->title;
-            $title = $titlePrefix . $title;
+            $title = $isPrivate && ! $canSeeDetails ? 'Lịch riêng tư' : $event->title;
+            $title = $titlePrefix.$title;
 
-            $description = $isPrivate && !$canSeeDetails ? null : $event->description;
-            $location = $isPrivate && !$canSeeDetails ? null : $event->location;
+            $description = $isPrivate && ! $canSeeDetails ? null : $event->description;
+            $location = $isPrivate && ! $canSeeDetails ? null : $event->location;
 
             return [
                 'id' => $event->id,
@@ -302,7 +306,7 @@ final class DutyScheduleIndex extends Component
                 'end_formatted' => $event->end_at?->format('H:i d/m/Y'),
                 'description' => $description,
                 'location' => $location,
-                'label_color' => $isPrivate && !$canSeeDetails ? 'private' : $event->label_color,
+                'label_color' => $isPrivate && ! $canSeeDetails ? 'private' : $event->label_color,
                 'creator_name' => $event->creator?->name ?? 'N/A',
                 'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
                 'can_edit' => auth()->user()?->can('update', $event) ?? false,
@@ -322,23 +326,23 @@ final class DutyScheduleIndex extends Component
     public function openCreateFromList(): void
     {
         $this->dispatch('schedule:close-day-schedules');
-        
-        $dateStr = \Carbon\Carbon::createFromFormat('d/m/Y', $this->selectedDateStr)->format('Y-m-d');
+
+        $dateStr = Carbon::createFromFormat('d/m/Y', $this->selectedDateStr)->format('Y-m-d');
         $this->openCreate($dateStr);
     }
 
     public function deleteFromList(int $id): void
     {
         $this->delete($id);
-        
+
         // Refresh
-        $dateStr = \Carbon\Carbon::createFromFormat('d/m/Y', $this->selectedDateStr)->format('Y-m-d');
+        $dateStr = Carbon::createFromFormat('d/m/Y', $this->selectedDateStr)->format('Y-m-d');
         $this->showDaySchedules($dateStr);
     }
 
     public function render(): View
     {
-        $users = \App\Models\User::query()->orderBy('name')->get(['id', 'name']);
+        $users = User::query()->orderBy('name')->get(['id', 'name']);
 
         return view('livewire.duty-schedules.duty-schedule-index', [
             'users' => $users,

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\DTOs\MailSettingsDTO;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 
@@ -13,53 +14,59 @@ final class MailSettingsService
 {
     private const string PREFIX = 'mail.';
 
-    public function load(): MailSettingsDTO
+    public function load(?User $user = null): MailSettingsDTO
     {
+        $user ??= auth()->user();
+        $prefix = $this->prefixFor($user instanceof User ? $user : null);
+
         return MailSettingsDTO::fromArray([
-            'enabled' => Setting::get(self::PREFIX.'enabled', false),
-            'from_name' => Setting::get(self::PREFIX.'from_name', 'GREECO'),
-            'from_address' => Setting::get(self::PREFIX.'from_address', ''),
-            'imap_host' => Setting::get(self::PREFIX.'imap_host', 'mail.greeco.vn'),
-            'imap_port' => Setting::get(self::PREFIX.'imap_port', 993),
-            'imap_encryption' => Setting::get(self::PREFIX.'imap_encryption', 'ssl'),
-            'imap_username' => Setting::get(self::PREFIX.'imap_username', ''),
-            'imap_password' => $this->getSecret(self::PREFIX.'imap_password'),
-            'smtp_host' => Setting::get(self::PREFIX.'smtp_host', 'mail.greeco.vn'),
-            'smtp_port' => Setting::get(self::PREFIX.'smtp_port', 465),
-            'smtp_encryption' => Setting::get(self::PREFIX.'smtp_encryption', 'ssl'),
-            'smtp_username' => Setting::get(self::PREFIX.'smtp_username', ''),
-            'smtp_password' => $this->getSecret(self::PREFIX.'smtp_password'),
-            'timeout' => Setting::get(self::PREFIX.'timeout', 15),
+            'enabled' => Setting::get($prefix.'enabled', false),
+            'from_name' => Setting::get($prefix.'from_name', $user instanceof User ? $user->name : 'GREECO'),
+            'from_address' => Setting::get($prefix.'from_address', $user instanceof User ? $user->email : ''),
+            'imap_host' => Setting::get($prefix.'imap_host', 'mail.greeco.vn'),
+            'imap_port' => Setting::get($prefix.'imap_port', 993),
+            'imap_encryption' => Setting::get($prefix.'imap_encryption', 'ssl'),
+            'imap_username' => Setting::get($prefix.'imap_username', ''),
+            'imap_password' => $this->getSecret($prefix.'imap_password'),
+            'smtp_host' => Setting::get($prefix.'smtp_host', 'mail.greeco.vn'),
+            'smtp_port' => Setting::get($prefix.'smtp_port', 465),
+            'smtp_encryption' => Setting::get($prefix.'smtp_encryption', 'ssl'),
+            'smtp_username' => Setting::get($prefix.'smtp_username', ''),
+            'smtp_password' => $this->getSecret($prefix.'smtp_password'),
+            'timeout' => Setting::get($prefix.'timeout', 15),
         ]);
     }
 
-    public function save(MailSettingsDTO $dto, bool $keepEmptyPasswords = true): void
+    public function save(MailSettingsDTO $dto, bool $keepEmptyPasswords = true, ?User $user = null): void
     {
-        Setting::set(self::PREFIX.'enabled', $dto->enabled ? '1' : '0');
-        Setting::set(self::PREFIX.'from_name', $dto->fromName);
-        Setting::set(self::PREFIX.'from_address', $dto->fromAddress);
-        Setting::set(self::PREFIX.'imap_host', $dto->imapHost);
-        Setting::set(self::PREFIX.'imap_port', (string) $dto->imapPort);
-        Setting::set(self::PREFIX.'imap_encryption', $dto->imapEncryption);
-        Setting::set(self::PREFIX.'imap_username', $dto->imapUsername);
-        Setting::set(self::PREFIX.'smtp_host', $dto->smtpHost);
-        Setting::set(self::PREFIX.'smtp_port', (string) $dto->smtpPort);
-        Setting::set(self::PREFIX.'smtp_encryption', $dto->smtpEncryption);
-        Setting::set(self::PREFIX.'smtp_username', $dto->smtpUsername);
-        Setting::set(self::PREFIX.'timeout', (string) $dto->timeout);
+        $user ??= auth()->user();
+        $prefix = $this->prefixFor($user instanceof User ? $user : null);
+
+        Setting::set($prefix.'enabled', $dto->enabled ? '1' : '0');
+        Setting::set($prefix.'from_name', $dto->fromName);
+        Setting::set($prefix.'from_address', $dto->fromAddress);
+        Setting::set($prefix.'imap_host', $dto->imapHost);
+        Setting::set($prefix.'imap_port', (string) $dto->imapPort);
+        Setting::set($prefix.'imap_encryption', $dto->imapEncryption);
+        Setting::set($prefix.'imap_username', $dto->imapUsername);
+        Setting::set($prefix.'smtp_host', $dto->smtpHost);
+        Setting::set($prefix.'smtp_port', (string) $dto->smtpPort);
+        Setting::set($prefix.'smtp_encryption', $dto->smtpEncryption);
+        Setting::set($prefix.'smtp_username', $dto->smtpUsername);
+        Setting::set($prefix.'timeout', (string) $dto->timeout);
 
         if ($dto->imapPassword !== null || ! $keepEmptyPasswords) {
-            Setting::set(self::PREFIX.'imap_password', $dto->imapPassword !== null ? Crypt::encryptString($dto->imapPassword) : null);
+            Setting::set($prefix.'imap_password', $dto->imapPassword !== null ? Crypt::encryptString($dto->imapPassword) : null);
         }
 
         if ($dto->smtpPassword !== null || ! $keepEmptyPasswords) {
-            Setting::set(self::PREFIX.'smtp_password', $dto->smtpPassword !== null ? Crypt::encryptString($dto->smtpPassword) : null);
+            Setting::set($prefix.'smtp_password', $dto->smtpPassword !== null ? Crypt::encryptString($dto->smtpPassword) : null);
         }
     }
 
-    public function withStoredSecrets(MailSettingsDTO $dto): MailSettingsDTO
+    public function withStoredSecrets(MailSettingsDTO $dto, ?User $user = null): MailSettingsDTO
     {
-        $stored = $this->load();
+        $stored = $this->load($user);
 
         return $dto->withPasswords(
             imapPassword: $dto->imapPassword ?? $stored->imapPassword,
@@ -74,6 +81,15 @@ final class MailSettingsService
         return $settings->imapHost !== ''
             && $settings->imapUsername !== ''
             && $settings->imapPassword !== null;
+    }
+
+    private function prefixFor(?User $user): string
+    {
+        if (! $user instanceof User) {
+            return self::PREFIX;
+        }
+
+        return self::PREFIX.'users.'.$user->id.'.';
     }
 
     private function getSecret(string $key): ?string

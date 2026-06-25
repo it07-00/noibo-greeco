@@ -45,7 +45,6 @@ final class PermissionSeeder extends Seeder
 
         $directorPermissions = [
             PermissionEnum::DashboardView->value,
-            PermissionEnum::UserView->value,
             PermissionEnum::ScheduleView->value,
             PermissionEnum::ScheduleCreate->value,
             PermissionEnum::ScheduleUpdate->value,
@@ -57,7 +56,6 @@ final class PermissionSeeder extends Seeder
 
         $staffPermissions = [
             PermissionEnum::DashboardView->value,
-            PermissionEnum::UserView->value,
             PermissionEnum::ScheduleView->value,
             PermissionEnum::ScheduleCreate->value,
             PermissionEnum::ScheduleUpdate->value,
@@ -76,9 +74,10 @@ final class PermissionSeeder extends Seeder
         $accountant->syncPermissions($staffPermissions);
 
         $user = User::query()->firstOrCreate(
-            ['email' => 'superadmin@example.com'],
+            ['username' => 'superadmin'],
             [
                 'name' => 'Super Admin',
+                'email' => 'superadmin@example.com',
                 'password' => Hash::make('password'),
             ],
         );

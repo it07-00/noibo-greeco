@@ -46,7 +46,9 @@
 
                 @php
                     $currentUser = auth()->user();
-                    $avatarUrl = $currentUser?->avatar_url ?? asset('images/avatar2.webp');
+                    $avatarUrl = $currentUser?->avatar_url;
+                    $avatarInitials = $currentUser?->avatar_initials ?? 'U';
+                    $transparentPixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
                 @endphp
 
                 <div class="dropdown text-end ms-sm-3 ms-2 ms-lg-4">
@@ -57,14 +59,16 @@
                                 <i class="fi fi-rr-angle-down text-3xs me-1"></i> {{ $currentUser?->roles->pluck('name')->first() ?? 'User' }}
                             </small>
                         </div>
-                        <div class="avatar avatar-sm rounded-circle avatar-status-success">
-                            <img src="{{ $avatarUrl }}" alt="{{ $currentUser?->name }}" data-current-user-avatar>
+                        <div class="avatar avatar-sm rounded-circle avatar-status-success bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold">
+                            <img src="{{ $avatarUrl ?? $transparentPixel }}" alt="{{ $currentUser?->name }}" class="{{ $avatarUrl ? '' : 'd-none' }}" data-current-user-avatar-img>
+                            <span class="{{ $avatarUrl ? 'd-none' : '' }}" data-current-user-avatar-initials>{{ $avatarInitials }}</span>
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end w-225px mt-1">
                         <li class="d-flex align-items-center p-2">
-                            <div class="avatar avatar-sm rounded-circle">
-                                <img src="{{ $avatarUrl }}" alt="{{ $currentUser?->name }}" data-current-user-avatar>
+                            <div class="avatar avatar-sm rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold">
+                                <img src="{{ $avatarUrl ?? $transparentPixel }}" alt="{{ $currentUser?->name }}" class="{{ $avatarUrl ? '' : 'd-none' }}" data-current-user-avatar-img>
+                                <span class="{{ $avatarUrl ? 'd-none' : '' }}" data-current-user-avatar-initials>{{ $avatarInitials }}</span>
                             </div>
                             <div class="ms-2">
                                 <div class="fw-bold text-dark">{{ $currentUser?->name }}</div>

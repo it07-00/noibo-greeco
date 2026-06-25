@@ -26,6 +26,7 @@
                                 <div class="avatar avatar-xxl rounded-circle overflow-hidden border">
                                     @php
                                         $avatarUrl = $user->avatar_url;
+                                        $avatarInitials = $user->avatar_initials;
                                         if ($avatarUpload) {
                                             try {
                                                 $avatarUrl = $avatarUpload->temporaryUrl();
@@ -34,7 +35,13 @@
                                             }
                                         }
                                     @endphp
-                                    <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="object-fit-cover w-100 h-100">
+                                    @if ($avatarUrl)
+                                        <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="object-fit-cover w-100 h-100">
+                                    @else
+                                        <span class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary-subtle text-primary fw-bold fs-2">
+                                            {{ $avatarInitials }}
+                                        </span>
+                                    @endif
                                 </div>
                                 <a href="javascript:void(0);" onclick="document.getElementById('avatarUploadInput').click()" class="avatar avatar-xxs bg-primary rounded-circle text-white position-absolute top-0 end-0 d-flex align-items-center justify-content-center" style="z-index: 10;" title="Thay đổi ảnh đại diện">
                                     <i class="fi fi-rr-camera"></i>
@@ -95,7 +102,7 @@
                     </div>
                     <div class="mb-4">
                         <span class="mb-1 d-block text-muted small fw-semibold">Tên đăng nhập (Username)</span>
-                        <p class="text-primary fw-bold mb-0 fs-6">{{ strstr($user->email, '@', true) ?: $user->email }}</p>
+                        <p class="text-primary fw-bold mb-0 fs-6">{{ $user->username }}</p>
                     </div>
                     <div class="mb-4">
                         <span class="mb-1 d-block text-muted small fw-semibold">Email tài khoản</span>
@@ -167,10 +174,38 @@
                                 <small class="text-muted d-block mt-1">Vai trò hệ thống do IT cấp và không thể thay đổi.</small>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Mật khẩu hiện tại</label>
+                                <div class="input-group">
+                                    <input id="profile-current-password" type="password" wire:model="current_password" class="form-control @error('current_password') is-invalid @enderror" placeholder="••••••••" autocomplete="current-password" />
+                                    <button type="button" class="btn btn-outline-secondary" data-password-toggle="#profile-current-password" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
+                                        <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                    </button>
+                                </div>
+                                @error('current_password') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                                <small class="text-muted d-block mt-1">Bắt buộc khi đổi mật khẩu.</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Mật khẩu mới</label>
-                                <input type="password" wire:model="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" />
-                                @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <div class="input-group">
+                                    <input id="profile-password" type="password" wire:model="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" autocomplete="new-password" />
+                                    <button type="button" class="btn btn-outline-secondary" data-password-toggle="#profile-password" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
+                                        <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                    </button>
+                                </div>
+                                @error('password') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 <small class="text-muted d-block mt-1">Để trống nếu không có nhu cầu đổi mật khẩu mới.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Xác nhận mật khẩu mới</label>
+                                <div class="input-group">
+                                    <input id="profile-password-confirmation" type="password" wire:model="password_confirmation" class="form-control" placeholder="••••••••" autocomplete="new-password" />
+                                    <button type="button" class="btn btn-outline-secondary" data-password-toggle="#profile-password-confirmation" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
+                                        <i class="fi fi-rr-eye" data-password-toggle-icon></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -197,13 +232,21 @@
     $wire.on('profile-avatar:updated', (data) => {
         const payload = Array.isArray(data) ? data[0] : data;
         const avatarUrl = payload?.url;
+        const initials = payload?.initials || 'U';
 
-        if (!avatarUrl) {
-            return;
-        }
+        document.querySelectorAll('[data-current-user-avatar-img]').forEach((image) => {
+            if (!avatarUrl) {
+                image.classList.add('d-none');
+                return;
+            }
 
-        document.querySelectorAll('[data-current-user-avatar]').forEach((image) => {
             image.src = avatarUrl;
+            image.classList.remove('d-none');
+        });
+
+        document.querySelectorAll('[data-current-user-avatar-initials]').forEach((element) => {
+            element.textContent = initials;
+            element.classList.toggle('d-none', Boolean(avatarUrl));
         });
     });
 

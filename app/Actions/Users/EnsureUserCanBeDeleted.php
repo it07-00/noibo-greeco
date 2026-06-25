@@ -24,12 +24,19 @@ final class EnsureUserCanBeDeleted
             ->where('name', RoleEnum::SuperAdmin->value)
             ->first();
 
-        if ($superAdminRole === null || $superAdminRole->users()->count() > 1) {
+        if ($user->isLocked()) {
+            return;
+        }
+
+        if ($superAdminRole !== null && $superAdminRole->users()
+            ->whereNull('users.locked_at')
+            ->where('users.id', '!=', $user->id)
+            ->exists()) {
             return;
         }
 
         throw ValidationException::withMessages([
-            'user' => 'Cannot delete the last Super Admin account.',
+            'user' => 'Không thể xóa tài khoản Super Admin hoạt động cuối cùng.',
         ]);
     }
 }

@@ -6,7 +6,7 @@ namespace App\DTOs;
 
 final readonly class UserFilterDTO
 {
-    private const array SORTABLE_FIELDS = ['name', 'email', 'created_at'];
+    private const array SORTABLE_FIELDS = ['name', 'username', 'email', 'created_at'];
 
     private const array PER_PAGE_OPTIONS = [10, 15, 25, 50];
 

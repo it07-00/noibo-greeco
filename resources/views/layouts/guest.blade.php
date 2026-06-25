@@ -30,5 +30,6 @@
     <script src="{{ asset('js/global.min.js') }}"></script>
     <script src="{{ asset('js/appSettings.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
+    @include('partials.password-toggle-script')
 </body>
 </html>
