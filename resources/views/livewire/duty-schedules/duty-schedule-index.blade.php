@@ -441,7 +441,7 @@
     </div>
 </div>
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.0.1">
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.0.2">
 @endpush
 
 
