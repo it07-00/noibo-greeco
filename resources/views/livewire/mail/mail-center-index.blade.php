@@ -20,7 +20,7 @@
                     <i class="fi fi-rr-paper-plane me-1"></i> Soạn mail
                 </button>
             @endcan
-            @can('mail.update')
+            @can('mail.view')
                 <button type="button" wire:click="showTab('settings')" class="btn {{ $activeTab === 'settings' ? 'btn-primary' : 'btn-light' }} waves-effect">
                     <i class="fi fi-rr-settings-sliders me-1"></i> Cấu hình
                 </button>
@@ -60,7 +60,7 @@
                             <div class="text-center text-muted py-5">
                                 <i class="fi fi-rr-envelope-open display-6 d-block mb-3"></i>
                                 <p class="mb-3">Chưa có cấu hình IMAP để đọc hộp thư.</p>
-                                @can('mail.update')
+                                @can('mail.view')
                                     <button type="button" wire:click="showTab('settings')" class="btn btn-primary">
                                         Cấu hình email
                                     </button>
@@ -242,7 +242,7 @@
     @endif
 
     @if ($activeTab === 'settings')
-        @can('mail.update')
+        @can('mail.view')
             <form wire:submit.prevent="saveSettings">
                 <div class="row g-4">
                     <div class="col-xl-8">

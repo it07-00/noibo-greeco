@@ -109,7 +109,7 @@ final class MailCenterIndex extends Component
         }
 
         if ($tab === 'settings') {
-            Gate::authorize(PermissionEnum::MailUpdate->value);
+            Gate::authorize(PermissionEnum::MailView->value);
         }
 
         $this->activeTab = $tab;
@@ -123,7 +123,7 @@ final class MailCenterIndex extends Component
 
     public function saveSettings(MailSettingsService $settingsService): void
     {
-        Gate::authorize(PermissionEnum::MailUpdate->value);
+        Gate::authorize(PermissionEnum::MailView->value);
 
         $this->validate($this->rules());
 
@@ -137,7 +137,7 @@ final class MailCenterIndex extends Component
 
     public function testImap(MailSettingsService $settingsService, MailImapService $imapService): void
     {
-        Gate::authorize(PermissionEnum::MailUpdate->value);
+        Gate::authorize(PermissionEnum::MailView->value);
 
         $this->validate($this->rules());
 
@@ -151,7 +151,7 @@ final class MailCenterIndex extends Component
 
     public function sendTestMail(MailSettingsService $settingsService, MailSmtpService $smtpService): void
     {
-        Gate::authorize(PermissionEnum::MailUpdate->value);
+        Gate::authorize(PermissionEnum::MailView->value);
 
         $this->validate(array_merge($this->rules(), [
             'test_recipient' => ['required', 'email', 'max:255'],
