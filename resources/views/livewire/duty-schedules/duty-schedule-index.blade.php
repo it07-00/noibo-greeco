@@ -228,8 +228,8 @@
         aria-hidden="true"
         wire:ignore
     >
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered duty-schedule-detail-dialog">
+            <div class="modal-content duty-schedule-detail-modal">
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold text-dark" id="detailTitle">Chi tiết lịch công tác</h5>
                     <button
@@ -239,32 +239,34 @@
                         aria-label="Close"
                     ></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <strong class="text-dark d-block mb-1"><i class="fi fi-rr-clock me-2"></i>Bắt đầu:</strong>
-                        <span id="detailStart" class="text-muted ps-4"></span>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark d-block mb-1"><i class="fi fi-rr-calendar me-2"></i>Kết thúc:</strong>
-                        <span id="detailEnd" class="text-muted ps-4"></span>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark d-block mb-1"><i class="fi fi-rr-marker me-2"></i>Địa điểm:</strong>
-                        <span id="detailLocation" class="text-muted ps-4"></span>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark d-block mb-1"><i class="fi fi-rr-user me-2"></i>Người tạo:</strong>
-                        <div class="ps-4 mt-1">
-                            <span id="detailCreator" class="badge bg-info-subtle text-info border border-info text-xs"></span>
+                <div class="modal-body duty-schedule-detail-body">
+                    <div class="schedule-detail-list">
+                        <div class="schedule-detail-item">
+                            <strong class="schedule-detail-label"><i class="fi fi-rr-clock"></i>Bắt đầu:</strong>
+                            <span id="detailStart" class="schedule-detail-value"></span>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <strong class="text-dark d-block mb-1"><i class="fi fi-rr-users me-2"></i>Thành viên tham gia:</strong>
-                        <div id="detailParticipants" class="ps-4 mt-1 d-flex flex-wrap gap-1"></div>
-                    </div>
-                    <div class="mb-0">
-                        <strong class="text-dark d-block mb-1"><i class="fi fi-rr-document-signed me-2"></i>Nội dung:</strong>
-                        <div id="detailDescription" class="text-muted ps-4" style="white-space: pre-wrap;"></div>
+                        <div class="schedule-detail-item">
+                            <strong class="schedule-detail-label"><i class="fi fi-rr-calendar"></i>Kết thúc:</strong>
+                            <span id="detailEnd" class="schedule-detail-value"></span>
+                        </div>
+                        <div class="schedule-detail-item">
+                            <strong class="schedule-detail-label"><i class="fi fi-rr-marker"></i>Địa điểm:</strong>
+                            <span id="detailLocation" class="schedule-detail-value"></span>
+                        </div>
+                        <div class="schedule-detail-item">
+                            <strong class="schedule-detail-label"><i class="fi fi-rr-user"></i>Người tạo:</strong>
+                            <div class="schedule-detail-value">
+                                <span id="detailCreator" class="schedule-detail-chip schedule-detail-chip-info"></span>
+                            </div>
+                        </div>
+                        <div class="schedule-detail-item">
+                            <strong class="schedule-detail-label"><i class="fi fi-rr-users"></i>Thành viên tham gia:</strong>
+                            <div id="detailParticipants" class="schedule-detail-value schedule-detail-chips"></div>
+                        </div>
+                        <div class="schedule-detail-item">
+                            <strong class="schedule-detail-label"><i class="fi fi-rr-document-signed"></i>Nội dung:</strong>
+                            <div id="detailDescription" class="schedule-detail-value schedule-detail-description" style="white-space: pre-wrap;"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -707,12 +709,12 @@
                 if (props.participants && props.participants.length > 0) {
                     props.participants.forEach(p => {
                         const span = document.createElement('span');
-                        span.className = 'badge bg-primary-subtle text-primary border border-primary text-xs';
+                        span.className = 'schedule-detail-chip schedule-detail-chip-primary';
                         span.innerText = p.name;
                         participantsContainer.appendChild(span);
                     });
                 } else {
-                    participantsContainer.innerHTML = '<span class="text-muted text-sm">Không có</span>';
+                    participantsContainer.innerHTML = '<span class="schedule-detail-empty">Không có</span>';
                 }
 
                 const btnEdit = document.getElementById('detailBtnEdit');
