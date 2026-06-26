@@ -226,6 +226,9 @@ final class RolesPermissionsIndex extends Component
                 PermissionEnum::MailSend->value => 'Gửi email nội bộ',
                 PermissionEnum::MailUpdate->value => 'Cập nhật cấu hình email',
             ],
+            'Quy định tài liệu' => [
+                PermissionEnum::DocumentView->value => 'Xem quy định tài liệu',
+            ],
             'Cài đặt hệ thống' => [
                 PermissionEnum::SettingView->value => 'Xem cài đặt hệ thống',
                 PermissionEnum::SettingUpdate->value => 'Cập nhật cài đặt hệ thống',

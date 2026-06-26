@@ -39,6 +39,7 @@ final class DashboardModuleTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Dashboard')
+            ->assertSee('/document-regulations')
             ->assertSee('Thành viên')
             ->assertSee('Vai trò')
             ->assertSee('Lịch hôm nay')

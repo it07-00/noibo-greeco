@@ -25,16 +25,16 @@
     <div class="row">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom py-3">
-                    <ul class="nav nav-underline card-header-tabs" id="settingsTab" role="tablist" wire:ignore>
+                <div class="card-header border-bottom py-3">
+                    <ul class="nav nav-pills gap-2" id="settingsTab" role="tablist" wire:ignore>
                         <li class="nav-item">
-                            <a class="nav-link active fw-semibold" data-bs-toggle="tab" href="#general" role="tab">Tổng quan</a>
+                            <a class="nav-link active fw-semibold px-3" data-bs-toggle="tab" href="#general" role="tab">Tổng quan</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#backup" role="tab">Sao lưu & Bộ nhớ đệm</a>
+                            <a class="nav-link fw-semibold px-3" data-bs-toggle="tab" href="#backup" role="tab">Sao lưu & Bộ nhớ đệm</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#logs" role="tab">Nhật ký hoạt động</a>
+                            <a class="nav-link fw-semibold px-3" data-bs-toggle="tab" href="#logs" role="tab">Nhật ký hoạt động</a>
                         </li>
                     </ul>
                 </div>

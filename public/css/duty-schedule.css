@@ -266,7 +266,7 @@
     font-size: 1.25rem !important;
     font-weight: 700 !important;
     color: #0f172a !important;
-    letter-spacing: -0.02em !important;
+    letter-spacing: 0 !important;
 }
 /* Toolbar Button styling */
 .fc .fc-button-primary {
@@ -314,6 +314,10 @@
 .fc .fc-today-button {
     border-radius: 8px !important;
     border: 1px solid #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .fc .fc-toolbar-title {
+    color: var(--bs-heading-color, #f8fafc) !important;
 }
 
 /* Custom scrollbar for participant list */

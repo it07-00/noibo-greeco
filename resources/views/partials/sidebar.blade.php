@@ -59,6 +59,15 @@
                 </li>
             @endif
 
+            @if (auth()->user()?->can('document.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('document-regulations.*') ? 'active' : '' }}" href="{{ route('document-regulations.index') }}">
+                        <i class="fi fi-rr-document-signed"></i>
+                        <span class="menu-label">Quy định Tài liệu</span>
+                    </a>
+                </li>
+            @endif
+
 
             @if (auth()->user()?->can('mail.view'))
                 <li class="menu-item">

@@ -33,6 +33,7 @@ final class RolePermissionService
         PermissionEnum::MailView->value => PermissionEnum::DashboardView->value,
         PermissionEnum::MailSend->value => PermissionEnum::MailView->value,
         PermissionEnum::MailUpdate->value => PermissionEnum::MailView->value,
+        PermissionEnum::DocumentView->value => PermissionEnum::DashboardView->value,
         PermissionEnum::SettingView->value => PermissionEnum::DashboardView->value,
         PermissionEnum::SettingUpdate->value => PermissionEnum::SettingView->value,
         PermissionEnum::RoleManage->value => PermissionEnum::DashboardView->value,

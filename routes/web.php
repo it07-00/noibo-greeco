@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Livewire\DailyReports\DailyReportIndex;
+use App\Livewire\DocumentRegulations\DocumentRegulationIndex;
 use App\Livewire\DutySchedules\DutyScheduleIndex;
 use App\Livewire\Mail\MailCenterIndex;
 use App\Livewire\Profile\ProfileEdit;
@@ -48,6 +49,10 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/daily-reports', DailyReportIndex::class)
         ->middleware('can:report.view')
         ->name('daily-reports.index');
+
+    Route::get('/document-regulations', DocumentRegulationIndex::class)
+        ->middleware('can:document.view')
+        ->name('document-regulations.index');
 
     Route::get('/mail', MailCenterIndex::class)
         ->middleware('can:mail.view')

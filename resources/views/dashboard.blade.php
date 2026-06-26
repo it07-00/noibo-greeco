@@ -241,6 +241,13 @@
                                 </a>
                             </div>
                         @endcan
+                        @can('document.view')
+                            <div class="col-6">
+                                <a href="{{ route('document-regulations.index') }}" class="btn btn-light w-100 text-start waves-effect">
+                                    <i class="fi fi-rr-document-signed text-info me-2"></i> Tài liệu
+                                </a>
+                            </div>
+                        @endcan
                         @can('role.manage')
                             <div class="col-6">
                                 <a href="{{ route('roles-permissions.index') }}" class="btn btn-light w-100 text-start waves-effect">

@@ -52,7 +52,9 @@ final class DutyScheduleModuleTest extends TestCase
         $this->actingAs($staff)
             ->get(route('duty-schedules.index'))
             ->assertOk()
-            ->assertSee('Lịch công tác');
+            ->assertSee('Lịch công tác')
+            ->assertDontSee('timeGridWeek', false)
+            ->assertDontSee('timeGridDay', false);
     }
 
     public function test_unauthorized_user_cannot_access_schedules_index(): void
@@ -385,4 +387,3 @@ final class DutyScheduleModuleTest extends TestCase
         $this->assertNotContains($s3->id, $eventIds);
     }
 }
-
