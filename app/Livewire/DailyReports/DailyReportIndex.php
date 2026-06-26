@@ -10,9 +10,11 @@ use App\Enums\RoleEnum;
 use App\Models\DailyReport;
 use App\Models\User;
 use App\Services\DailyReportService;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -28,15 +30,22 @@ final class DailyReportIndex extends Component
 
     // ── Filters ──────────────────────────────────────────────────────────────
     public string $filterDate = '';
+
     public int $filterUserId = 0;
+
     public string $search = '';
+
     public string $viewMode = 'mine'; // 'mine' | 'all'
+
     public string $viewType = 'table'; // 'table' | 'calendar'
 
     // ── Create form ───────────────────────────────────────────────────────────
     public string $formDate = '';
+
     public string $formWorkDone = '';
+
     public string $formPlanTomorrow = '';
+
     public string $formIssues = '';
 
     // ── Edit ──────────────────────────────────────────────────────────────────
@@ -47,24 +56,25 @@ final class DailyReportIndex extends Component
 
     // ── Day reports view properties (for Director/non-creators) ────────────────
     public string $selectedDateStr = '';
+
     public array $dayReports = [];
 
     protected function rules(): array
     {
         return [
-            'formDate'         => ['required', 'date'],
-            'formWorkDone'     => ['required', 'string', 'min:10', 'max:3000'],
+            'formDate' => ['required', 'date'],
+            'formWorkDone' => ['required', 'string', 'min:10', 'max:3000'],
             'formPlanTomorrow' => ['nullable', 'string', 'max:2000'],
-            'formIssues'       => ['nullable', 'string', 'max:2000'],
+            'formIssues' => ['nullable', 'string', 'max:2000'],
         ];
     }
 
     protected array $messages = [
-        'formDate.required'     => 'Vui lòng chọn ngày báo cáo.',
-        'formDate.date'         => 'Ngày báo cáo không hợp lệ.',
-        'formDate.unique'       => 'Bạn đã có báo cáo cho ngày này rồi.',
+        'formDate.required' => 'Vui lòng chọn ngày báo cáo.',
+        'formDate.date' => 'Ngày báo cáo không hợp lệ.',
+        'formDate.unique' => 'Bạn đã có báo cáo cho ngày này rồi.',
         'formWorkDone.required' => 'Vui lòng nhập công việc đã thực hiện.',
-        'formWorkDone.min'      => 'Mô tả công việc cần ít nhất 10 ký tự.',
+        'formWorkDone.min' => 'Mô tả công việc cần ít nhất 10 ký tự.',
     ];
 
     public function mount(): void
@@ -88,16 +98,17 @@ final class DailyReportIndex extends Component
     private function resolveCanViewAll(): bool
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return false;
         }
         // SuperAdmin → always yes
         if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
             return true;
         }
+
         // View-only role (Director): has report.view but NOT report.create
         return $user->can(PermissionEnum::ReportView->value)
-            && !$user->can(PermissionEnum::ReportCreate->value);
+            && ! $user->can(PermissionEnum::ReportCreate->value);
     }
 
     public function updatedFilterDate(): void
@@ -168,28 +179,29 @@ final class DailyReportIndex extends Component
     {
         if ($service->existsForDate((int) Auth::id(), $this->formDate, $this->editingId ?: null)) {
             $this->addError('formDate', 'Bạn đã có báo cáo cho ngày này rồi.');
+
             return;
         }
 
         $this->validate();
 
         $dto = DailyReportDTO::fromArray([
-            'user_id'       => Auth::id(),
-            'report_date'   => $this->formDate,
-            'work_done'     => $this->formWorkDone,
+            'user_id' => Auth::id(),
+            'report_date' => $this->formDate,
+            'work_done' => $this->formWorkDone,
             'plan_tomorrow' => $this->formPlanTomorrow,
-            'issues'        => $this->formIssues,
+            'issues' => $this->formIssues,
         ]);
 
         if ($this->editingId > 0) {
             $report = DailyReport::findOrFail($this->editingId);
             Gate::authorize('update', $report);
             $service->updateReport($report, $dto);
-            $message = 'Đã cập nhật báo cáo ngày ' . $this->formDate . ' thành công.';
+            $message = 'Đã cập nhật báo cáo ngày '.$this->formDate.' thành công.';
         } else {
             Gate::authorize('create', DailyReport::class);
             $service->createReport($dto);
-            $message = 'Đã tạo báo cáo ngày ' . $this->formDate . ' thành công.';
+            $message = 'Đã tạo báo cáo ngày '.$this->formDate.' thành công.';
         }
 
         $this->dispatch('report-create:hide');
@@ -197,12 +209,12 @@ final class DailyReportIndex extends Component
         $this->dispatch('reports:filter-changed');
 
         $this->dispatch('swal:alert', [
-            'icon'     => 'success',
-            'title'    => 'Thành công!',
-            'text'     => $message,
-            'toast'    => true,
+            'icon' => 'success',
+            'title' => 'Thành công!',
+            'text' => $message,
+            'toast' => true,
             'position' => 'top-end',
-            'timer'    => 3000,
+            'timer' => 3000,
         ]);
     }
 
@@ -218,12 +230,12 @@ final class DailyReportIndex extends Component
         $this->dispatch('reports:filter-changed');
 
         $this->dispatch('swal:alert', [
-            'icon'     => 'success',
-            'title'    => 'Đã xóa!',
-            'text'     => 'Báo cáo ngày ' . $date . ' đã bị xóa.',
-            'toast'    => true,
+            'icon' => 'success',
+            'title' => 'Đã xóa!',
+            'text' => 'Báo cáo ngày '.$date.' đã bị xóa.',
+            'toast' => true,
             'position' => 'top-end',
-            'timer'    => 3000,
+            'timer' => 3000,
         ]);
     }
 
@@ -240,17 +252,17 @@ final class DailyReportIndex extends Component
     {
         Gate::authorize('viewAny', DailyReport::class);
 
-        $this->selectedDateStr = \Carbon\Carbon::parse($dateStr)->format('d/m/Y');
-        
+        $this->selectedDateStr = Carbon::parse($dateStr)->format('d/m/Y');
+
         $canViewAll = $this->resolveCanViewAll();
 
         $userId = match (true) {
-            $this->viewMode === 'mine'                   => (int) Auth::id(),
-            $canViewAll && $this->filterUserId > 0       => $this->filterUserId,
-            default                                       => null,
+            $this->viewMode === 'mine' => (int) Auth::id(),
+            $canViewAll && $this->filterUserId > 0 => $this->filterUserId,
+            default => null,
         };
 
-        $reports = $service->getReportsInRange($dateStr . ' 00:00:00', $dateStr . ' 23:59:59', $userId);
+        $reports = $service->getReportsInRange($dateStr.' 00:00:00', $dateStr.' 23:59:59', $userId);
 
         $this->dayReports = $reports->map(function (DailyReport $report) {
             return [
@@ -278,9 +290,9 @@ final class DailyReportIndex extends Component
     {
         $report = DailyReport::findOrFail($id);
         $dateStr = $report->report_date->toDateString();
-        
+
         $this->delete($service, $id);
-        
+
         // Refresh
         $this->showDayReports($dateStr, $service);
     }
@@ -308,17 +320,17 @@ final class DailyReportIndex extends Component
         $canViewAll = $this->resolveCanViewAll();
 
         $userId = match (true) {
-            $this->viewMode === 'mine'                   => (int) Auth::id(),
-            $canViewAll && $this->filterUserId > 0       => $this->filterUserId,
-            default                                       => null,
+            $this->viewMode === 'mine' => (int) Auth::id(),
+            $canViewAll && $this->filterUserId > 0 => $this->filterUserId,
+            default => null,
         };
 
         $reports = $service->getReportsInRange($start, $end, $userId);
 
         return $reports->map(function (DailyReport $report) use ($canViewAll) {
-            $summary = \Illuminate\Support\Str::limit($report->work_done, 35);
+            $summary = Str::limit($report->work_done, 35);
             $title = ($canViewAll && $this->viewMode === 'all')
-                ? ($report->user->name ?? 'N/A') . ': ' . $summary
+                ? ($report->user->name ?? 'N/A').': '.$summary
                 : $summary;
 
             $color = $report->issues ? 'warning' : 'success';
@@ -354,9 +366,9 @@ final class DailyReportIndex extends Component
         $canViewAll = $this->resolveCanViewAll();
 
         $userId = match (true) {
-            $this->viewMode === 'mine'                   => (int) Auth::id(),
-            $canViewAll && $this->filterUserId > 0       => $this->filterUserId,
-            default                                       => null,
+            $this->viewMode === 'mine' => (int) Auth::id(),
+            $canViewAll && $this->filterUserId > 0 => $this->filterUserId,
+            default => null,
         };
 
         $reports = $service->getReports(
@@ -370,14 +382,16 @@ final class DailyReportIndex extends Component
             : null;
 
         $users = $canViewAll
-            ? User::query()->orderBy('name')->get(['id', 'name'])
+            ? User::permission(PermissionEnum::ReportCreate->value)
+                ->orderBy('name')
+                ->get(['id', 'name'])
             : collect();
 
         return view('livewire.daily-reports.daily-report-index', [
-            'reports'       => $reports,
-            'canViewAll'    => $canViewAll,
+            'reports' => $reports,
+            'canViewAll' => $canViewAll,
             'viewingReport' => $viewingReport,
-            'users'         => $users,
+            'users' => $users,
         ]);
     }
 }

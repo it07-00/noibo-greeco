@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\DTOs\DailyReportDTO;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Livewire\DailyReports\DailyReportIndex;
 use App\Models\DailyReport;
 use App\Models\User;
 use App\Services\DailyReportService;
@@ -137,10 +138,34 @@ final class DailyReportModuleTest extends TestCase
 
         // Director component mount configures viewMode as 'all' and hides tab switcher
         $this->actingAs($director);
-        Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        Livewire::test(DailyReportIndex::class)
             ->assertSet('viewMode', 'all')
             ->assertSet('filterUserId', 0)
             ->assertDontSee('Của tôi');
+    }
+
+    public function test_report_employee_filter_lists_report_creators_only(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $director = User::factory()->create();
+        $director->assignRole(RoleEnum::Director->value);
+
+        $staff = User::factory()->create();
+        $staff->assignRole(RoleEnum::IT->value);
+
+        $plainUser = User::factory()->create();
+
+        $this->actingAs($director);
+
+        Livewire::test(DailyReportIndex::class)
+            ->assertViewHas('users', function ($users) use ($director, $staff, $plainUser) {
+                $ids = $users->pluck('id');
+
+                return $ids->contains($staff->id)
+                    && ! $ids->contains($director->id)
+                    && ! $ids->contains($plainUser->id);
+            });
     }
 
     public function test_super_admin_can_see_view_mode_tabs(): void
@@ -152,7 +177,7 @@ final class DailyReportModuleTest extends TestCase
 
         $this->actingAs($admin);
 
-        Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        Livewire::test(DailyReportIndex::class)
             ->assertSee('Của tôi')
             ->assertSee('Tất cả');
     }
@@ -174,7 +199,7 @@ final class DailyReportModuleTest extends TestCase
         $this->actingAs($staff);
 
         // Fetch events through Livewire component
-        $component = Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class);
+        $component = Livewire::test(DailyReportIndex::class);
         $events = $component->instance()->getEvents('2026-06-01', '2026-06-03', app(DailyReportService::class));
 
         $this->assertCount(1, $events);
@@ -195,14 +220,14 @@ final class DailyReportModuleTest extends TestCase
         $this->actingAs($staff);
 
         // 1. Check validation empty/short work_done
-        Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        Livewire::test(DailyReportIndex::class)
             ->set('formDate', '2026-06-02')
             ->set('formWorkDone', 'Short') // less than 10 characters
             ->call('save')
             ->assertHasErrors(['formWorkDone' => 'min']);
 
         // 2. Check validation missing date
-        Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        Livewire::test(DailyReportIndex::class)
             ->set('formDate', '')
             ->set('formWorkDone', 'Học tập nghiên cứu lập trình Laravel 12.')
             ->call('save')
@@ -226,7 +251,7 @@ final class DailyReportModuleTest extends TestCase
         ]);
 
         // Trying to create another report for the same day should fail validation
-        Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        Livewire::test(DailyReportIndex::class)
             ->set('formDate', '2026-06-02')
             ->set('formWorkDone', 'Báo cáo công việc trùng lặp ngày.')
             ->call('save')
@@ -286,14 +311,14 @@ final class DailyReportModuleTest extends TestCase
         $this->actingAs($staff);
 
         // 1. Search filter
-        Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        Livewire::test(DailyReportIndex::class)
             ->set('search', 'lập trình')
             ->assertViewHas('reports', function ($reports) {
                 return $reports->count() === 1 && str_contains($reports->first()->work_done, 'lập trình');
             });
 
         // 2. Date filter
-        Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        Livewire::test(DailyReportIndex::class)
             ->set('filterDate', $date1)
             ->assertViewHas('reports', function ($reports) {
                 return $reports->count() === 1 && str_contains($reports->first()->work_done, 'database');
@@ -318,8 +343,8 @@ final class DailyReportModuleTest extends TestCase
         ]);
 
         $this->actingAs($director);
-        
-        $test = Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+
+        $test = Livewire::test(DailyReportIndex::class)
             ->call('showDayReports', '2026-06-02')
             ->assertSet('selectedDateStr', '02/06/2026')
             ->assertDispatched('report:open-day-reports');
@@ -340,7 +365,7 @@ final class DailyReportModuleTest extends TestCase
         $this->actingAs($staff);
 
         // Mount should default filterDate to today
-        $component = Livewire::test(\App\Livewire\DailyReports\DailyReportIndex::class)
+        $component = Livewire::test(DailyReportIndex::class)
             ->assertSet('filterDate', now()->toDateString());
 
         // Switching viewMode should also reset filterDate to today

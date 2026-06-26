@@ -591,13 +591,11 @@
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                right: 'dayGridMonth'
             },
             buttonText: {
                 today: 'Hôm nay',
-                month: 'Tháng',
-                week: 'Tuần',
-                day: 'Ngày'
+                month: 'Tháng'
             },
             buttonHints: {
                 prev: '$one trước',
