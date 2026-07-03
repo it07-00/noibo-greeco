@@ -49,6 +49,7 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::ScheduleCreate->value,
             PermissionEnum::ScheduleUpdate->value,
             PermissionEnum::ScheduleDelete->value,
+            PermissionEnum::ScheduleViewPrivate->value,
             PermissionEnum::ReportView->value,
             PermissionEnum::DocumentView->value,
             PermissionEnum::MailView->value,
