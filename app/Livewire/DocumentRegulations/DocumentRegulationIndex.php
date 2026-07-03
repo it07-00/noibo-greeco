@@ -31,10 +31,22 @@ final class DocumentRegulationIndex extends Component
     public string $code = '';
     public string $title = '';
     public string $owner = '';
+    public string $ownerType = '';
     public string $status = 'active';
     public string $summary = '';
     public string $content = '';
     public $file; // temporary file upload
+
+    public array $defaultDepartments = [
+        'Ban giám đốc',
+        'Hành chính',
+        'Nhân sự',
+        'Kế toán',
+        'IT / Kỹ thuật',
+        'Kinh doanh',
+        'Marketing',
+        'Tư vấn',
+    ];
 
     // For detail view
     public ?DocumentRegulation $selectedRegulation = null;
@@ -50,7 +62,8 @@ final class DocumentRegulationIndex extends Component
         return [
             'code' => ['required', 'string', 'max:50', 'unique:document_regulations,code,' . $this->regulationId],
             'title' => ['required', 'string', 'max:255'],
-            'owner' => ['required', 'string', 'max:100'],
+            'ownerType' => ['required', 'string'],
+            'owner' => ['required_if:ownerType,Khác', 'nullable', 'string', 'max:100'],
             'status' => ['required', 'in:active,inactive'],
             'summary' => ['required', 'string', 'max:1000'],
             'content' => ['nullable', 'string'],
@@ -61,7 +74,8 @@ final class DocumentRegulationIndex extends Component
     protected array $validationAttributes = [
         'code' => 'mã quy định',
         'title' => 'tên quy định',
-        'owner' => 'phòng ban phụ trách',
+        'ownerType' => 'phòng ban phụ trách',
+        'owner' => 'tên phòng ban khác',
         'status' => 'trạng thái',
         'summary' => 'tóm tắt nội dung',
         'content' => 'nội dung chi tiết',
@@ -90,6 +104,7 @@ final class DocumentRegulationIndex extends Component
         $this->code = '';
         $this->title = '';
         $this->owner = '';
+        $this->ownerType = '';
         $this->status = 'active';
         $this->summary = '';
         $this->content = '';
@@ -114,6 +129,13 @@ final class DocumentRegulationIndex extends Component
         $this->code = $regulation->code;
         $this->title = $regulation->title;
         $this->owner = $regulation->owner;
+
+        if (in_array($regulation->owner, $this->defaultDepartments, true)) {
+            $this->ownerType = $regulation->owner;
+        } else {
+            $this->ownerType = 'Khác';
+        }
+
         $this->status = $regulation->status;
         $this->summary = $regulation->summary;
         $this->content = $regulation->content ?? '';
@@ -130,6 +152,11 @@ final class DocumentRegulationIndex extends Component
     public function save(): void
     {
         abort_unless(auth()->user()?->can(PermissionEnum::DocumentManage->value), 403);
+
+        if ($this->ownerType !== 'Khác') {
+            $this->owner = $this->ownerType;
+        }
+
         $this->validate();
 
         $data = [

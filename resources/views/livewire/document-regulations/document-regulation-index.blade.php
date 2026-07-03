@@ -322,15 +322,30 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Phòng ban/Bộ phận phụ trách <span class="text-danger">*</span></label>
-                                <input
-                                    type="text"
-                                    class="form-control @error('owner') is-invalid @enderror"
-                                    wire:model="owner"
-                                    placeholder="Ví dụ: Hành chính, Kế toán, IT..."
-                                />
-                                @error('owner')
+                                <select class="form-select @error('ownerType') is-invalid @enderror" wire:model.live="ownerType">
+                                    <option value="">Chọn phòng ban...</option>
+                                    @foreach ($defaultDepartments as $dept)
+                                        <option value="{{ $dept }}">{{ $dept }}</option>
+                                    @endforeach
+                                    <option value="Khác">Khác...</option>
+                                </select>
+                                @error('ownerType')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+
+                                @if ($ownerType === 'Khác')
+                                    <div class="mt-2">
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-sm @error('owner') is-invalid @enderror"
+                                            wire:model="owner"
+                                            placeholder="Nhập tên phòng ban khác..."
+                                        />
+                                        @error('owner')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                @endif
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Trạng thái áp dụng <span class="text-danger">*</span></label>
