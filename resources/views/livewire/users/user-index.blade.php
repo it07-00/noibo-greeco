@@ -60,14 +60,7 @@
                                     @endif
                                 </button>
                             </th>
-                            <th scope="col">
-                                <button type="button" class="btn btn-link p-0 text-body fw-semibold" wire:click="sortBy('email')">
-                                    Email
-                                    @if ($sortField === 'email')
-                                        <i class="fi fi-rr-angle-{{ $sortDirection === 'asc' ? 'small-up' : 'small-down' }}"></i>
-                                    @endif
-                                </button>
-                            </th>
+
                             <th scope="col">
                                 <button type="button" class="btn btn-link p-0 text-body fw-semibold" wire:click="sortBy('username')">
                                     Username
@@ -101,7 +94,7 @@
                                         <span class="fw-semibold">{{ $user->name }}</span>
                                     </div>
                                 </td>
-                                <td>{{ $user->email }}</td>
+
                                 <td>{{ $user->username }}</td>
                                 <td>
                                     @if ($user->department)
@@ -187,7 +180,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="7" class="text-center py-5 text-muted">
                                     Không tìm thấy người dùng nào.
                                 </td>
                             </tr>
