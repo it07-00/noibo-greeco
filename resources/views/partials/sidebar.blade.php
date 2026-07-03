@@ -67,7 +67,7 @@
                                           request()->routeIs('departments.*') || 
                                           request()->routeIs('settings.*');
                 @endphp
-                <li class="menu-item menu-arrow {{ $isManagementActive ? 'open' : '' }}">
+                <li class="menu-item menu-arrow {{ $isManagementActive ? 'open' : '' }}" data-keep-open="{{ $isManagementActive ? 'true' : 'false' }}">
                     <a class="menu-link {{ $isManagementActive ? 'open' : '' }}" href="javascript:void(0);">
                         <i class="fi fi-rr-settings-sliders"></i>
                         <span class="menu-label">Quản trị hệ thống</span>
@@ -119,3 +119,44 @@
         @endif
     </div>
 </aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const initHoverMenu = () => {
+            const adminMenuItem = document.querySelector('.menu-item.menu-arrow');
+            if (adminMenuItem) {
+                const menuLink = adminMenuItem.querySelector('.menu-link');
+                const subMenu = adminMenuItem.querySelector('.menu-inner');
+                const keepOpen = adminMenuItem.getAttribute('data-keep-open') === 'true';
+
+                // On desktop (width >= 1191px), use hover interaction
+                if (window.innerWidth >= 1191) {
+                    if (menuLink) {
+                        // Prevent JQuery/Bootstrap click toggles from executing
+                        menuLink.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                        }, true);
+                    }
+
+                    if (subMenu && !keepOpen) {
+                        adminMenuItem.addEventListener('mouseenter', () => {
+                            adminMenuItem.classList.add('open');
+                            jQuery(subMenu).stop(true, true).slideDown(200);
+                        });
+
+                        adminMenuItem.addEventListener('mouseleave', () => {
+                            adminMenuItem.classList.remove('open');
+                            jQuery(subMenu).stop(true, true).slideUp(200);
+                        });
+                    }
+                }
+            }
+        };
+
+        initHoverMenu();
+        
+        // Also register for Livewire navigation if used
+        document.addEventListener('livewire:navigated', initHoverMenu);
+    });
+</script>
