@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'noibo' => [
+        'api_url' => env('NOIBO_API_URL', 'http://127.0.0.1:8001'),
+        'api_token' => env('NOIBO_API_TOKEN', 'greeco-noibo-secret-2026'),
+    ],
+
 ];

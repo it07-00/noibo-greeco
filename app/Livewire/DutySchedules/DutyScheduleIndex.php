@@ -8,6 +8,7 @@ use App\DTOs\DutyScheduleDTO;
 use App\Enums\RoleEnum;
 use App\Models\DutySchedule;
 use App\Models\User;
+use App\Repositories\NoiboWorkScheduleRepository;
 use App\Services\DutyScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -22,6 +23,8 @@ final class DutyScheduleIndex extends Component
 {
     private DutyScheduleService $scheduleService;
 
+    private NoiboWorkScheduleRepository $noiboRepo;
+
     // Day schedules view properties (for Director/non-creators)
     public string $selectedDateStr = '';
 
@@ -29,6 +32,8 @@ final class DutyScheduleIndex extends Component
 
     // Filters
     public int $filterUserId = 0;
+
+    public bool $showNoiboSchedules = true;
 
     // Form properties
     public ?int $scheduleId = null;
@@ -51,9 +56,10 @@ final class DutyScheduleIndex extends Component
 
     public ?string $successMessage = null;
 
-    public function boot(DutyScheduleService $scheduleService): void
+    public function boot(DutyScheduleService $scheduleService, NoiboWorkScheduleRepository $noiboRepo): void
     {
         $this->scheduleService = $scheduleService;
+        $this->noiboRepo = $noiboRepo;
     }
 
     public function mount(): void
@@ -62,6 +68,11 @@ final class DutyScheduleIndex extends Component
     }
 
     public function updatedFilterUserId(): void
+    {
+        $this->dispatch('schedule:filter-changed');
+    }
+
+    public function updatedShowNoiboSchedules(): void
     {
         $this->dispatch('schedule:filter-changed');
     }
@@ -105,7 +116,7 @@ final class DutyScheduleIndex extends Component
 
         $events = $this->scheduleService->getEventsInRange($start, $end, $this->filterUserId ?: null);
 
-        return $events->map(function (DutySchedule $event) {
+        $result = $events->map(function (DutySchedule $event) {
             $isCreator = auth()->id() === $event->created_by;
             $isSuperAdmin = auth()->user()?->hasRole(RoleEnum::SuperAdmin->value) ?? false;
             $isDirector = auth()->user()?->hasRole(RoleEnum::Director->value) ?? false;
@@ -146,8 +157,19 @@ final class DutyScheduleIndex extends Component
                 'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
                 'can_edit' => auth()->user()?->can('update', $event) ?? false,
                 'can_delete' => auth()->user()?->can('delete', $event) ?? false,
+                'source' => 'greeco',
             ];
         })->toArray();
+
+        // Merge noibo events if enabled and user is Director or SuperAdmin
+        if ($this->showNoiboSchedules && $this->canViewNoiboSchedules()) {
+            $noiboItems = $this->noiboRepo->getEventsInRange($start, $end);
+            foreach ($noiboItems as $item) {
+                $result[] = $this->noiboRepo->toCalendarEvent($item);
+            }
+        }
+
+        return $result;
     }
 
     private function getEventClasses(string $labelColor): array
@@ -311,8 +333,17 @@ final class DutyScheduleIndex extends Component
                 'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
                 'can_edit' => auth()->user()?->can('update', $event) ?? false,
                 'can_delete' => auth()->user()?->can('delete', $event) ?? false,
+                'source' => 'greeco',
             ];
         })->toArray();
+
+        // Merge noibo events for this day
+        if ($this->showNoiboSchedules && $this->canViewNoiboSchedules()) {
+            $noiboItems = $this->noiboRepo->getEventsInRange($start, $end);
+            foreach ($noiboItems as $item) {
+                $this->daySchedules[] = $this->noiboRepo->toDayScheduleItem($item);
+            }
+        }
 
         $this->dispatch('schedule:open-day-schedules');
     }
@@ -340,12 +371,26 @@ final class DutyScheduleIndex extends Component
         $this->showDaySchedules($dateStr);
     }
 
+    /**
+     * Check if the current user can view noibo main schedules.
+     */
+    public function canViewNoiboSchedules(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $user->hasAnyRole([
+            RoleEnum::Director->value,
+            RoleEnum::SuperAdmin->value,
+        ]);
+    }
+
     public function render(): View
     {
         $users = User::query()->orderBy('name')->get(['id', 'name']);
 
         return view('livewire.duty-schedules.duty-schedule-index', [
             'users' => $users,
+            'canViewNoibo' => $this->canViewNoiboSchedules(),
         ]);
     }
 }

@@ -45,6 +45,21 @@
                         @endforeach
                     </select>
                 </div>
+                @if ($canViewNoibo)
+                    <div class="col-sm-auto ms-sm-auto">
+                        <div class="form-check form-switch mb-0">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="toggleNoiboSchedules"
+                                wire:model.live="showNoiboSchedules"
+                            />
+                            <label class="form-check-label fw-semibold small" for="toggleNoiboSchedules">
+                                <span class="noibo-badge me-1">Noibo</span> Hiển thị lịch Nội bộ chính
+                            </label>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -331,12 +346,13 @@
                                     <div class="card-body p-3">
                                         <div class="d-flex align-items-start justify-content-between mb-2">
                                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-1 gap-sm-2">
-                                                <span class="badge 
+                                                <span class="badge
                                                     @if($schedule['label_color'] === 'success') bg-success-subtle text-success border border-success
                                                     @elseif($schedule['label_color'] === 'warning') bg-warning-subtle text-warning border border-warning
                                                     @elseif($schedule['label_color'] === 'danger') bg-danger-subtle text-danger border border-danger
                                                     @elseif($schedule['label_color'] === 'info') bg-info-subtle text-info border border-info
                                                     @elseif($schedule['label_color'] === 'purple') bg-purple-subtle text-purple border border-purple
+                                                    @elseif($schedule['label_color'] === 'noibo') bg-warning-subtle text-dark border border-warning
                                                     @elseif($schedule['label_color'] === 'private') bg-secondary-subtle text-secondary border border-secondary opacity-75
                                                     @else bg-primary-subtle text-primary border border-primary
                                                     @endif
@@ -347,6 +363,7 @@
                                                     @elseif($schedule['label_color'] === 'danger') Khẩn cấp
                                                     @elseif($schedule['label_color'] === 'info') Cuộc họp
                                                     @elseif($schedule['label_color'] === 'purple') Họp công tác
+                                                    @elseif($schedule['label_color'] === 'noibo') <span class="noibo-badge">Noibo</span>
                                                     @elseif($schedule['label_color'] === 'private') Lịch riêng tư
                                                     @else Mặc định
                                                     @endif
@@ -360,26 +377,28 @@
                                                 </span>
                                             </div>
                                             <div class="d-flex gap-1">
-                                                @if ($schedule['can_edit'])
-                                                    <button
-                                                        type="button"
-                                                        class="btn btn-sm btn-outline-warning p-1 lh-1"
-                                                        title="Chỉnh sửa"
-                                                        wire:click="openEditFromList({{ $schedule['id'] }})"
-                                                    >
-                                                        <i class="fi fi-rr-edit"></i>
-                                                    </button>
-                                                @endif
-                                                @if ($schedule['can_delete'])
-                                                    <button
-                                                        type="button"
-                                                        class="btn btn-sm btn-outline-danger p-1 lh-1"
-                                                        title="Xóa"
-                                                        wire:click="deleteFromList({{ $schedule['id'] }})"
-                                                        wire:confirm="Bạn có chắc chắn muốn xóa lịch công tác này không?"
-                                                    >
-                                                        <i class="fi fi-rr-trash"></i>
-                                                    </button>
+                                                @if (($schedule['source'] ?? 'greeco') !== 'noibo')
+                                                    @if ($schedule['can_edit'])
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-warning p-1 lh-1"
+                                                            title="Chỉnh sửa"
+                                                            wire:click="openEditFromList({{ $schedule['id'] }})"
+                                                        >
+                                                            <i class="fi fi-rr-edit"></i>
+                                                        </button>
+                                                    @endif
+                                                    @if ($schedule['can_delete'])
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-danger p-1 lh-1"
+                                                            title="Xóa"
+                                                            wire:click="deleteFromList({{ $schedule['id'] }})"
+                                                            wire:confirm="Bạn có chắc chắn muốn xóa lịch công tác này không?"
+                                                        >
+                                                            <i class="fi fi-rr-trash"></i>
+                                                        </button>
+                                                    @endif
                                                 @endif
                                             </div>
                                         </div>
@@ -441,7 +460,7 @@
     </div>
 </div>
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.0.2">
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.0.3">
 @endpush
 
 
@@ -541,18 +560,18 @@
                 // Day number element
                 const numberEl = document.createElement('span');
                 const cleanNum = arg.dayNumberText.replace('thg', '').replace('tháng', '').replace(/[a-zA-Z]/g, '').trim();
-                
+
                 if (arg.isToday) {
                     numberEl.className = 'day-cell-today-number';
                 } else {
                     numberEl.className = 'day-cell-number';
                 }
                 numberEl.innerText = cleanNum;
-                
+
                 // Actions container
                 const rightContainer = document.createElement('div');
                 rightContainer.className = 'day-cell-actions';
-                
+
                 // Check if date is in the past
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -579,13 +598,13 @@
                         rightContainer.appendChild(plusBtn);
                     @endcan
                 }
-                
+
                 return { domNodes: [numberEl, rightContainer] };
             },
             eventContent: function(arg) {
                 const event = arg.event;
                 const props = event.extendedProps;
-                
+
                 // 1. Get event time string
                 let timeStr = '';
                 if (event.allDay) {
@@ -599,7 +618,7 @@
                         const startHours = String(event.start.getHours()).padStart(2, '0');
                         const startMinutes = String(event.start.getMinutes()).padStart(2, '0');
                         const startStr = `${startHours}:${startMinutes}`;
-                        
+
                         if (event.end) {
                             const endHours = String(event.end.getHours()).padStart(2, '0');
                             const endMinutes = String(event.end.getMinutes()).padStart(2, '0');
@@ -610,7 +629,7 @@
                         }
                     }
                 }
-                
+
                 // 2. Format creator & participants names list
                 let namesList = [];
                 if (props.creator_name) {
@@ -624,22 +643,23 @@
                     });
                 }
                 const namesStr = namesList.filter(Boolean).join(', ');
-                
+
                 // 3. Create DOM structure
                 const card = document.createElement('div');
-                const themeClass = 'event-theme-' + (props.label_color || 'primary');
+                const isNoibo = (props.source === 'noibo');
+                const themeClass = isNoibo ? 'event-theme-noibo' : ('event-theme-' + (props.label_color || 'primary'));
                 card.className = `greeco-event-card ${themeClass}`;
-                
+
                 // Title element
                 const titleEl = document.createElement('span');
                 titleEl.className = 'greeco-event-title';
                 titleEl.innerText = props.raw_title || event.title;
                 card.appendChild(titleEl);
-                
+
                 // Meta subtitle (time • names)
                 const metaEl = document.createElement('span');
                 metaEl.className = 'greeco-event-meta';
-                
+
                 let metaText = '';
                 if (timeStr && namesStr) {
                     metaText = `${timeStr} • ${namesStr}`;
@@ -648,21 +668,12 @@
                 }
                 metaEl.innerText = metaText;
                 card.appendChild(metaEl);
-                
+
                 return { domNodes: [card] };
             },
             events: function(info, successCallback, failureCallback) {
                 wire.getEvents(info.startStr, info.endStr)
                     .then(events => {
-                        // Cache event counts per date
-                        const counts = {};
-                        events.forEach(e => {
-                            if (e.start) {
-                                const dateKey = e.start.substring(0, 10);
-                                counts[dateKey] = (counts[dateKey] || 0) + 1;
-                            }
-                        });
-                        
                         successCallback(events);
                     })
                     .catch(err => {
