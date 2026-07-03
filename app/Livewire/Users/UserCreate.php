@@ -35,7 +35,7 @@ final class UserCreate extends Component
      */
     public array $roles = [];
 
-    public ?int $department_id = null;
+    public $department_id = null;
 
     private UserService $users;
 

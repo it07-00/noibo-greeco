@@ -31,7 +31,7 @@ final class DocumentRegulationIndex extends Component
     public ?int $regulationId = null;
     public string $code = '';
     public string $title = '';
-    public ?int $departmentId = null;
+    public $departmentId = null;
     public string $status = 'active';
     public string $summary = '';
     public string $content = '';
@@ -136,7 +136,7 @@ final class DocumentRegulationIndex extends Component
         $data = [
             'code' => $this->code,
             'title' => $this->title,
-            'department_id' => $this->departmentId,
+            'department_id' => $this->departmentId ?: null,
             'status' => $this->status,
             'summary' => $this->summary,
             'content' => $this->content ?: null,

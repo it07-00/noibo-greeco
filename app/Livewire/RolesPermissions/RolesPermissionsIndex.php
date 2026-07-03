@@ -26,7 +26,7 @@ final class RolesPermissionsIndex extends Component
 
     public string $newRoleDescription = '';
 
-    public ?int $newRoleDepartmentId = null;
+    public $newRoleDepartmentId = null;
 
     public int $editingRoleId = 0;
 
@@ -34,7 +34,7 @@ final class RolesPermissionsIndex extends Component
 
     public string $editRoleDescription = '';
 
-    public ?int $editRoleDepartmentId = null;
+    public $editRoleDepartmentId = null;
 
     public ?string $successMessage = null;
 
