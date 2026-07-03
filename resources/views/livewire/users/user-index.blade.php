@@ -72,14 +72,7 @@
                             <th scope="col">Phòng ban</th>
                             <th scope="col">Vai trò</th>
                             <th scope="col">Trạng thái</th>
-                            <th scope="col">
-                                <button type="button" class="btn btn-link p-0 text-body fw-semibold" wire:click="sortBy('created_at')">
-                                    Ngày tạo
-                                    @if ($sortField === 'created_at')
-                                        <i class="fi fi-rr-angle-{{ $sortDirection === 'asc' ? 'small-up' : 'small-down' }}"></i>
-                                    @endif
-                                </button>
-                            </th>
+
                             <th scope="col" class="text-end">Thao tác</th>
                         </tr>
                     </thead>
@@ -123,7 +116,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td>{{ $user->created_at?->format('Y-m-d H:i') }}</td>
+
                                 <td class="text-end">
                                     <div class="d-inline-flex flex-wrap justify-content-end gap-1">
                                         @if (auth()->user()?->can('user.update'))
@@ -180,7 +173,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-5 text-muted">
+                                <td colspan="6" class="text-center py-5 text-muted">
                                     Không tìm thấy người dùng nào.
                                 </td>
                             </tr>
