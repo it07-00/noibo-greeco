@@ -35,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(\Spatie\Permission\Models\Role::class, \App\Policies\RolePolicy::class);
         Gate::policy(\App\Models\DailyReport::class, \App\Policies\DailyReportPolicy::class);
+        Gate::policy(\App\Models\DocumentRegulation::class, \App\Policies\DocumentRegulationPolicy::class);
 
         // Register authentication activity logging
         \Illuminate\Support\Facades\Event::listen(

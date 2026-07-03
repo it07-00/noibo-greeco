@@ -52,6 +52,7 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::ScheduleViewPrivate->value,
             PermissionEnum::ReportView->value,
             PermissionEnum::DocumentView->value,
+            PermissionEnum::DocumentManage->value,
             PermissionEnum::MailView->value,
             PermissionEnum::MailSend->value,
             PermissionEnum::MailUpdate->value,
@@ -74,6 +75,7 @@ final class PermissionSeeder extends Seeder
 
         $director->syncPermissions($directorPermissions);
         $it->syncPermissions($staffPermissions);
+        $it->givePermissionTo(PermissionEnum::DocumentManage->value);
         $sales->syncPermissions($staffPermissions);
         $consultant->syncPermissions($staffPermissions);
         $accountant->syncPermissions($staffPermissions);

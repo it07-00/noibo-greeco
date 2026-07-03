@@ -21,6 +21,7 @@ enum PermissionEnum: string
     case MailSend = 'mail.send';
     case MailUpdate = 'mail.update';
     case DocumentView = 'document.view';
+    case DocumentManage = 'document.manage';
     case RoleManage = 'role.manage';
     case ReportView = 'report.view';
     case ReportCreate = 'report.create';
@@ -47,6 +48,7 @@ enum PermissionEnum: string
             self::MailSend => 'Gửi email nội bộ',
             self::MailUpdate => 'Cập nhật cấu hình email',
             self::DocumentView => 'Xem quy định tài liệu',
+            self::DocumentManage => 'Quản lý quy định tài liệu',
             self::RoleManage => 'Quản lý vai trò và phân quyền',
             self::ReportView => 'Xem báo cáo ngày',
             self::ReportCreate => 'Tạo báo cáo ngày',
