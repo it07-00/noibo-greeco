@@ -641,6 +641,7 @@
                             namesList.push(p.name);
                         }
                     });
+                }
                 // Limit display to at most 2 names
                 let namesStr = '';
                 if (namesList.length > 2) {
