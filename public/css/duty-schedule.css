@@ -557,4 +557,183 @@
     line-height: 1.2;
 }
 
+/* 2026 calendar polish: clearer hierarchy, calmer grid, stronger interaction cues. */
+#calendar {
+    font-family: 'Geist', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+#calendar.fc {
+    --fc-border-color: #e7ebf0;
+    --fc-today-bg-color: #f3f7ff;
+}
+
+#calendar .fc-view-harness,
+#calendar.fc-theme-standard .fc-scrollgrid {
+    border-radius: 16px !important;
+}
+
+#calendar.fc-theme-standard .fc-scrollgrid {
+    border-color: #e7ebf0 !important;
+    box-shadow: 0 12px 32px -22px rgba(15, 23, 42, 0.28) !important;
+}
+
+#calendar .fc-col-header-cell {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%) !important;
+    border-bottom: 1px solid #e7ebf0 !important;
+}
+
+#calendar .fc-col-header-cell-cushion {
+    padding: 18px 8px !important;
+    color: #182230 !important;
+    font-size: 14px !important;
+    font-weight: 750 !important;
+    letter-spacing: -0.02em;
+    text-transform: none;
+}
+
+#calendar .fc-daygrid-day-frame {
+    min-height: 128px;
+}
+
+#calendar .fc-daygrid-day-frame:hover {
+    background-color: #fafbfd;
+}
+
+#calendar .fc-day-today {
+    background: linear-gradient(180deg, #f2f6ff 0%, #f8faff 100%) !important;
+    box-shadow: inset 0 3px 0 #2563eb;
+}
+
+#calendar .fc-day-today .fc-daygrid-day-frame:hover {
+    background-color: #edf3ff;
+}
+
+#calendar .fc-event {
+    margin: 3px 7px !important;
+}
+
+#calendar .fc-event:focus,
+#calendar .fc-event:active {
+    outline: 2px solid rgba(37, 99, 235, 0.34) !important;
+    outline-offset: 2px;
+}
+
+#calendar .greeco-event-card {
+    position: relative;
+    margin: 1px 0;
+    padding: 8px 10px 9px;
+    border: 1px solid color-mix(in srgb, var(--border-color) 24%, transparent) !important;
+    border-left: 4px solid var(--border-color) !important;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #ffffff 0%, var(--bg-color) 100%) !important;
+    box-shadow: 0 2px 8px -5px rgba(15, 23, 42, 0.2);
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+#calendar .greeco-event-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--border-color) 46%, transparent) !important;
+    box-shadow: 0 10px 20px -12px color-mix(in srgb, var(--border-color) 50%, transparent);
+    filter: none;
+}
+
+.greeco-event-context {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    margin-bottom: 4px;
+}
+
+.greeco-event-owner {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-color);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.greeco-event-time {
+    flex: 0 0 auto;
+    padding: 2px 6px;
+    color: var(--text-color);
+    background: color-mix(in srgb, var(--border-color) 10%, #ffffff);
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+#calendar .greeco-event-title {
+    margin-bottom: 3px;
+    color: #1e293b !important;
+    font-size: 11.5px !important;
+    font-weight: 650 !important;
+}
+
+#calendar .greeco-event-meta {
+    position: relative;
+    padding-left: 10px;
+}
+
+#calendar .greeco-event-meta::before {
+    position: absolute;
+    top: 50%;
+    left: 1px;
+    width: 4px;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 50%;
+    content: '';
+    transform: translateY(-50%);
+}
+
+#calendar .fc-daygrid-day-top {
+    padding: 10px 12px 7px !important;
+}
+
+#calendar .day-cell-number {
+    color: #475569;
+    font-weight: 650;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    #calendar .fc-daygrid-event-harness {
+        animation: calendar-event-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    #calendar .fc-daygrid-event-harness:nth-child(2) { animation-delay: 35ms; }
+    #calendar .fc-daygrid-event-harness:nth-child(3) { animation-delay: 70ms; }
+    #calendar .fc-daygrid-event-harness:nth-child(4) { animation-delay: 105ms; }
+
+    @keyframes calendar-event-in {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+@media (max-width: 767.98px) {
+    #calendar .greeco-event-context {
+        margin-bottom: 2px;
+    }
+
+    #calendar .greeco-event-owner {
+        font-size: 9px;
+    }
+
+    #calendar .greeco-event-time {
+        display: none;
+    }
+}
+
 

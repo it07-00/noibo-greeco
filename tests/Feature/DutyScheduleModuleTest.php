@@ -261,6 +261,20 @@ final class DutyScheduleModuleTest extends TestCase
         $this->assertNotSame('N/A', $daySchedules[0]['creator_name']);
     }
 
+    public function test_director_event_click_is_routed_to_the_full_day_schedule_list(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $director = User::factory()->create();
+        $director->assignRole(RoleEnum::Director->value);
+
+        $this->actingAs($director);
+
+        $this->get(route('duty-schedules.index'))
+            ->assertOk()
+            ->assertSee('wire.showDaySchedules(`${year}-${month}-${day}`);', false);
+    }
+
     public function test_user_can_create_duty_schedule_with_participants(): void
     {
         $this->seed(PermissionSeeder::class);
