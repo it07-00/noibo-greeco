@@ -61,42 +61,48 @@
 
             {{-- ── Admin Management Group ──────────────────────────────────────── --}}
             @if (auth()->user()?->can('user.view') || auth()->user()?->can('role.manage') || auth()->user()?->can('setting.view'))
-                <li class="menu-heading mt-3">
-                    <span class="menu-label">Quản trị hệ thống</span>
+                @php
+                    $isManagementActive = request()->routeIs('users.*') || 
+                                          request()->routeIs('roles-permissions.*') || 
+                                          request()->routeIs('departments.*') || 
+                                          request()->routeIs('settings.*');
+                @endphp
+                <li class="menu-item menu-arrow {{ $isManagementActive ? 'open' : '' }}">
+                    <a class="menu-link {{ $isManagementActive ? 'open' : '' }}" href="javascript:void(0);">
+                        <i class="fi fi-rr-settings-sliders"></i>
+                        <span class="menu-label">Quản trị hệ thống</span>
+                    </a>
+                    <ul class="menu-inner" style="{{ $isManagementActive ? 'display: block;' : 'display: none;' }}">
+                        @if (auth()->user()?->can('user.view'))
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                                    <span class="menu-label">Người dùng</span>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if (auth()->user()?->can('role.manage'))
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('roles-permissions.*') ? 'active' : '' }}" href="{{ route('roles-permissions.index') }}">
+                                    <span class="menu-label">Vai trò & Quyền</span>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" href="{{ route('departments.index') }}">
+                                    <span class="menu-label">Phòng ban</span>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if (auth()->user()?->can('setting.view'))
+                            <li class="menu-item">
+                                <a class="menu-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+                                    <span class="menu-label">Cài đặt</span>
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
                 </li>
-
-                @if (auth()->user()?->can('user.view'))
-                    <li class="menu-item">
-                        <a class="menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
-                            <i class="fi fi-rr-users"></i>
-                            <span class="menu-label">Người dùng</span>
-                        </a>
-                    </li>
-                @endif
-
-                @if (auth()->user()?->can('role.manage'))
-                    <li class="menu-item">
-                        <a class="menu-link {{ request()->routeIs('roles-permissions.*') ? 'active' : '' }}" href="{{ route('roles-permissions.index') }}">
-                            <i class="fi fi-rr-shield-check"></i>
-                            <span class="menu-label">Vai trò & Quyền</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a class="menu-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" href="{{ route('departments.index') }}">
-                            <i class="fi fi-rr-bank"></i>
-                            <span class="menu-label">Phòng ban</span>
-                        </a>
-                    </li>
-                @endif
-
-                @if (auth()->user()?->can('setting.view'))
-                    <li class="menu-item">
-                        <a class="menu-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
-                            <i class="fi fi-rr-settings"></i>
-                            <span class="menu-label">Cài đặt</span>
-                        </a>
-                    </li>
-                @endif
             @endif
         </ul>
     </nav>
