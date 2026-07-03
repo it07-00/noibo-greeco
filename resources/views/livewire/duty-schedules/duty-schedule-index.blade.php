@@ -460,7 +460,7 @@
     </div>
 </div>
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.0.3">
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.0.4">
 @endpush
 
 
