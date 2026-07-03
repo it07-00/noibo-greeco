@@ -118,10 +118,9 @@ final class DutyScheduleIndex extends Component
 
         $result = $events->map(function (DutySchedule $event) {
             $isCreator = auth()->id() === $event->created_by;
-            $isSuperAdmin = auth()->user()?->hasRole(RoleEnum::SuperAdmin->value) ?? false;
-            $isDirector = auth()->user()?->hasRole(RoleEnum::Director->value) ?? false;
             $isParticipant = $event->users->contains(auth()->id());
-            $canSeeDetails = $isCreator || $isSuperAdmin || $isDirector || $isParticipant;
+            $hasPrivatePermission = auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value) ?? false;
+            $canSeeDetails = $isCreator || $isParticipant || $hasPrivatePermission;
 
             $isPrivate = (bool) $event->is_private;
             $titlePrefix = $isPrivate ? '🔒 ' : '';
@@ -308,10 +307,9 @@ final class DutyScheduleIndex extends Component
 
         $this->daySchedules = $schedules->map(function (DutySchedule $event) {
             $isCreator = auth()->id() === $event->created_by;
-            $isSuperAdmin = auth()->user()?->hasRole(RoleEnum::SuperAdmin->value) ?? false;
-            $isDirector = auth()->user()?->hasRole(RoleEnum::Director->value) ?? false;
             $isParticipant = $event->users->contains(auth()->id());
-            $canSeeDetails = $isCreator || $isSuperAdmin || $isDirector || $isParticipant;
+            $hasPrivatePermission = auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value) ?? false;
+            $canSeeDetails = $isCreator || $isParticipant || $hasPrivatePermission;
 
             $isPrivate = (bool) $event->is_private;
             $titlePrefix = $isPrivate ? '🔒 ' : '';
@@ -371,17 +369,11 @@ final class DutyScheduleIndex extends Component
         $this->showDaySchedules($dateStr);
     }
 
-    /**
-     * Check if the current user can view noibo main schedules.
-     */
     public function canViewNoiboSchedules(): bool
     {
         $user = auth()->user();
 
-        return $user !== null && $user->hasAnyRole([
-            RoleEnum::Director->value,
-            RoleEnum::SuperAdmin->value,
-        ]);
+        return $user !== null && $user->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value);
     }
 
     public function render(): View

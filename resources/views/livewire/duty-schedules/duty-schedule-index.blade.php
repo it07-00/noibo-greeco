@@ -460,7 +460,7 @@
     </div>
 </div>
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.0.4">
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.1.0">
 @endpush
 
 
@@ -655,26 +655,39 @@
                 const isNoibo = (props.source === 'noibo');
                 const themeClass = isNoibo ? 'event-theme-noibo' : ('event-theme-' + (props.label_color || 'primary'));
                 card.className = `greeco-event-card ${themeClass}`;
+                const eventTitle = props.raw_title || event.title;
+                card.title = [eventTitle, timeStr, namesStr].filter(Boolean).join(' · ');
 
-                // Title element
+                const contextEl = document.createElement('span');
+                contextEl.className = 'greeco-event-context';
+
+                const ownerEl = document.createElement('span');
+                ownerEl.className = 'greeco-event-owner';
+                ownerEl.innerText = isNoibo ? 'Bảo Châu' : (props.creator_name || namesStr || 'Lịch công tác');
+                contextEl.appendChild(ownerEl);
+
+                if (timeStr) {
+                    const timeEl = document.createElement('span');
+                    timeEl.className = 'greeco-event-time';
+                    timeEl.innerText = timeStr;
+                    contextEl.appendChild(timeEl);
+                }
+                card.appendChild(contextEl);
+
                 const titleEl = document.createElement('span');
                 titleEl.className = 'greeco-event-title';
-                const eventTitle = props.raw_title || event.title;
-                titleEl.innerText = isNoibo ? ('[BC] ' + eventTitle) : eventTitle;
+                titleEl.innerText = eventTitle;
                 card.appendChild(titleEl);
 
-                // Meta subtitle (time • names)
-                const metaEl = document.createElement('span');
-                metaEl.className = 'greeco-event-meta';
-
-                let metaText = '';
-                if (timeStr && namesStr) {
-                    metaText = `${timeStr} • ${namesStr}`;
-                } else {
-                    metaText = timeStr || namesStr || '';
+                const participantNames = namesList.filter(name => name && name !== props.creator_name);
+                if (participantNames.length > 0) {
+                    const metaEl = document.createElement('span');
+                    metaEl.className = 'greeco-event-meta';
+                    metaEl.innerText = participantNames.length > 2
+                        ? `${participantNames.slice(0, 2).join(', ')} +${participantNames.length - 2}`
+                        : participantNames.join(', ');
+                    card.appendChild(metaEl);
                 }
-                metaEl.innerText = metaText;
-                card.appendChild(metaEl);
 
                 return { domNodes: [card] };
             },
@@ -699,7 +712,7 @@
                     return;
                 }
 
-                @if(auth()->user()?->hasRole(\App\Enums\RoleEnum::Director->value))
+                @if(auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value))
                     wire.showDaySchedules(info.dateStr);
                 @else
                     @can('create', App\Models\DutySchedule::class)
@@ -712,6 +725,16 @@
             eventClick: function(info) {
                 const event = info.event;
                 const props = event.extendedProps;
+
+                @if(auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value))
+                    if (event.start) {
+                        const year = event.start.getFullYear();
+                        const month = String(event.start.getMonth() + 1).padStart(2, '0');
+                        const day = String(event.start.getDate()).padStart(2, '0');
+                        wire.showDaySchedules(`${year}-${month}-${day}`);
+                    }
+                    return;
+                @endif
 
                 document.getElementById('detailTitle').innerText = props.raw_title || event.title;
                 document.getElementById('detailStart').innerText = event.start ? formatDateTime(event.start) : '';

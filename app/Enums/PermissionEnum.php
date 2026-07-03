@@ -26,6 +26,7 @@ enum PermissionEnum: string
     case ReportCreate = 'report.create';
     case ReportUpdate = 'report.update';
     case ReportDelete = 'report.delete';
+    case ScheduleViewPrivate = 'schedule.view-private';
 
     public function label(): string
     {
@@ -39,6 +40,7 @@ enum PermissionEnum: string
             self::ScheduleCreate => 'Tạo lịch công tác',
             self::ScheduleUpdate => 'Cập nhật lịch công tác',
             self::ScheduleDelete => 'Xóa lịch công tác',
+            self::ScheduleViewPrivate => 'Xem lịch công tác riêng tư',
             self::SettingView => 'Xem cài đặt hệ thống',
             self::SettingUpdate => 'Cập nhật cài đặt hệ thống',
             self::MailView => 'Xem hộp thư nội bộ',
