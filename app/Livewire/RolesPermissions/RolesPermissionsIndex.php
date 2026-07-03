@@ -214,6 +214,7 @@ final class RolesPermissionsIndex extends Component
                 PermissionEnum::ScheduleCreate->value => 'Tạo lịch công tác',
                 PermissionEnum::ScheduleUpdate->value => 'Cập nhật lịch công tác',
                 PermissionEnum::ScheduleDelete->value => 'Xóa lịch công tác',
+                PermissionEnum::ScheduleViewPrivate->value => 'Xem lịch công tác riêng tư',
             ],
             'Báo cáo ngày' => [
                 PermissionEnum::ReportView->value => 'Xem báo cáo ngày',
@@ -228,6 +229,7 @@ final class RolesPermissionsIndex extends Component
             ],
             'Quy định tài liệu' => [
                 PermissionEnum::DocumentView->value => 'Xem quy định tài liệu',
+                PermissionEnum::DocumentManage->value => 'Quản lý quy định tài liệu',
             ],
             'Cài đặt hệ thống' => [
                 PermissionEnum::SettingView->value => 'Xem cài đặt hệ thống',
