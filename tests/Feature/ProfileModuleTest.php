@@ -74,7 +74,7 @@ final class ProfileModuleTest extends TestCase
         ]);
 
         $this->assertNull($user->avatar_url);
-        $this->assertSame('N', $user->avatar_initials);
+        $this->assertSame('A', $user->avatar_initials);
     }
 
     public function test_user_can_upload_avatar(): void

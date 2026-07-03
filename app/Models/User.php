@@ -96,7 +96,10 @@ class User extends Authenticatable
             return 'U';
         }
 
-        return Str::upper(Str::substr($name, 0, 1));
+        $words = preg_split('/\s+/', $name);
+        $lastWord = end($words);
+
+        return Str::upper(Str::substr($lastWord, 0, 1));
     }
 
     public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo

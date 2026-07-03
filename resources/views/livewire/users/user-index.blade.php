@@ -81,9 +81,13 @@
                             <tr wire:key="user-row-{{ $user->id }}">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <span class="avatar avatar-sm bg-primary-subtle text-primary rounded-circle">
-                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                        </span>
+                                        <div class="avatar avatar-sm rounded-circle overflow-hidden bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold" style="width: 32px; height: 32px; flex-shrink: 0;">
+                                            @if ($user->avatar_url)
+                                                <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="object-fit-cover w-100 h-100">
+                                            @else
+                                                <span>{{ $user->avatar_initials }}</span>
+                                            @endif
+                                        </div>
                                         <span class="fw-semibold">{{ $user->name }}</span>
                                     </div>
                                 </td>
