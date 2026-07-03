@@ -81,7 +81,7 @@
                             <tr wire:key="user-row-{{ $user->id }}">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="avatar avatar-sm rounded-circle overflow-hidden bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold" style="width: 32px; height: 32px; flex-shrink: 0;">
+                                        <div class="avatar avatar-sm rounded-circle overflow-hidden d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; flex-shrink: 0; background: linear-gradient(135deg, #e0e7ff 0%, #e0f2fe 100%); color: #4f46e5; border: 1.5px solid #ffffff; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08); font-size: 14px;">
                                             @if ($user->avatar_url)
                                                 <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="object-fit-cover w-100 h-100">
                                             @else
