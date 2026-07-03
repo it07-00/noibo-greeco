@@ -654,7 +654,7 @@
                 const titleEl = document.createElement('span');
                 titleEl.className = 'greeco-event-title';
                 const eventTitle = props.raw_title || event.title;
-                titleEl.innerText = isNoibo ? ('[Bảo Châu] ' + eventTitle) : eventTitle;
+                titleEl.innerText = isNoibo ? ('[BC] ' + eventTitle) : eventTitle;
                 card.appendChild(titleEl);
 
                 // Meta subtitle (time • names)
