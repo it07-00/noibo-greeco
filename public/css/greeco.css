@@ -570,3 +570,16 @@
         min-width: 650px !important;
     }
 }
+
+/* Prevent horizontal scrollbar on all screens */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Fix fixed header position and prevent overflow */
+.app-header {
+    left: 0;
+    right: 0;
+    width: auto !important;
+}
