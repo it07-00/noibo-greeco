@@ -641,8 +641,13 @@
                             namesList.push(p.name);
                         }
                     });
+                // Limit display to at most 2 names
+                let namesStr = '';
+                if (namesList.length > 2) {
+                    namesStr = namesList.slice(0, 2).join(', ') + ' + ' + (namesList.length - 2);
+                } else {
+                    namesStr = namesList.filter(Boolean).join(', ');
                 }
-                const namesStr = namesList.filter(Boolean).join(', ');
 
                 // 3. Create DOM structure
                 const card = document.createElement('div');
