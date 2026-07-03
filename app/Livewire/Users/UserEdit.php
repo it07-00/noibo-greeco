@@ -39,6 +39,10 @@ final class UserEdit extends Component
 
     public $department_id = null;
 
+    public string $dob = '';
+
+    public string $address = '';
+
     private UserService $users;
 
     public function boot(UserService $users): void
@@ -61,6 +65,8 @@ final class UserEdit extends Component
         $this->password_confirmation = '';
         $this->roles = $user->roles->pluck('name')->values()->all();
         $this->department_id = $user->department_id;
+        $this->dob = $user->dob ? $user->dob->format('Y-m-d') : '';
+        $this->address = $user->address ?? '';
         $this->isOpen = true;
         $this->dispatch('user-edit:show');
     }

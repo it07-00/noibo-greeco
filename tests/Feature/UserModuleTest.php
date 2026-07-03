@@ -102,22 +102,30 @@ final class UserModuleTest extends TestCase
             'email' => 'staff@example.com',
             'password' => 'password',
             'roles' => [RoleEnum::Director->value],
+            'dob' => '1990-01-01',
+            'address' => 'Hanoi, Vietnam',
         ]));
 
         $this->assertTrue(Hash::check('password', $user->password));
         $this->assertTrue($user->hasRole(RoleEnum::Director->value));
+        $this->assertSame('1990-01-01', $user->dob->format('Y-m-d'));
+        $this->assertSame('Hanoi, Vietnam', $user->address);
 
         $updated = $service->update($user, UserDTO::fromArray([
             'name' => 'Admin Member',
             'username' => 'admin.member',
             'email' => 'admin.member@example.com',
             'roles' => [RoleEnum::IT->value],
+            'dob' => '1995-05-15',
+            'address' => 'Danang, Vietnam',
         ]));
 
         $this->assertSame('Admin Member', $updated->name);
         $this->assertSame('admin.member', $updated->username);
         $this->assertSame('admin.member@example.com', $updated->email);
         $this->assertTrue($updated->hasRole(RoleEnum::IT->value));
+        $this->assertSame('1995-05-15', $updated->dob->format('Y-m-d'));
+        $this->assertSame('Danang, Vietnam', $updated->address);
 
         $service->resetPasswordToDefault($updated);
         $this->assertTrue(Hash::check(UserService::DEFAULT_RESET_PASSWORD, $updated->refresh()->password));

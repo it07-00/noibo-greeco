@@ -37,6 +37,10 @@ final class UserCreate extends Component
 
     public $department_id = null;
 
+    public string $dob = '';
+
+    public string $address = '';
+
     private UserService $users;
 
     public function boot(UserService $users): void
@@ -92,5 +96,7 @@ final class UserCreate extends Component
         $this->password_confirmation = '';
         $this->roles = [];
         $this->department_id = null;
+        $this->dob = '';
+        $this->address = '';
     }
 }

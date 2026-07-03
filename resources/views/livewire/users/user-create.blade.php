@@ -47,6 +47,18 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label class="form-label" for="create-dob">Ngày sinh</label>
+                                <input id="create-dob" type="date" class="form-control @error('dob') is-invalid @enderror" wire:model.defer="dob">
+                                @error('dob') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="create-address">Địa chỉ</label>
+                                <input id="create-address" type="text" class="form-control @error('address') is-invalid @enderror" wire:model.defer="address" placeholder="Nhập địa chỉ...">
+                                @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label" for="create-password">Mật khẩu</label>
                                 <div class="input-group">
                                     <input id="create-password" type="password" class="form-control @error('password') is-invalid @enderror" wire:model.defer="password">

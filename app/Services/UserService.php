@@ -48,6 +48,8 @@ final class UserService
                 'email' => $dto->email,
                 'password' => Hash::make((string) $dto->password),
                 'department_id' => $dto->departmentId,
+                'dob' => $dto->dob,
+                'address' => $dto->address,
             ]);
 
             $this->assignRole($user, $dto->roles);
@@ -64,6 +66,8 @@ final class UserService
                 'username' => $dto->username,
                 'email' => $dto->email,
                 'department_id' => $dto->departmentId,
+                'dob' => $dto->dob,
+                'address' => $dto->address,
             ];
 
             if ($dto->password !== null) {

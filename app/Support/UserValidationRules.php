@@ -22,6 +22,8 @@ final class UserValidationRules
             'roles' => ['array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],
+            'dob' => ['nullable', 'date'],
+            'address' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -40,6 +42,8 @@ final class UserValidationRules
             'roles' => ['array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],
+            'dob' => ['nullable', 'date'],
+            'address' => ['nullable', 'string', 'max:255'],
         ];
     }
 }
