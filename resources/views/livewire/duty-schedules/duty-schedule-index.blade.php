@@ -55,7 +55,7 @@
                                 wire:model.live="showNoiboSchedules"
                             />
                             <label class="form-check-label fw-semibold small" for="toggleNoiboSchedules">
-                                <span class="noibo-badge me-1">Noibo</span> Hiển thị lịch Nội bộ chính
+                                <span class="noibo-badge me-1">Bảo Châu</span> Hiển thị lịch Bảo Châu
                             </label>
                         </div>
                     </div>
@@ -363,7 +363,7 @@
                                                     @elseif($schedule['label_color'] === 'danger') Khẩn cấp
                                                     @elseif($schedule['label_color'] === 'info') Cuộc họp
                                                     @elseif($schedule['label_color'] === 'purple') Họp công tác
-                                                    @elseif($schedule['label_color'] === 'noibo') <span class="noibo-badge">Noibo</span>
+                                                    @elseif($schedule['label_color'] === 'noibo') <span class="noibo-badge">Bảo Châu</span>
                                                     @elseif($schedule['label_color'] === 'private') Lịch riêng tư
                                                     @else Mặc định
                                                     @endif
@@ -653,7 +653,8 @@
                 // Title element
                 const titleEl = document.createElement('span');
                 titleEl.className = 'greeco-event-title';
-                titleEl.innerText = props.raw_title || event.title;
+                const eventTitle = props.raw_title || event.title;
+                titleEl.innerText = isNoibo ? ('[Bảo Châu] ' + eventTitle) : eventTitle;
                 card.appendChild(titleEl);
 
                 // Meta subtitle (time • names)
