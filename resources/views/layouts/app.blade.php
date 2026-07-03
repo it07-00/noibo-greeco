@@ -155,6 +155,18 @@
                 modalEl.addEventListener('hidden.bs.modal', () => {
                     delete modalEl.dataset.greecoModalState;
                     cleanupModalState();
+
+                    const lwEl = modalEl.closest('[wire\\:id]') || modalEl.querySelector('[wire\\:id]');
+                    if (lwEl && window.Livewire) {
+                        const component = Livewire.find(lwEl.getAttribute('wire:id'));
+                        if (component) {
+                            if (typeof component.close === 'function') {
+                                component.close();
+                            } else if (typeof component.resetForm === 'function') {
+                                component.resetForm();
+                            }
+                        }
+                    }
                 });
             };
 

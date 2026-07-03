@@ -6,8 +6,6 @@
         tabindex="-1"
         aria-labelledby="userDeleteModalLabel"
         aria-hidden="true"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
     >
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
