@@ -15,7 +15,7 @@ final class DocumentRegulation extends Model
     protected $fillable = [
         'code',
         'title',
-        'owner',
+        'role_id',
         'status',
         'summary',
         'content',
@@ -26,5 +26,10 @@ final class DocumentRegulation extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'role_id');
     }
 }

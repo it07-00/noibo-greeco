@@ -97,19 +97,19 @@
                 </div>
                 <div class="col-md-3 col-sm-6">
                     <label class="form-label mb-0 text-muted small">Bộ phận phụ trách</label>
-                    <select class="form-select form-select-sm" wire:model.live="filterOwner">
+                    <select class="form-select form-select-sm" wire:model.live="filterRoleId">
                         <option value="">Tất cả bộ phận</option>
-                        @foreach ($owners as $o)
-                            <option value="{{ $o }}">{{ $o }}</option>
+                        @foreach ($filterRoles as $role)
+                            <option value="{{ $role->id }}">{{ $role->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                @if ($search || $filterOwner)
+                @if ($search || $filterRoleId)
                     <div class="col-sm-auto ms-auto align-self-end">
                         <button
                             type="button"
                             class="btn btn-sm btn-outline-secondary"
-                            wire:click="$set('search', ''); $set('filterOwner', '')"
+                            wire:click="$set('search', ''); $set('filterRoleId', '')"
                         >
                             <i class="fi fi-rr-cross-small me-1"></i> Xóa lọc
                         </button>
@@ -141,7 +141,7 @@
                                 <th>Tên quy định</th>
                                 <th>Phụ trách</th>
                                 <th>Trạng thái</th>
-                                <th style="min-width: 320px;">Nóm tắt nội dung chính</th>
+                                <th style="min-width: 320px;">Tóm tắt nội dung chính</th>
                                 <th class="text-end pe-3" style="width: 140px;">Thao tác</th>
                             </tr>
                         </thead>
@@ -152,7 +152,7 @@
                                         <span class="badge bg-primary-subtle text-primary fw-semibold">{{ $regulation->code }}</span>
                                     </td>
                                     <td class="fw-semibold text-dark">{{ $regulation->title }}</td>
-                                    <td class="text-muted">{{ $regulation->owner }}</td>
+                                    <td class="text-muted">{{ $regulation->role->name ?? '—' }}</td>
                                     <td>
                                         @if ($regulation->status === 'active')
                                             <span class="badge bg-success-subtle text-success border border-success">Đang áp dụng</span>
@@ -227,7 +227,7 @@
                     @if ($selectedRegulation)
                         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                             <span class="badge bg-primary px-2 py-1">{{ $selectedRegulation->code }}</span>
-                            <span class="badge bg-light-subtle text-dark border border-gray-300 px-2 py-1">Phụ trách: {{ $selectedRegulation->owner }}</span>
+                            <span class="badge bg-light-subtle text-dark border border-gray-300 px-2 py-1">Phụ trách: {{ $selectedRegulation->role->name ?? '—' }}</span>
                             @if ($selectedRegulation->status === 'active')
                                 <span class="badge bg-success-subtle text-success border border-success px-2 py-1">Đang áp dụng</span>
                             @else
@@ -321,31 +321,16 @@
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Phòng ban/Bộ phận phụ trách <span class="text-danger">*</span></label>
-                                <select class="form-select @error('ownerType') is-invalid @enderror" wire:model.live="ownerType">
-                                    <option value="">Chọn phòng ban...</option>
-                                    @foreach ($defaultDepartments as $dept)
-                                        <option value="{{ $dept }}">{{ $dept }}</option>
+                                <label class="form-label fw-semibold">Vai trò/Bộ phận phụ trách <span class="text-danger">*</span></label>
+                                <select class="form-select @error('roleId') is-invalid @enderror" wire:model="roleId">
+                                    <option value="">Chọn vai trò phụ trách...</option>
+                                    @foreach ($availableRoles as $role)
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
                                     @endforeach
-                                    <option value="Khác">Khác...</option>
                                 </select>
-                                @error('ownerType')
+                                @error('roleId')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-
-                                @if ($ownerType === 'Khác')
-                                    <div class="mt-2">
-                                        <input
-                                            type="text"
-                                            class="form-control form-control-sm @error('owner') is-invalid @enderror"
-                                            wire:model="owner"
-                                            placeholder="Nhập tên phòng ban khác..."
-                                        />
-                                        @error('owner')
-                                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                @endif
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Trạng thái áp dụng <span class="text-danger">*</span></label>

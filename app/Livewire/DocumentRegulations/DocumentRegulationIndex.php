@@ -13,6 +13,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Role;
 
 #[Layout('layouts.app')]
 #[Title('Quy định Tài liệu')]
@@ -24,29 +25,17 @@ final class DocumentRegulationIndex extends Component
 
     // Filters
     public string $search = '';
-    public string $filterOwner = '';
+    public string $filterRoleId = '';
 
     // Form inputs
     public ?int $regulationId = null;
     public string $code = '';
     public string $title = '';
-    public string $owner = '';
-    public string $ownerType = '';
+    public ?int $roleId = null;
     public string $status = 'active';
     public string $summary = '';
     public string $content = '';
     public $file; // temporary file upload
-
-    public array $defaultDepartments = [
-        'Ban giám đốc',
-        'Hành chính',
-        'Nhân sự',
-        'Kế toán',
-        'IT / Kỹ thuật',
-        'Kinh doanh',
-        'Marketing',
-        'Tư vấn',
-    ];
 
     // For detail view
     public ?DocumentRegulation $selectedRegulation = null;
@@ -62,8 +51,7 @@ final class DocumentRegulationIndex extends Component
         return [
             'code' => ['required', 'string', 'max:50', 'unique:document_regulations,code,' . $this->regulationId],
             'title' => ['required', 'string', 'max:255'],
-            'ownerType' => ['required', 'string'],
-            'owner' => ['required_if:ownerType,Khác', 'nullable', 'string', 'max:100'],
+            'roleId' => ['required', 'integer', 'exists:roles,id'],
             'status' => ['required', 'in:active,inactive'],
             'summary' => ['required', 'string', 'max:1000'],
             'content' => ['nullable', 'string'],
@@ -74,8 +62,7 @@ final class DocumentRegulationIndex extends Component
     protected array $validationAttributes = [
         'code' => 'mã quy định',
         'title' => 'tên quy định',
-        'ownerType' => 'phòng ban phụ trách',
-        'owner' => 'tên phòng ban khác',
+        'roleId' => 'vai trò/phòng ban phụ trách',
         'status' => 'trạng thái',
         'summary' => 'tóm tắt nội dung',
         'content' => 'nội dung chi tiết',
@@ -93,7 +80,7 @@ final class DocumentRegulationIndex extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterOwner(): void
+    public function updatingFilterRoleId(): void
     {
         $this->resetPage();
     }
@@ -103,8 +90,7 @@ final class DocumentRegulationIndex extends Component
         $this->regulationId = null;
         $this->code = '';
         $this->title = '';
-        $this->owner = '';
-        $this->ownerType = '';
+        $this->roleId = null;
         $this->status = 'active';
         $this->summary = '';
         $this->content = '';
@@ -128,14 +114,7 @@ final class DocumentRegulationIndex extends Component
         $this->regulationId = $regulation->id;
         $this->code = $regulation->code;
         $this->title = $regulation->title;
-        $this->owner = $regulation->owner;
-
-        if (in_array($regulation->owner, $this->defaultDepartments, true)) {
-            $this->ownerType = $regulation->owner;
-        } else {
-            $this->ownerType = 'Khác';
-        }
-
+        $this->roleId = $regulation->role_id;
         $this->status = $regulation->status;
         $this->summary = $regulation->summary;
         $this->content = $regulation->content ?? '';
@@ -145,24 +124,19 @@ final class DocumentRegulationIndex extends Component
 
     public function showDetails(int $id): void
     {
-        $this->selectedRegulation = DocumentRegulation::findOrFail($id);
+        $this->selectedRegulation = DocumentRegulation::with('role')->findOrFail($id);
         $this->dispatch('document:open-detail');
     }
 
     public function save(): void
     {
         abort_unless(auth()->user()?->can(PermissionEnum::DocumentManage->value), 403);
-
-        if ($this->ownerType !== 'Khác') {
-            $this->owner = $this->ownerType;
-        }
-
         $this->validate();
 
         $data = [
             'code' => $this->code,
             'title' => $this->title,
-            'owner' => $this->owner,
+            'role_id' => $this->roleId,
             'status' => $this->status,
             'summary' => $this->summary,
             'content' => $this->content ?: null,
@@ -219,6 +193,7 @@ final class DocumentRegulationIndex extends Component
     public function render(): View
     {
         $query = DocumentRegulation::query()
+            ->with(['role', 'creator'])
             ->when($this->search, function ($q) {
                 $q->where(function ($sq) {
                     $sq->where('title', 'like', '%' . $this->search . '%')
@@ -226,21 +201,19 @@ final class DocumentRegulationIndex extends Component
                       ->orWhere('summary', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when($this->filterOwner, function ($q) {
-                $q->where('owner', $this->filterOwner);
+            ->when($this->filterRoleId, function ($q) {
+                $q->where('role_id', $this->filterRoleId);
             })
             ->orderBy('code');
 
-        $owners = DocumentRegulation::query()
-            ->distinct()
-            ->pluck('owner')
-            ->filter()
-            ->toArray();
+        $usedRoleIds = DocumentRegulation::query()->distinct()->pluck('role_id')->filter()->toArray();
+        $filterRoles = Role::whereIn('id', $usedRoleIds)->get();
 
         return view('livewire.document-regulations.document-regulation-index', [
             'regulations' => $query->paginate(10),
-            'owners' => $owners,
-            'canManage' => auth()->user()?->can(PermissionEnum::DocumentManage->value) ?? false,
+            'availableRoles' => Role::all(),
+            'filterRoles' => $filterRoles,
+            'canManage' => $this->canManage,
         ]);
     }
 }

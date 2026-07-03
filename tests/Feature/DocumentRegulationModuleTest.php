@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 final class DocumentRegulationModuleTest extends TestCase
@@ -68,6 +69,8 @@ final class DocumentRegulationModuleTest extends TestCase
 
         $this->actingAs($director);
 
+        $itRole = Role::where('name', RoleEnum::IT->value)->firstOrFail();
+
         // 1. Create Regulation
         $file = UploadedFile::fake()->create('doc01.pdf', 500);
 
@@ -75,7 +78,7 @@ final class DocumentRegulationModuleTest extends TestCase
             ->assertSet('canManage', true)
             ->set('code', 'QD-TL-TEST')
             ->set('title', 'Quy định thử nghiệm')
-            ->set('ownerType', 'Ban giám đốc')
+            ->set('roleId', $itRole->id)
             ->set('status', 'active')
             ->set('summary', 'Tóm tắt quy định thử nghiệm')
             ->set('content', 'Chi tiết toàn văn quy định thử nghiệm')
@@ -87,7 +90,7 @@ final class DocumentRegulationModuleTest extends TestCase
         $this->assertDatabaseHas('document_regulations', [
             'code' => 'QD-TL-TEST',
             'title' => 'Quy định thử nghiệm',
-            'owner' => 'Ban giám đốc',
+            'role_id' => $itRole->id,
             'created_by' => $director->id,
         ]);
 
@@ -99,7 +102,7 @@ final class DocumentRegulationModuleTest extends TestCase
         Livewire::test(\App\Livewire\DocumentRegulations\DocumentRegulationIndex::class)
             ->call('openEdit', $regulation->id)
             ->assertSet('code', 'QD-TL-TEST')
-            ->assertSet('ownerType', 'Ban giám đốc')
+            ->assertSet('roleId', $itRole->id)
             ->set('title', 'Quy định thử nghiệm cập nhật')
             ->call('save')
             ->assertHasNoErrors();
@@ -118,30 +121,5 @@ final class DocumentRegulationModuleTest extends TestCase
             'id' => $regulation->id,
         ]);
         Storage::disk('public')->assertMissing($regulation->file_path);
-    }
-
-    public function test_authorized_user_can_create_regulation_with_custom_owner(): void
-    {
-        $this->seed(PermissionSeeder::class);
-        
-        $director = User::factory()->create();
-        $director->assignRole(RoleEnum::Director->value);
-
-        $this->actingAs($director);
-
-        Livewire::test(\App\Livewire\DocumentRegulations\DocumentRegulationIndex::class)
-            ->set('code', 'QD-TL-CUSTOM')
-            ->set('title', 'Quy định tùy chỉnh phòng ban')
-            ->set('ownerType', 'Khác')
-            ->set('owner', 'Phòng ban Nghiên cứu Phát triển')
-            ->set('status', 'active')
-            ->set('summary', 'Tóm tắt ngắn')
-            ->call('save')
-            ->assertHasNoErrors();
-
-        $this->assertDatabaseHas('document_regulations', [
-            'code' => 'QD-TL-CUSTOM',
-            'owner' => 'Phòng ban Nghiên cứu Phát triển',
-        ]);
     }
 }
