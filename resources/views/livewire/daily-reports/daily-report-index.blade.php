@@ -552,6 +552,10 @@
     </div>
 </div>
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/daily-report.css') }}?v=1.0.0">
+@endpush
+
 @push('scripts')
 <script src="{{ asset('js/fullcalendar.global.min.js') }}"></script>
 <script>
@@ -620,7 +624,8 @@
             },
             eventClick: function(info) {
                 const event = info.event;
-                wire.openDetailModal(event.id);
+                const reportDate = event.startStr.substring(0, 10);
+                wire.handleCalendarEventClick(event.id, reportDate);
             }
         });
 

@@ -1,0 +1,34 @@
+/* Keep the Daily Reports calendar inside its card when event text is long. */
+#calendar-reports,
+#calendar-reports.fc {
+    min-width: 0;
+    max-width: 100%;
+}
+
+#calendar-reports .fc-scrollgrid-sync-table {
+    width: 100% !important;
+    table-layout: fixed;
+}
+
+#calendar-reports .fc-daygrid-day,
+#calendar-reports .fc-daygrid-day-frame,
+#calendar-reports .fc-daygrid-day-events,
+#calendar-reports .fc-daygrid-event-harness {
+    min-width: 0;
+    max-width: 100%;
+}
+
+#calendar-reports .fc-event {
+    min-width: 0;
+    max-width: calc(100% - 8px);
+    overflow: hidden;
+}
+
+#calendar-reports .fc-event-main,
+#calendar-reports .fc-event-title,
+#calendar-reports .fc-event-time {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

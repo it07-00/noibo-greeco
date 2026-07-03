@@ -355,6 +355,37 @@ final class DailyReportModuleTest extends TestCase
         $this->assertSame($staff->name, $dayReports[0]['user_name']);
     }
 
+    public function test_calendar_event_click_opens_all_day_reports_for_director(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $director = User::factory()->create();
+        $director->assignRole(RoleEnum::Director->value);
+
+        $staff = User::factory()->create();
+        $staff->assignRole(RoleEnum::IT->value);
+
+        DailyReport::create([
+            'user_id' => $staff->id,
+            'report_date' => '2026-06-02',
+            'work_done' => 'Report opened from calendar event',
+        ]);
+
+        $this->actingAs($director);
+
+        $test = Livewire::test(DailyReportIndex::class)
+            ->call('handleCalendarEventClick', 1, '2026-06-02')
+            ->assertSet('selectedDateStr', '02/06/2026')
+            ->assertDispatched('report:open-day-reports')
+            ->assertNotDispatched('report-detail:show');
+
+        $this->assertCount(1, $test->instance()->dayReports);
+        $this->assertSame(
+            'Report opened from calendar event',
+            $test->instance()->dayReports[0]['work_done'],
+        );
+    }
+
     public function test_report_index_defaults_to_filtering_current_date(): void
     {
         $this->seed(PermissionSeeder::class);

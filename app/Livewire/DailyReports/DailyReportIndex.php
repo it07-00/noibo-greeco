@@ -280,6 +280,20 @@ final class DailyReportIndex extends Component
         $this->dispatch('report:open-day-reports');
     }
 
+    public function handleCalendarEventClick(
+        int $reportId,
+        string $dateStr,
+        DailyReportService $service,
+    ): void {
+        if ($this->resolveCanViewAll()) {
+            $this->showDayReports($dateStr, $service);
+
+            return;
+        }
+
+        $this->openDetailModal($reportId);
+    }
+
     public function openEditFromList(int $id): void
     {
         $this->dispatch('report:close-day-reports');
