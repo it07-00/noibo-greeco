@@ -431,6 +431,17 @@
                                 </div>
                             @endforeach
                         </div>
+                    @endif
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        @can('create', App\Models\DutySchedule::class)
+                            @if($selectedDateStr && \Carbon\Carbon::createFromFormat('d/m/Y', $selectedDateStr)->startOfDay()->gte(\Carbon\Carbon::today()))
+                                <button
+                                    type="button"
+                                    class="btn btn-primary btn-sm waves-effect waves-light"
+                                    wire:click="openCreateFromList"
+                                >
                                     <i class="fi fi-rr-plus me-1"></i> Thêm lịch ngày này
                                 </button>
                             @endif
