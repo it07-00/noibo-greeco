@@ -139,14 +139,18 @@
                         }, true);
                     }
 
-                    if (subMenu && !keepOpen) {
+                    if (subMenu) {
                         adminMenuItem.addEventListener('mouseenter', () => {
                             adminMenuItem.classList.add('open');
+                            if (menuLink) menuLink.classList.add('open');
                             jQuery(subMenu).stop(true, true).slideDown(200);
                         });
 
                         adminMenuItem.addEventListener('mouseleave', () => {
+                            // If keepOpen is true, we still want it to stay open or collapse?
+                            // Let's collapse it to make the entire sidebar hoverable consistently.
                             adminMenuItem.classList.remove('open');
+                            if (menuLink) menuLink.classList.remove('open');
                             jQuery(subMenu).stop(true, true).slideUp(200);
                         });
                     }
