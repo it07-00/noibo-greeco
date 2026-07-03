@@ -46,6 +46,10 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
         ->middleware('can:role.manage')
         ->name('roles-permissions.index');
 
+    Route::get('/departments', \App\Livewire\Departments\DepartmentIndex::class)
+        ->middleware('can:role.manage')
+        ->name('departments.index');
+
     Route::get('/daily-reports', DailyReportIndex::class)
         ->middleware('can:report.view')
         ->name('daily-reports.index');

@@ -6,6 +6,7 @@ namespace App\Livewire\Users;
 
 use App\DTOs\UserDTO;
 use App\Models\User;
+use App\Models\Department;
 use App\Services\UserService;
 use App\Support\UserValidationRules;
 use Illuminate\Contracts\View\View;
@@ -33,6 +34,8 @@ final class UserCreate extends Component
      * @var list<string>
      */
     public array $roles = [];
+
+    public ?int $department_id = null;
 
     private UserService $users;
 
@@ -76,6 +79,7 @@ final class UserCreate extends Component
     {
         return view('livewire.users.user-create', [
             'roleOptions' => $this->users->roleOptions(),
+            'departments' => Department::orderBy('name')->get(),
         ]);
     }
 
@@ -87,5 +91,6 @@ final class UserCreate extends Component
         $this->password = '';
         $this->password_confirmation = '';
         $this->roles = [];
+        $this->department_id = null;
     }
 }

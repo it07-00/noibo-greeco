@@ -38,6 +38,7 @@ class User extends Authenticatable
         'address',
         'avatar_path',
         'locked_at',
+        'department_id',
     ];
 
     /**
@@ -96,5 +97,10 @@ class User extends Authenticatable
         }
 
         return Str::upper(Str::substr($name, 0, 1));
+    }
+
+    public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 }

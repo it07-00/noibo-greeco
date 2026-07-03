@@ -41,19 +41,17 @@
                                         @else
                                             <i class="fi fi-rr-user scale-1x me-1"></i>
                                         @endif
-                                        {{ $role->name }}
+                                        {{ $role->name }} @if($role->department) <span class="small text-muted">({{ $role->department->code }})</span> @endif
                                     </button>
-                                    {{-- Edit button only for non-system roles --}}
-                                    @if (! \App\Enums\RoleEnum::isSystemRole($role->name))
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-link p-0 ms-1 text-muted"
-                                            title="Chỉnh sửa vai trò"
-                                            wire:click="openEditModal({{ $role->id }})"
-                                        >
-                                            <i class="fi fi-rr-edit" style="font-size: 0.75rem;"></i>
-                                        </button>
-                                    @endif
+                                    {{-- Edit button for roles (system roles can update description/department, but not name) --}}
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-link p-0 ms-1 text-muted"
+                                        title="Chỉnh sửa vai trò"
+                                        wire:click="openEditModal({{ $role->id }})"
+                                    >
+                                        <i class="fi fi-rr-edit" style="font-size: 0.75rem;"></i>
+                                    </button>
                                 </div>
                             </li>
                         @endforeach
@@ -68,18 +66,20 @@
                                     <i class="fi fi-rr-info text-primary me-1"></i> 
                                     {{ $activeRole->description ?? 'Không có mô tả chi tiết cho vai trò này.' }}
                                 </p>
+                                <p class="text-primary mt-1 mb-0 small fw-semibold">
+                                    <i class="fi fi-rr-bank me-1"></i> Phòng ban trực thuộc: 
+                                    <span class="text-dark">{{ $activeRole->department->name ?? 'Không trực thuộc phòng ban nào' }}</span>
+                                </p>
                             </div>
                             
                             <div class="d-flex gap-2">
-                                @if (! \App\Enums\RoleEnum::isSystemRole($activeRole->name))
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-secondary waves-effect"
-                                        wire:click="openEditModal({{ $activeRole->id }})"
-                                    >
-                                        <i class="fi fi-rr-edit me-1"></i> Chỉnh sửa
-                                    </button>
-                                @endif
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary waves-effect"
+                                    wire:click="openEditModal({{ $activeRole->id }})"
+                                >
+                                    <i class="fi fi-rr-edit me-1"></i> Chỉnh sửa thông tin
+                                </button>
 
                                 @if (! \App\Enums\RoleEnum::isSystemRole($activeRole->name))
                                     <button
@@ -137,20 +137,20 @@
     <!-- Add Role Modal -->
     <div wire:ignore.self class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <form wire:submit.prevent="createRole" class="modal-content">
+            <form wire:submit.prevent="createRole" class="modal-content border-0 shadow-lg">
                 <div class="modal-header">
-                    <h5 class="modal-title">Thêm Vai trò Mới</h5>
+                    <h5 class="modal-title fw-bold text-dark">Thêm Vai trò Mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label" for="newRoleName">Tên vai trò <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold" for="newRoleName">Tên vai trò <span class="text-danger">*</span></label>
                         <input
                             type="text"
                             id="newRoleName"
                             wire:model.defer="newRoleName"
                             class="form-control @error('newRoleName') is-invalid @enderror"
-                            placeholder="Ví dụ: Editor, Accountant,..."
+                            placeholder="Ví dụ: Kỹ thuật viên, Trưởng nhóm sales,..."
                             required
                         />
                         @error('newRoleName')
@@ -158,7 +158,23 @@
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="newRoleDescription">Mô tả chi tiết</label>
+                        <label class="form-label fw-semibold" for="newRoleDepartmentId">Phòng ban trực thuộc</label>
+                        <select
+                            id="newRoleDepartmentId"
+                            wire:model.defer="newRoleDepartmentId"
+                            class="form-select @error('newRoleDepartmentId') is-invalid @enderror"
+                        >
+                            <option value="">-- Không trực thuộc phòng ban nào --</option>
+                            @foreach ($availableDepartments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->name }} ({{ $dept->code }})</option>
+                            @endforeach
+                        </select>
+                        @error('newRoleDepartmentId')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="newRoleDescription">Mô tả chi tiết</label>
                         <textarea
                             id="newRoleDescription"
                             wire:model.defer="newRoleDescription"
@@ -182,14 +198,14 @@
     <!-- Edit Role Modal -->
     <div wire:ignore.self class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <form wire:submit.prevent="updateRole" class="modal-content">
+            <form wire:submit.prevent="updateRole" class="modal-content border-0 shadow-lg">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fi fi-rr-edit me-2 text-primary"></i>Chỉnh sửa Vai trò</h5>
+                    <h5 class="modal-title fw-bold text-dark"><i class="fi fi-rr-edit me-2 text-primary"></i>Chỉnh sửa Vai trò</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label" for="editRoleName">Tên vai trò <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold" for="editRoleName">Tên vai trò <span class="text-danger">*</span></label>
                         <input
                             type="text"
                             id="editRoleName"
@@ -197,13 +213,30 @@
                             class="form-control @error('editRoleName') is-invalid @enderror"
                             placeholder="Tên vai trò"
                             required
+                            @if ($editingRoleId && \App\Enums\RoleEnum::isSystemRole($editRoleName)) disabled @endif
                         />
                         @error('editRoleName')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="editRoleDescription">Mô tả chi tiết</label>
+                        <label class="form-label fw-semibold" for="editRoleDepartmentId">Phòng ban trực thuộc</label>
+                        <select
+                            id="editRoleDepartmentId"
+                            wire:model.defer="editRoleDepartmentId"
+                            class="form-select @error('editRoleDepartmentId') is-invalid @enderror"
+                        >
+                            <option value="">-- Không trực thuộc phòng ban nào --</option>
+                            @foreach ($availableDepartments as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->name }} ({{ $dept->code }})</option>
+                            @endforeach
+                        </select>
+                        @error('editRoleDepartmentId')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="editRoleDescription">Mô tả chi tiết</label>
                         <textarea
                             id="editRoleDescription"
                             wire:model.defer="editRoleDescription"
@@ -230,7 +263,6 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Close Add Role modal after successful creation
         window.addEventListener('role-create:hide', () => {
             const modalEl = document.getElementById('addRoleModal');
             if (modalEl) {
@@ -238,7 +270,6 @@
             }
         });
 
-        // Open Edit Role modal when Livewire dispatches event
         window.addEventListener('role-edit:show', () => {
             const modalEl = document.getElementById('editRoleModal');
             if (modalEl) {
@@ -248,7 +279,6 @@
             }
         });
 
-        // Close Edit Role modal after successful update
         window.addEventListener('role-edit:hide', () => {
             const modalEl = document.getElementById('editRoleModal');
             if (modalEl) {

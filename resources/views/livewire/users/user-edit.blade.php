@@ -38,6 +38,17 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label class="form-label" for="edit-department">Phòng ban</label>
+                                <select id="edit-department" class="form-select @error('department_id') is-invalid @enderror" wire:model.defer="department_id">
+                                    <option value="">-- Chọn phòng ban --</option>
+                                    @foreach ($departments as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->name }} ({{ $dept->code }})</option>
+                                    @endforeach
+                                </select>
+                                @error('department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label" for="edit-password">Mật khẩu mới</label>
                                 <div class="input-group">
                                     <input id="edit-password" type="password" class="form-control @error('password') is-invalid @enderror" wire:model.defer="password">

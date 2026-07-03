@@ -97,19 +97,19 @@
                 </div>
                 <div class="col-md-3 col-sm-6">
                     <label class="form-label mb-0 text-muted small">Bộ phận phụ trách</label>
-                    <select class="form-select form-select-sm" wire:model.live="filterRoleId">
+                    <select class="form-select form-select-sm" wire:model.live="filterDepartmentId">
                         <option value="">Tất cả bộ phận</option>
-                        @foreach ($filterRoles as $role)
-                            <option value="{{ $role->id }}">{{ $role->name }}</option>
+                        @foreach ($filterDepartments as $dept)
+                            <option value="{{ $dept->id }}">{{ $dept->name }} ({{ $dept->code }})</option>
                         @endforeach
                     </select>
                 </div>
-                @if ($search || $filterRoleId)
+                @if ($search || $filterDepartmentId)
                     <div class="col-sm-auto ms-auto align-self-end">
                         <button
                             type="button"
                             class="btn btn-sm btn-outline-secondary"
-                            wire:click="$set('search', ''); $set('filterRoleId', '')"
+                            wire:click="$set('search', ''); $set('filterDepartmentId', '')"
                         >
                             <i class="fi fi-rr-cross-small me-1"></i> Xóa lọc
                         </button>
@@ -139,7 +139,7 @@
                             <tr>
                                 <th class="ps-3 text-nowrap" style="width: 120px;">Mã</th>
                                 <th>Tên quy định</th>
-                                <th>Phụ trách</th>
+                                <th>Bộ phận phụ trách</th>
                                 <th>Trạng thái</th>
                                 <th style="min-width: 320px;">Tóm tắt nội dung chính</th>
                                 <th class="text-end pe-3" style="width: 140px;">Thao tác</th>
@@ -152,7 +152,7 @@
                                         <span class="badge bg-primary-subtle text-primary fw-semibold">{{ $regulation->code }}</span>
                                     </td>
                                     <td class="fw-semibold text-dark">{{ $regulation->title }}</td>
-                                    <td class="text-muted">{{ $regulation->role->name ?? '—' }}</td>
+                                    <td class="text-muted">{{ $regulation->department->name ?? '—' }}</td>
                                     <td>
                                         @if ($regulation->status === 'active')
                                             <span class="badge bg-success-subtle text-success border border-success">Đang áp dụng</span>
@@ -227,7 +227,7 @@
                     @if ($selectedRegulation)
                         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                             <span class="badge bg-primary px-2 py-1">{{ $selectedRegulation->code }}</span>
-                            <span class="badge bg-light-subtle text-dark border border-gray-300 px-2 py-1">Phụ trách: {{ $selectedRegulation->role->name ?? '—' }}</span>
+                            <span class="badge bg-light-subtle text-dark border border-gray-300 px-2 py-1">Bộ phận: {{ $selectedRegulation->department->name ?? '—' }}</span>
                             @if ($selectedRegulation->status === 'active')
                                 <span class="badge bg-success-subtle text-success border border-success px-2 py-1">Đang áp dụng</span>
                             @else
@@ -321,14 +321,14 @@
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Vai trò/Bộ phận phụ trách <span class="text-danger">*</span></label>
-                                <select class="form-select @error('roleId') is-invalid @enderror" wire:model="roleId">
-                                    <option value="">Chọn vai trò phụ trách...</option>
-                                    @foreach ($availableRoles as $role)
-                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                <label class="form-label fw-semibold">Bộ phận phụ trách <span class="text-danger">*</span></label>
+                                <select class="form-select @error('departmentId') is-invalid @enderror" wire:model="departmentId">
+                                    <option value="">Chọn bộ phận phụ trách...</option>
+                                    @foreach ($availableDepartments as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->name }} ({{ $dept->code }})</option>
                                     @endforeach
                                 </select>
-                                @error('roleId')
+                                @error('departmentId')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

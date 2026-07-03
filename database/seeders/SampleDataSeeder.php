@@ -23,38 +23,50 @@ final class SampleDataSeeder extends Seeder
                 'name' => 'Nguyễn Giám Đốc',
                 'username' => 'giamdoc',
                 'email' => 'giamdoc@example.com',
+                'dept_code' => 'BGĐ',
             ],
             RoleEnum::IT->value => [
                 'name' => 'Trần Kỹ Thuật (IT)',
                 'username' => 'it',
                 'email' => 'it@example.com',
+                'dept_code' => 'IT',
             ],
             RoleEnum::Sales->value => [
                 'name' => 'Lê Kinh Doanh',
                 'username' => 'sales',
                 'email' => 'sales@example.com',
+                'dept_code' => 'KD',
             ],
             RoleEnum::Accountant->value => [
                 'name' => 'Phạm Kế Toán',
                 'username' => 'ketoan',
                 'email' => 'ketoan@example.com',
+                'dept_code' => 'TCKT',
             ],
             RoleEnum::Consultant->value => [
                 'name' => 'Hoàng Tư Vấn',
                 'username' => 'tuvan',
                 'email' => 'tuvan@example.com',
+                'dept_code' => 'TV',
             ],
         ];
 
         foreach ($roleUsers as $roleName => $data) {
+            $deptId = \Illuminate\Support\Facades\DB::table('departments')
+                ->where('code', $data['dept_code'])
+                ->value('id');
+
             $user = User::query()->firstOrCreate(
                 ['username' => $data['username']],
                 [
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'password' => Hash::make('password'),
+                    'department_id' => $deptId,
                 ]
             );
+
+            $user->update(['department_id' => $deptId]);
 
             // Sync role to user
             $user->syncRoles([$roleName]);

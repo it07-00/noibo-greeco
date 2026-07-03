@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 final class DashboardService
 {

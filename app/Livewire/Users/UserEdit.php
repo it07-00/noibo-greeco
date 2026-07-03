@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Users;
 
 use App\DTOs\UserDTO;
+use App\Models\User;
+use App\Models\Department;
 use App\Services\UserService;
 use App\Support\UserValidationRules;
 use Illuminate\Contracts\View\View;
@@ -35,6 +37,8 @@ final class UserEdit extends Component
      */
     public array $roles = [];
 
+    public ?int $department_id = null;
+
     private UserService $users;
 
     public function boot(UserService $users): void
@@ -56,6 +60,7 @@ final class UserEdit extends Component
         $this->password = '';
         $this->password_confirmation = '';
         $this->roles = $user->roles->pluck('name')->values()->all();
+        $this->department_id = $user->department_id;
         $this->isOpen = true;
         $this->dispatch('user-edit:show');
     }
@@ -88,6 +93,7 @@ final class UserEdit extends Component
     {
         return view('livewire.users.user-edit', [
             'roleOptions' => $this->users->roleOptions(),
+            'departments' => Department::orderBy('name')->get(),
         ]);
     }
 }

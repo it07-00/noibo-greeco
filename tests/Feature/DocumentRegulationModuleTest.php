@@ -8,12 +8,12 @@ use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Models\DocumentRegulation;
 use App\Models\User;
+use App\Models\Department;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 final class DocumentRegulationModuleTest extends TestCase
@@ -69,7 +69,7 @@ final class DocumentRegulationModuleTest extends TestCase
 
         $this->actingAs($director);
 
-        $itRole = Role::where('name', RoleEnum::IT->value)->firstOrFail();
+        $itDept = Department::where('code', 'IT')->firstOrFail();
 
         // 1. Create Regulation
         $file = UploadedFile::fake()->create('doc01.pdf', 500);
@@ -78,7 +78,7 @@ final class DocumentRegulationModuleTest extends TestCase
             ->assertSet('canManage', true)
             ->set('code', 'QD-TL-TEST')
             ->set('title', 'Quy định thử nghiệm')
-            ->set('roleId', $itRole->id)
+            ->set('departmentId', $itDept->id)
             ->set('status', 'active')
             ->set('summary', 'Tóm tắt quy định thử nghiệm')
             ->set('content', 'Chi tiết toàn văn quy định thử nghiệm')
@@ -90,7 +90,7 @@ final class DocumentRegulationModuleTest extends TestCase
         $this->assertDatabaseHas('document_regulations', [
             'code' => 'QD-TL-TEST',
             'title' => 'Quy định thử nghiệm',
-            'role_id' => $itRole->id,
+            'department_id' => $itDept->id,
             'created_by' => $director->id,
         ]);
 
@@ -102,7 +102,7 @@ final class DocumentRegulationModuleTest extends TestCase
         Livewire::test(\App\Livewire\DocumentRegulations\DocumentRegulationIndex::class)
             ->call('openEdit', $regulation->id)
             ->assertSet('code', 'QD-TL-TEST')
-            ->assertSet('roleId', $itRole->id)
+            ->assertSet('departmentId', $itDept->id)
             ->set('title', 'Quy định thử nghiệm cập nhật')
             ->call('save')
             ->assertHasNoErrors();

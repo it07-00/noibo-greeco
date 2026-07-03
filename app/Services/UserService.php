@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 final class UserService
 {
@@ -47,6 +47,7 @@ final class UserService
                 'username' => $dto->username,
                 'email' => $dto->email,
                 'password' => Hash::make((string) $dto->password),
+                'department_id' => $dto->departmentId,
             ]);
 
             $this->assignRole($user, $dto->roles);
@@ -62,6 +63,7 @@ final class UserService
                 'name' => $dto->name,
                 'username' => $dto->username,
                 'email' => $dto->email,
+                'department_id' => $dto->departmentId,
             ];
 
             if ($dto->password !== null) {

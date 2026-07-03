@@ -14,7 +14,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->string('title');
-            $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
+            $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
             $table->string('status')->default('active'); // active / inactive
             $table->string('summary', 1000);
             $table->longText('content')->nullable();

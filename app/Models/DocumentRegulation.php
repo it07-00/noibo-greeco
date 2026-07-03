@@ -15,7 +15,7 @@ final class DocumentRegulation extends Model
     protected $fillable = [
         'code',
         'title',
-        'role_id',
+        'department_id',
         'status',
         'summary',
         'content',
@@ -28,8 +28,8 @@ final class DocumentRegulation extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function role(): BelongsTo
+    public function department(): BelongsTo
     {
-        return $this->belongsTo(\Spatie\Permission\Models\Role::class, 'role_id');
+        return $this->belongsTo(Department::class);
     }
 }

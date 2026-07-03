@@ -39,6 +39,12 @@
                         <span class="menu-label">Vai trò & Quyền</span>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" href="{{ route('departments.index') }}">
+                        <i class="fi fi-rr-bank"></i>
+                        <span class="menu-label">Phòng ban</span>
+                    </a>
+                </li>
             @endif
 
             @if (auth()->user()?->can('schedule.view'))

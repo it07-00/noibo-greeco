@@ -76,6 +76,7 @@
                                     @endif
                                 </button>
                             </th>
+                            <th scope="col">Phòng ban</th>
                             <th scope="col">Vai trò</th>
                             <th scope="col">Trạng thái</th>
                             <th scope="col">
@@ -102,6 +103,13 @@
                                 </td>
                                 <td>{{ $user->email }}</td>
                                 <td>{{ $user->username }}</td>
+                                <td>
+                                    @if ($user->department)
+                                        <span class="badge bg-info-subtle text-info">{{ $user->department->name }}</span>
+                                    @else
+                                        <span class="text-muted">Chưa phân phòng</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">
                                         @forelse ($user->roles as $roleItem)
@@ -179,7 +187,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-5 text-muted">
+                                <td colspan="8" class="text-center py-5 text-muted">
                                     Không tìm thấy người dùng nào.
                                 </td>
                             </tr>

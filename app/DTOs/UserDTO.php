@@ -15,10 +15,11 @@ final readonly class UserDTO
         public string $email,
         public ?string $password = null,
         public array $roles = [],
+        public ?int $departmentId = null,
     ) {}
 
     /**
-     * @param  array{name?: string, username?: string, email?: string, password?: string|null, roles?: array<int, string>|null}  $data
+     * @param  array{name?: string, username?: string, email?: string, password?: string|null, roles?: array<int, string>|null, department_id?: int|string|null}  $data
      */
     public static function fromArray(array $data): self
     {
@@ -31,6 +32,7 @@ final readonly class UserDTO
                 static fn (mixed $role): string => trim((string) $role),
                 (array) ($data['roles'] ?? []),
             ))),
+            departmentId: isset($data['department_id']) && $data['department_id'] !== '' ? (int) $data['department_id'] : null,
         );
     }
 }

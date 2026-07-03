@@ -16,7 +16,7 @@ final class UserRepository
     public function paginate(UserFilterDTO $filter): LengthAwarePaginator
     {
         return User::query()
-            ->with('roles:id,name')
+            ->with(['roles:id,name', 'department'])
             ->when($filter->search, function ($query, string $search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('name', 'like', "%{$search}%")

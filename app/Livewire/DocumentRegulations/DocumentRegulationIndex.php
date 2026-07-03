@@ -6,6 +6,7 @@ namespace App\Livewire\DocumentRegulations;
 
 use App\Enums\PermissionEnum;
 use App\Models\DocumentRegulation;
+use App\Models\Department;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -13,7 +14,6 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Spatie\Permission\Models\Role;
 
 #[Layout('layouts.app')]
 #[Title('Quy định Tài liệu')]
@@ -25,13 +25,13 @@ final class DocumentRegulationIndex extends Component
 
     // Filters
     public string $search = '';
-    public string $filterRoleId = '';
+    public string $filterDepartmentId = '';
 
     // Form inputs
     public ?int $regulationId = null;
     public string $code = '';
     public string $title = '';
-    public ?int $roleId = null;
+    public ?int $departmentId = null;
     public string $status = 'active';
     public string $summary = '';
     public string $content = '';
@@ -51,7 +51,7 @@ final class DocumentRegulationIndex extends Component
         return [
             'code' => ['required', 'string', 'max:50', 'unique:document_regulations,code,' . $this->regulationId],
             'title' => ['required', 'string', 'max:255'],
-            'roleId' => ['required', 'integer', 'exists:roles,id'],
+            'departmentId' => ['required', 'integer', 'exists:departments,id'],
             'status' => ['required', 'in:active,inactive'],
             'summary' => ['required', 'string', 'max:1000'],
             'content' => ['nullable', 'string'],
@@ -62,7 +62,7 @@ final class DocumentRegulationIndex extends Component
     protected array $validationAttributes = [
         'code' => 'mã quy định',
         'title' => 'tên quy định',
-        'roleId' => 'vai trò/phòng ban phụ trách',
+        'departmentId' => 'bộ phận phụ trách',
         'status' => 'trạng thái',
         'summary' => 'tóm tắt nội dung',
         'content' => 'nội dung chi tiết',
@@ -80,7 +80,7 @@ final class DocumentRegulationIndex extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterRoleId(): void
+    public function updatingFilterDepartmentId(): void
     {
         $this->resetPage();
     }
@@ -90,7 +90,7 @@ final class DocumentRegulationIndex extends Component
         $this->regulationId = null;
         $this->code = '';
         $this->title = '';
-        $this->roleId = null;
+        $this->departmentId = null;
         $this->status = 'active';
         $this->summary = '';
         $this->content = '';
@@ -109,22 +109,22 @@ final class DocumentRegulationIndex extends Component
     {
         abort_unless(auth()->user()?->can(PermissionEnum::DocumentManage->value), 403);
         $this->resetForm();
-        
+
         $regulation = DocumentRegulation::findOrFail($id);
         $this->regulationId = $regulation->id;
         $this->code = $regulation->code;
         $this->title = $regulation->title;
-        $this->roleId = $regulation->role_id;
+        $this->departmentId = $regulation->department_id;
         $this->status = $regulation->status;
         $this->summary = $regulation->summary;
         $this->content = $regulation->content ?? '';
-        
+
         $this->dispatch('document:open-edit');
     }
 
     public function showDetails(int $id): void
     {
-        $this->selectedRegulation = DocumentRegulation::with('role')->findOrFail($id);
+        $this->selectedRegulation = DocumentRegulation::with('department')->findOrFail($id);
         $this->dispatch('document:open-detail');
     }
 
@@ -136,7 +136,7 @@ final class DocumentRegulationIndex extends Component
         $data = [
             'code' => $this->code,
             'title' => $this->title,
-            'role_id' => $this->roleId,
+            'department_id' => $this->departmentId,
             'status' => $this->status,
             'summary' => $this->summary,
             'content' => $this->content ?: null,
@@ -181,7 +181,7 @@ final class DocumentRegulationIndex extends Component
     public function downloadFile(int $id)
     {
         $regulation = DocumentRegulation::findOrFail($id);
-        
+
         if (!$regulation->file_path || !Storage::disk('public')->exists($regulation->file_path)) {
             session()->flash('error', 'Tệp đính kèm không tồn tại.');
             return null;
@@ -193,7 +193,7 @@ final class DocumentRegulationIndex extends Component
     public function render(): View
     {
         $query = DocumentRegulation::query()
-            ->with(['role', 'creator'])
+            ->with(['department', 'creator'])
             ->when($this->search, function ($q) {
                 $q->where(function ($sq) {
                     $sq->where('title', 'like', '%' . $this->search . '%')
@@ -201,18 +201,18 @@ final class DocumentRegulationIndex extends Component
                       ->orWhere('summary', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when($this->filterRoleId, function ($q) {
-                $q->where('role_id', $this->filterRoleId);
+            ->when($this->filterDepartmentId, function ($q) {
+                $q->where('department_id', $this->filterDepartmentId);
             })
             ->orderBy('code');
 
-        $usedRoleIds = DocumentRegulation::query()->distinct()->pluck('role_id')->filter()->toArray();
-        $filterRoles = Role::whereIn('id', $usedRoleIds)->get();
+        $usedDeptIds = DocumentRegulation::query()->distinct()->pluck('department_id')->filter()->toArray();
+        $filterDepartments = Department::whereIn('id', $usedDeptIds)->get();
 
         return view('livewire.document-regulations.document-regulation-index', [
             'regulations' => $query->paginate(10),
-            'availableRoles' => Role::all(),
-            'filterRoles' => $filterRoles,
+            'availableDepartments' => Department::orderBy('name')->get(),
+            'filterDepartments' => $filterDepartments,
             'canManage' => $this->canManage,
         ]);
     }

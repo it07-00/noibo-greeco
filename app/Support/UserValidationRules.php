@@ -21,6 +21,7 @@ final class UserValidationRules
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'roles' => ['array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
+            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
         ];
     }
 
@@ -38,6 +39,7 @@ final class UserValidationRules
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'roles' => ['array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
+            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
         ];
     }
 }

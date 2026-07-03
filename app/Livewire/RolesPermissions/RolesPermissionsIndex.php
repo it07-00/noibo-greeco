@@ -7,13 +7,14 @@ namespace App\Livewire\RolesPermissions;
 use App\DTOs\RoleDTO;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Models\Department;
 use App\Services\RolePermissionService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 #[Layout('layouts.app')]
 #[Title('Quản lý Vai trò & Quyền')]
@@ -25,11 +26,15 @@ final class RolesPermissionsIndex extends Component
 
     public string $newRoleDescription = '';
 
+    public ?int $newRoleDepartmentId = null;
+
     public int $editingRoleId = 0;
 
     public string $editRoleName = '';
 
     public string $editRoleDescription = '';
+
+    public ?int $editRoleDepartmentId = null;
 
     public ?string $successMessage = null;
 
@@ -38,8 +43,10 @@ final class RolesPermissionsIndex extends Component
     protected array $rules = [
         'newRoleName' => ['required', 'string', 'max:255', 'unique:roles,name'],
         'newRoleDescription' => ['nullable', 'string', 'max:500'],
+        'newRoleDepartmentId' => ['nullable', 'integer', 'exists:departments,id'],
         'editRoleName' => ['required', 'string', 'max:255'],
         'editRoleDescription' => ['nullable', 'string', 'max:500'],
+        'editRoleDepartmentId' => ['nullable', 'integer', 'exists:departments,id'],
     ];
 
     public function mount(RolePermissionService $service): void
@@ -93,11 +100,13 @@ final class RolesPermissionsIndex extends Component
         $this->validate([
             'newRoleName' => ['required', 'string', 'max:255', 'unique:roles,name'],
             'newRoleDescription' => ['nullable', 'string', 'max:500'],
+            'newRoleDepartmentId' => ['nullable', 'integer', 'exists:departments,id'],
         ]);
 
         $dto = RoleDTO::fromArray([
             'name' => $this->newRoleName,
             'description' => $this->newRoleDescription,
+            'department_id' => $this->newRoleDepartmentId,
         ]);
 
         $role = $service->createRole($dto);
@@ -105,6 +114,7 @@ final class RolesPermissionsIndex extends Component
         $this->activeRoleId = (int) $role->id;
         $this->newRoleName = '';
         $this->newRoleDescription = '';
+        $this->newRoleDepartmentId = null;
 
         $this->dispatch('swal:alert', [
             'icon' => 'success',
@@ -152,7 +162,8 @@ final class RolesPermissionsIndex extends Component
         $this->editingRoleId = $roleId;
         $this->editRoleName = $role->name;
         $this->editRoleDescription = $role->description ?? '';
-        $this->resetValidation(['editRoleName', 'editRoleDescription']);
+        $this->editRoleDepartmentId = $role->department_id;
+        $this->resetValidation(['editRoleName', 'editRoleDescription', 'editRoleDepartmentId']);
 
         $this->dispatch('role-edit:show');
     }
@@ -164,11 +175,12 @@ final class RolesPermissionsIndex extends Component
         $this->validate([
             'editRoleName' => ['required', 'string', 'max:255', 'unique:roles,name,'.$this->editingRoleId],
             'editRoleDescription' => ['nullable', 'string', 'max:500'],
+            'editRoleDepartmentId' => ['nullable', 'integer', 'exists:departments,id'],
         ]);
 
         $role = Role::findOrFail($this->editingRoleId);
 
-        if (RoleEnum::isSystemRole($role->name)) {
+        if (RoleEnum::isSystemRole($role->name) && $role->name !== $this->editRoleName) {
             $this->dispatch('swal:alert', [
                 'icon' => 'error',
                 'title' => 'Không thể chỉnh sửa!',
@@ -181,6 +193,7 @@ final class RolesPermissionsIndex extends Component
         $dto = RoleDTO::fromArray([
             'name' => $this->editRoleName,
             'description' => $this->editRoleDescription,
+            'department_id' => $this->editRoleDepartmentId,
         ]);
 
         $service->updateRole($role, $dto);
@@ -244,12 +257,14 @@ final class RolesPermissionsIndex extends Component
         ];
 
         $activeRolePermissions = $activeRole ? $activeRole->permissions->pluck('name')->toArray() : [];
+        $availableDepartments = Department::orderBy('name')->get();
 
         return view('livewire.roles-permissions.roles-permissions-index', [
             'roles' => $roles,
             'activeRole' => $activeRole,
             'permissionsGrouped' => $permissionsGrouped,
             'activeRolePermissions' => $activeRolePermissions,
+            'availableDepartments' => $availableDepartments,
         ]);
     }
 }

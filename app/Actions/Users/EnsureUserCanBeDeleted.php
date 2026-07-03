@@ -7,7 +7,7 @@ namespace App\Actions\Users;
 use App\Enums\RoleEnum;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 final class EnsureUserCanBeDeleted
 {

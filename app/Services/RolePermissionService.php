@@ -10,7 +10,7 @@ use App\Enums\RoleEnum;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 final class RolePermissionService
 {
@@ -45,6 +45,7 @@ final class RolePermissionService
     public function getRoles(): Collection
     {
         return Role::query()
+            ->with('department')
             ->orderBy('id')
             ->get();
     }
@@ -65,6 +66,7 @@ final class RolePermissionService
             return Role::create([
                 'name' => $dto->name,
                 'description' => $dto->description,
+                'department_id' => $dto->departmentId,
                 'guard_name' => 'web',
             ]);
         });
@@ -73,13 +75,14 @@ final class RolePermissionService
     public function updateRole(Role $role, RoleDTO $dto): Role
     {
         return DB::transaction(function () use ($role, $dto): Role {
-            if (RoleEnum::isSystemRole($role->name)) {
+            if (RoleEnum::isSystemRole($role->name) && $role->name !== $dto->name) {
                 throw new \InvalidArgumentException('Không thể đổi tên vai trò hệ thống');
             }
 
             $role->update([
                 'name' => $dto->name,
                 'description' => $dto->description,
+                'department_id' => $dto->departmentId,
             ]);
 
             return $role->refresh();

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Tests\TestCase;
 
 final class UserModuleTest extends TestCase
