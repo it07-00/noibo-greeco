@@ -1,0 +1,258 @@
+.sales-page {
+    --sales-success: #2f8f2f;
+    --sales-surface: #ffffff;
+    --sales-supporting: #344054;
+}
+
+.sales-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+}
+
+.sales-primary-action,
+.sales-action-button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sales-search .form-control,
+.sales-search .input-group-text,
+.sales-page .form-control,
+.sales-page .form-select {
+    min-height: 44px;
+}
+
+.sales-kpi-label {
+    color: var(--sales-supporting);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.sales-kpi-value {
+    color: #17211a;
+    font-size: clamp(1.35rem, 2vw, 1.9rem);
+    font-weight: 750;
+    line-height: 1.25;
+    margin: 0.35rem 0 0.2rem;
+}
+
+.sales-money {
+    font-size: clamp(1rem, 1.6vw, 1.45rem);
+}
+
+.sales-table thead th {
+    background: #f6f8f6;
+    color: #4b5563;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    padding-block: 0.85rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.sales-table tbody td {
+    padding-block: 0.9rem;
+}
+
+.sales-table tbody tr {
+    transition: background-color 180ms ease;
+}
+
+.sales-table tbody tr:hover {
+    background: #f8fbf8;
+}
+
+.sales-number {
+    font-variant-numeric: tabular-nums;
+}
+
+.sales-count-pill {
+    align-items: center;
+    background: #edf7ed;
+    border-radius: 999px;
+    color: #267326;
+    display: inline-flex;
+    font-size: 0.8rem;
+    font-weight: 700;
+    justify-content: center;
+    min-height: 28px;
+    min-width: 32px;
+    padding-inline: 0.55rem;
+}
+
+.sales-icon-button {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    min-height: 40px;
+    min-width: 40px;
+}
+
+.sales-service-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.sales-service-row {
+    background: #fafcfa;
+    border-radius: 0.65rem;
+    box-shadow: 0 1px 3px rgba(23, 33, 26, 0.08);
+    padding: 1rem;
+}
+
+.sales-total-panel {
+    align-items: center;
+    background: #edf7ed;
+    border-radius: 0.65rem;
+    color: #1f5f24;
+    display: flex;
+    font-size: 1rem;
+    justify-content: space-between;
+    padding: 0.9rem 1rem;
+}
+
+.sales-total-panel strong {
+    font-size: 1.2rem;
+}
+
+.contract-facts dt {
+    color: var(--sales-supporting);
+    font-weight: 600;
+    padding-block: 0.45rem;
+}
+
+.contract-facts dd {
+    margin-bottom: 0;
+    padding-block: 0.45rem;
+}
+
+.payment-allocation-input {
+    flex: 0 0 190px;
+    max-width: 190px;
+}
+
+.sales-supporting-text {
+    color: var(--sales-supporting);
+    line-height: 1.5;
+}
+
+.sales-empty-state {
+    color: #344054;
+    text-align: center;
+}
+
+.report-progress {
+    height: 0.55rem;
+}
+
+.report-type-row {
+    align-items: center;
+    background: #f6f8f6;
+    border-radius: 0.75rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.9rem 1rem;
+}
+
+.report-type-row:last-child {
+    margin-bottom: 0;
+}
+
+.sales-working-situation,
+.document-feedback {
+    line-height: 1.45;
+    max-width: 320px;
+    white-space: normal;
+}
+
+.sales-form-section {
+    background: #f7f9f7;
+    border-radius: 0.9rem;
+    padding: 1rem;
+}
+
+.sales-form-section-title {
+    align-items: center;
+    color: #17211a;
+    display: flex;
+    font-size: 0.78rem;
+    font-weight: 750;
+    gap: 0.5rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.sales-finance-fact,
+.sales-readonly-panel {
+    background: #fff;
+    border-radius: 0.7rem;
+    box-shadow: 0 1px 3px rgba(23, 33, 26, 0.08);
+    min-height: 44px;
+    padding: 0.75rem 0.85rem;
+}
+
+.sales-finance-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.sales-finance-fact span {
+    color: var(--sales-supporting);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.sales-finance-fact strong {
+    font-variant-numeric: tabular-nums;
+}
+
+.sales-page :focus-visible {
+    outline: 3px solid rgba(47, 143, 47, 0.28);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sales-table tbody tr {
+        transition: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sales-page {
+        padding-top: 1rem !important;
+    }
+
+    .sales-kpi-card .card-body {
+        padding: 0.85rem;
+    }
+
+    .sales-table thead th,
+    .sales-table tbody td {
+        padding-inline: 0.65rem;
+    }
+
+    .sales-total-panel {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .payment-allocation-input {
+        flex-basis: 135px;
+        max-width: 135px;
+    }
+
+    .sales-form-section {
+        padding: 0.85rem;
+    }
+}

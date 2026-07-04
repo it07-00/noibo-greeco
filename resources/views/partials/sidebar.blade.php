@@ -59,6 +59,48 @@
                 </li>
             @endif
 
+            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view'))
+                <li class="menu-heading">
+                    <span class="menu-label">Kinh doanh</span>
+                </li>
+            @endif
+
+            @if (auth()->user()?->can('customer.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('customers.*') ? 'active' : '' }}" href="{{ route('customers.index') }}">
+                        <i class="fi fi-rr-users-alt"></i>
+                        <span class="menu-label">Khách hàng</span>
+                    </a>
+                </li>
+            @endif
+
+            @if (auth()->user()?->can('quotation.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('quotations.*') ? 'active' : '' }}" href="{{ route('quotations.index') }}">
+                        <i class="fi fi-rr-document-signed"></i>
+                        <span class="menu-label">Theo dõi báo giá</span>
+                    </a>
+                </li>
+            @endif
+
+            @if (auth()->user()?->can('contract.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('contracts.*') ? 'active' : '' }}" href="{{ route('contracts.index') }}">
+                        <i class="fi fi-rr-briefcase"></i>
+                        <span class="menu-label">Hợp đồng</span>
+                    </a>
+                </li>
+            @endif
+
+            @if (auth()->user()?->can('sales-report.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('business-reports.*') ? 'active' : '' }}" href="{{ route('business-reports.index') }}">
+                        <i class="fi fi-rr-chart-histogram"></i>
+                        <span class="menu-label">Báo cáo kinh doanh</span>
+                    </a>
+                </li>
+            @endif
+
             {{-- ── Admin Management Group ──────────────────────────────────────── --}}
             @if (auth()->user()?->can('user.view') || auth()->user()?->can('role.manage') || auth()->user()?->can('setting.view'))
                 @php

@@ -2,6 +2,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=1.0.1">
+    <link rel="stylesheet" href="{{ asset('css/sales.css') }}?v=1.2.0">
 @endpush
 
 @section('content')
@@ -9,7 +10,7 @@
     <div class="app-page-head d-flex flex-wrap gap-3 align-items-center justify-content-between">
         <div class="clearfix">
             <h1 class="app-page-title">Dashboard</h1>
-            <span class="text-muted">
+            <span class="sales-supporting-text">
                 <i class="fi fi-rr-calendar me-1"></i>{{ now()->format('d/m/Y') }}
             </span>
         </div>
@@ -26,6 +27,68 @@
             @endcan
         </div>
     </div>
+
+    @if ($commerce !== null)
+        <section class="sales-page mb-4" aria-labelledby="commerceDashboardTitle">
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-3">
+                <div>
+                    <div class="sales-eyebrow text-uppercase fw-bold mb-1">Tổng quan thương mại tháng {{ now()->month }}</div>
+                    <h2 id="commerceDashboardTitle" class="h5 mb-1">Kinh doanh & dòng tiền</h2>
+                    <div class="sales-supporting-text">Dữ liệu hợp đồng ký, KPI, tiền thực nhận và cơ hội đang theo dõi.</div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    @can('quotation.view')
+                        <a href="{{ route('quotations.index') }}" class="btn btn-light sales-action-button">Báo giá</a>
+                    @endcan
+                    @can('contract.view')
+                        <a href="{{ route('contracts.index') }}" class="btn btn-light sales-action-button">Hợp đồng</a>
+                    @endcan
+                    @can('sales-report.view')
+                        <a href="{{ route('business-reports.index') }}" class="btn btn-primary sales-action-button">Xem báo cáo</a>
+                    @endcan
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6 col-xl-3">
+                    <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                        <div class="card-body">
+                            <div class="sales-kpi-label">Doanh số ký</div>
+                            <div class="sales-kpi-value sales-money">{{ number_format($commerce['signed_value'], 0, ',', '.') }}₫</div>
+                            <div class="sales-supporting-text small">{{ $commerce['contract_count'] }} hợp đồng trong tháng</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                        <div class="card-body">
+                            <div class="sales-kpi-label">Hoàn thành KPI</div>
+                            <div class="sales-kpi-value">{{ number_format($commerce['target_percent'], 1, ',', '.') }}%</div>
+                            <div class="sales-supporting-text small">Mục tiêu {{ number_format($commerce['target'], 0, ',', '.') }}₫</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                        <div class="card-body">
+                            <div class="sales-kpi-label">Tiền thực nhận</div>
+                            <div class="sales-kpi-value sales-money text-success">{{ number_format($commerce['collected'], 0, ',', '.') }}₫</div>
+                            <div class="sales-supporting-text small">Còn phải thu {{ number_format($commerce['outstanding'], 0, ',', '.') }}₫</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                        <div class="card-body">
+                            <div class="sales-kpi-label">Cơ hội</div>
+                            <div class="sales-kpi-value sales-money">{{ number_format($commerce['pipeline'], 0, ',', '.') }}₫</div>
+                            <div class="sales-supporting-text small">Tỷ lệ thắng {{ number_format($commerce['conversion_rate'], 1, ',', '.') }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
 
     <div class="row g-3 dashboard-stat-row">
         @can('user.view')
@@ -97,7 +160,7 @@
                 <div class="card-header border-0 pb-0 d-flex flex-wrap align-items-center justify-content-between">
                     <div>
                         <h5 class="card-title mb-1">Tổng quan vận hành</h5>
-                        <small class="text-muted">Theo dõi lịch công tác và báo cáo nội bộ trong ngày.</small>
+                        <small class="sales-supporting-text">Theo dõi lịch công tác và báo cáo nội bộ trong ngày.</small>
                     </div>
                     <span class="badge bg-primary-subtle text-primary">GREECO Office</span>
                 </div>
@@ -136,7 +199,7 @@
                                         <div class="progress progress-sm">
                                             <div class="progress-bar bg-success" style="width: {{ $reportStatus['percent'] }}%"></div>
                                         </div>
-                                        <small class="text-muted">{{ $reportStatus['submitted'] }} đã nộp, {{ $reportStatus['missing'] }} chưa nộp</small>
+                                        <small class="sales-supporting-text">{{ $reportStatus['submitted'] }} đã nộp, {{ $reportStatus['missing'] }} chưa nộp</small>
                                     </div>
                                 </div>
                             </div>
@@ -164,15 +227,15 @@
                                                     @endif
                                                     {{ $schedule['title'] }}
                                                 </strong>
-                                                <small class="text-muted text-nowrap">{{ $schedule['time'] }}</small>
+                                                <small class="sales-supporting-text text-nowrap">{{ $schedule['time'] }}</small>
                                             </span>
-                                            <small class="text-muted d-block text-truncate">
+                                            <small class="sales-supporting-text d-block text-truncate">
                                                 {{ $schedule['creator'] }}{{ $schedule['location'] ? ' · '.$schedule['location'] : '' }}
                                             </small>
                                         </span>
                                     </a>
                                 @empty
-                                    <div class="text-center text-muted py-4">
+                                    <div class="text-center sales-supporting-text py-4">
                                         <i class="fi fi-rr-calendar-slash display-6 d-block mb-2"></i>
                                         Chưa có lịch công tác sắp tới.
                                     </div>
@@ -195,13 +258,13 @@
                                         <span class="flex-grow-1 min-w-0">
                                             <span class="d-flex align-items-center justify-content-between gap-2">
                                                 <strong class="text-truncate min-w-0">{{ $report['user'] }}</strong>
-                                                <small class="text-muted text-nowrap">{{ $report['date'] }}</small>
+                                                <small class="sales-supporting-text text-nowrap">{{ $report['date'] }}</small>
                                             </span>
-                                            <small class="text-muted d-block text-truncate">{{ $report['summary'] }}</small>
+                                            <small class="sales-supporting-text d-block text-truncate">{{ $report['summary'] }}</small>
                                         </span>
                                     </a>
                                 @empty
-                                    <div class="text-center text-muted py-4">
+                                    <div class="text-center sales-supporting-text py-4">
                                         <i class="fi fi-rr-document display-6 d-block mb-2"></i>
                                         Chưa có báo cáo nào.
                                     </div>
@@ -277,14 +340,14 @@
                             <div class="mb-3">
                                 <div class="d-flex align-items-center justify-content-between mb-1">
                                     <span class="fw-semibold">{{ $role['name'] }}</span>
-                                    <small class="text-muted">{{ $role['users_count'] }} người</small>
+                                    <small class="sales-supporting-text">{{ $role['users_count'] }} người</small>
                                 </div>
                                 <div class="progress progress-sm">
                                     <div class="progress-bar" style="width: {{ $role['percent'] }}%"></div>
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center text-muted py-4">
+                            <div class="text-center sales-supporting-text py-4">
                                 Chưa có vai trò nào.
                             </div>
                         @endforelse

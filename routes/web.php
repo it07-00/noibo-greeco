@@ -3,12 +3,19 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\ContractDocumentDownloadController;
 use App\Http\Controllers\DashboardController;
+use App\Livewire\Contracts\ContractIndex;
+use App\Livewire\Contracts\ContractShow;
+use App\Livewire\Customers\CustomerIndex;
 use App\Livewire\DailyReports\DailyReportIndex;
+use App\Livewire\Departments\DepartmentIndex;
 use App\Livewire\DocumentRegulations\DocumentRegulationIndex;
 use App\Livewire\DutySchedules\DutyScheduleIndex;
 use App\Livewire\Mail\MailCenterIndex;
 use App\Livewire\Profile\ProfileEdit;
+use App\Livewire\Quotations\QuotationIndex;
+use App\Livewire\Reports\BusinessReportIndex;
 use App\Livewire\RolesPermissions\RolesPermissionsIndex;
 use App\Livewire\Settings\SettingIndex;
 use App\Livewire\Users\UserIndex;
@@ -46,13 +53,37 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
         ->middleware('can:role.manage')
         ->name('roles-permissions.index');
 
-    Route::get('/departments', \App\Livewire\Departments\DepartmentIndex::class)
+    Route::get('/departments', DepartmentIndex::class)
         ->middleware('can:role.manage')
         ->name('departments.index');
 
     Route::get('/daily-reports', DailyReportIndex::class)
         ->middleware('can:report.view')
         ->name('daily-reports.index');
+
+    Route::get('/customers', CustomerIndex::class)
+        ->middleware('can:customer.view')
+        ->name('customers.index');
+
+    Route::get('/quotations', QuotationIndex::class)
+        ->middleware('can:quotation.view')
+        ->name('quotations.index');
+
+    Route::get('/contracts', ContractIndex::class)
+        ->middleware('can:contract.view')
+        ->name('contracts.index');
+
+    Route::get('/contracts/{contract}', ContractShow::class)
+        ->middleware('can:contract.view')
+        ->name('contracts.show');
+
+    Route::get('/contracts/{contract}/documents/{document}/download', ContractDocumentDownloadController::class)
+        ->middleware('can:contract-document.view')
+        ->name('contracts.documents.download');
+
+    Route::get('/business-reports', BusinessReportIndex::class)
+        ->middleware('can:sales-report.view')
+        ->name('business-reports.index');
 
     Route::get('/document-regulations', DocumentRegulationIndex::class)
         ->middleware('can:document.view')

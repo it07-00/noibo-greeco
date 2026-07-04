@@ -28,6 +28,33 @@ enum PermissionEnum: string
     case ReportUpdate = 'report.update';
     case ReportDelete = 'report.delete';
     case ScheduleViewPrivate = 'schedule.view-private';
+    case CustomerView = 'customer.view';
+    case CustomerManage = 'customer.manage';
+    case QuotationView = 'quotation.view';
+    case QuotationCreate = 'quotation.create';
+    case QuotationUpdate = 'quotation.update';
+    case QuotationSend = 'quotation.send';
+    case QuotationConvert = 'quotation.convert';
+    case ContractView = 'contract.view';
+    case ContractCreate = 'contract.create';
+    case ContractUpdate = 'contract.update';
+    case ContractApprove = 'contract.approve';
+    case ContractActivate = 'contract.activate';
+    case ContractComplete = 'contract.complete';
+    case ContractCancel = 'contract.cancel';
+    case PaymentScheduleView = 'payment-schedule.view';
+    case PaymentScheduleManage = 'payment-schedule.manage';
+    case PaymentScheduleConfirm = 'payment-schedule.confirm';
+    case PaymentRecord = 'payment.record';
+    case PaymentAdjust = 'payment.adjust';
+    case ContractDocumentView = 'contract-document.view';
+    case ContractDocumentSubmit = 'contract-document.submit';
+    case ContractDocumentReview = 'contract-document.review';
+    case BusinessDashboardView = 'business-dashboard.view';
+    case AccountingDashboardView = 'accounting-dashboard.view';
+    case ManagementDashboardView = 'management-dashboard.view';
+    case SalesReportView = 'sales-report.view';
+    case SalesTargetManage = 'sales-target.manage';
 
     public function label(): string
     {
@@ -54,6 +81,33 @@ enum PermissionEnum: string
             self::ReportCreate => 'Tạo báo cáo ngày',
             self::ReportUpdate => 'Sửa báo cáo ngày',
             self::ReportDelete => 'Xóa báo cáo ngày',
+            self::CustomerView => 'Xem khách hàng',
+            self::CustomerManage => 'Quản lý khách hàng',
+            self::QuotationView => 'Xem báo giá',
+            self::QuotationCreate => 'Tạo báo giá',
+            self::QuotationUpdate => 'Cập nhật báo giá',
+            self::QuotationSend => 'Gửi báo giá',
+            self::QuotationConvert => 'Chuyển báo giá thành hợp đồng',
+            self::ContractView => 'Xem hợp đồng',
+            self::ContractCreate => 'Tạo hợp đồng',
+            self::ContractUpdate => 'Cập nhật hợp đồng',
+            self::ContractApprove => 'Phê duyệt hợp đồng',
+            self::ContractActivate => 'Kích hoạt hợp đồng',
+            self::ContractComplete => 'Hoàn thành hợp đồng',
+            self::ContractCancel => 'Hủy hợp đồng',
+            self::PaymentScheduleView => 'Xem lịch thanh toán',
+            self::PaymentScheduleManage => 'Quản lý lịch thanh toán',
+            self::PaymentScheduleConfirm => 'Xác nhận lịch thanh toán',
+            self::PaymentRecord => 'Ghi nhận thanh toán',
+            self::PaymentAdjust => 'Điều chỉnh thanh toán',
+            self::ContractDocumentView => 'Xem chứng từ hợp đồng',
+            self::ContractDocumentSubmit => 'Gửi chứng từ hợp đồng',
+            self::ContractDocumentReview => 'Kiểm tra chứng từ hợp đồng',
+            self::BusinessDashboardView => 'Xem dashboard kinh doanh',
+            self::AccountingDashboardView => 'Xem dashboard kế toán',
+            self::ManagementDashboardView => 'Xem dashboard quản trị',
+            self::SalesReportView => 'Xem báo cáo kinh doanh',
+            self::SalesTargetManage => 'Thiết lập KPI kinh doanh',
         };
     }
 }

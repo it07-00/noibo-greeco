@@ -6,11 +6,12 @@ namespace Database\Seeders;
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
-use App\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 final class PermissionSeeder extends Seeder
@@ -28,7 +29,7 @@ final class PermissionSeeder extends Seeder
         ];
 
         foreach ($departments as $dept) {
-            \Illuminate\Support\Facades\DB::table('departments')->updateOrInsert(
+            DB::table('departments')->updateOrInsert(
                 ['code' => $dept['code']],
                 ['name' => $dept['name'], 'description' => $dept['description'], 'created_at' => now(), 'updated_at' => now()]
             );
@@ -40,11 +41,11 @@ final class PermissionSeeder extends Seeder
             Permission::findOrCreate($permission->value, 'web');
         }
 
-        $deptBgd = \Illuminate\Support\Facades\DB::table('departments')->where('code', 'BGĐ')->value('id');
-        $deptIt = \Illuminate\Support\Facades\DB::table('departments')->where('code', 'IT')->value('id');
-        $deptKd = \Illuminate\Support\Facades\DB::table('departments')->where('code', 'KD')->value('id');
-        $deptTv = \Illuminate\Support\Facades\DB::table('departments')->where('code', 'TV')->value('id');
-        $deptTckt = \Illuminate\Support\Facades\DB::table('departments')->where('code', 'TCKT')->value('id');
+        $deptBgd = DB::table('departments')->where('code', 'BGĐ')->value('id');
+        $deptIt = DB::table('departments')->where('code', 'IT')->value('id');
+        $deptKd = DB::table('departments')->where('code', 'KD')->value('id');
+        $deptTv = DB::table('departments')->where('code', 'TV')->value('id');
+        $deptTckt = DB::table('departments')->where('code', 'TCKT')->value('id');
 
         $superAdmin = Role::findOrCreate(RoleEnum::SuperAdmin->value, 'web');
         $superAdmin->update([
@@ -115,13 +116,75 @@ final class PermissionSeeder extends Seeder
         ];
 
         $director->syncPermissions($directorPermissions);
+        $director->givePermissionTo([
+            PermissionEnum::CustomerView->value,
+            PermissionEnum::QuotationView->value,
+            PermissionEnum::ContractView->value,
+            PermissionEnum::ContractApprove->value,
+            PermissionEnum::ContractActivate->value,
+            PermissionEnum::ContractComplete->value,
+            PermissionEnum::ContractCancel->value,
+            PermissionEnum::PaymentScheduleView->value,
+            PermissionEnum::ContractDocumentView->value,
+            PermissionEnum::ManagementDashboardView->value,
+            PermissionEnum::SalesReportView->value,
+            PermissionEnum::SalesTargetManage->value,
+        ]);
+
         $it->syncPermissions($staffPermissions);
         $it->givePermissionTo(PermissionEnum::DocumentManage->value);
-        $sales->syncPermissions($staffPermissions);
-        $consultant->syncPermissions($staffPermissions);
-        $accountant->syncPermissions($staffPermissions);
 
-        $itDeptId = \Illuminate\Support\Facades\DB::table('departments')
+        $sales->syncPermissions($staffPermissions);
+        $sales->givePermissionTo([
+            PermissionEnum::CustomerView->value,
+            PermissionEnum::CustomerManage->value,
+            PermissionEnum::QuotationView->value,
+            PermissionEnum::QuotationCreate->value,
+            PermissionEnum::QuotationUpdate->value,
+            PermissionEnum::QuotationSend->value,
+            PermissionEnum::QuotationConvert->value,
+            PermissionEnum::ContractView->value,
+            PermissionEnum::ContractCreate->value,
+            PermissionEnum::ContractUpdate->value,
+            PermissionEnum::ContractActivate->value,
+            PermissionEnum::PaymentScheduleView->value,
+            PermissionEnum::PaymentScheduleManage->value,
+            PermissionEnum::ContractDocumentView->value,
+            PermissionEnum::ContractDocumentSubmit->value,
+            PermissionEnum::BusinessDashboardView->value,
+            PermissionEnum::SalesReportView->value,
+            PermissionEnum::SalesTargetManage->value,
+        ]);
+
+        $consultant->syncPermissions($staffPermissions);
+        $consultant->givePermissionTo([
+            PermissionEnum::CustomerView->value,
+            PermissionEnum::QuotationView->value,
+            PermissionEnum::ContractView->value,
+            PermissionEnum::ContractUpdate->value,
+            PermissionEnum::PaymentScheduleView->value,
+            PermissionEnum::ContractDocumentView->value,
+            PermissionEnum::ContractDocumentSubmit->value,
+        ]);
+
+        $accountant->syncPermissions($staffPermissions);
+        $accountant->givePermissionTo([
+            PermissionEnum::CustomerView->value,
+            PermissionEnum::QuotationView->value,
+            PermissionEnum::ContractView->value,
+            PermissionEnum::PaymentScheduleView->value,
+            PermissionEnum::PaymentScheduleManage->value,
+            PermissionEnum::PaymentScheduleConfirm->value,
+            PermissionEnum::PaymentRecord->value,
+            PermissionEnum::PaymentAdjust->value,
+            PermissionEnum::ContractDocumentView->value,
+            PermissionEnum::ContractDocumentSubmit->value,
+            PermissionEnum::ContractDocumentReview->value,
+            PermissionEnum::AccountingDashboardView->value,
+            PermissionEnum::SalesReportView->value,
+        ]);
+
+        $itDeptId = DB::table('departments')
             ->where('code', 'IT')
             ->value('id');
 

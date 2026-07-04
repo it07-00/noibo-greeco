@@ -1,0 +1,211 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Customers;
+
+use App\Models\Customer;
+use App\Services\CustomerService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+#[Layout('layouts.app')]
+#[Title('Khách hàng')]
+final class CustomerIndex extends Component
+{
+    use WithPagination;
+
+    protected $paginationTheme = 'bootstrap';
+
+    public string $search = '';
+
+    public int $editingId = 0;
+
+    public string $name = '';
+
+    public string $taxCode = '';
+
+    public string $contactName = '';
+
+    public string $email = '';
+
+    public string $phone = '';
+
+    public string $billingAddress = '';
+
+    public string $workAddress = '';
+
+    public string $province = '';
+
+    public string $industry = '';
+
+    public string $notes = '';
+
+    public function mount(): void
+    {
+        Gate::authorize('viewAny', Customer::class);
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function openCreate(): void
+    {
+        Gate::authorize('create', Customer::class);
+        $this->resetForm();
+        $this->dispatch('customer-form:show');
+    }
+
+    public function openEdit(int $customerId): void
+    {
+        $customer = Customer::query()->findOrFail($customerId);
+        Gate::authorize('update', $customer);
+
+        $this->editingId = $customer->id;
+        $this->name = $customer->name;
+        $this->taxCode = $customer->tax_code ?? '';
+        $this->contactName = $customer->contact_name ?? '';
+        $this->email = $customer->email ?? '';
+        $this->phone = $customer->phone ?? '';
+        $this->billingAddress = $customer->billing_address ?? '';
+        $this->workAddress = $customer->work_address ?? '';
+        $this->province = $customer->province ?? '';
+        $this->industry = $customer->industry ?? '';
+        $this->notes = $customer->notes ?? '';
+        $this->resetValidation();
+        $this->dispatch('customer-form:show');
+    }
+
+    public function lookupTaxCode(): void
+    {
+        if (empty($this->taxCode)) {
+            $this->addError('taxCode', 'Vui lòng nhập mã số thuế để tra cứu.');
+
+            return;
+        }
+
+        try {
+            $response = Http::get("https://api.vietqr.io/v2/business/{$this->taxCode}");
+            $data = $response->json();
+
+            if (($data['code'] ?? null) === '00') {
+                $company = $data['data'];
+
+                $this->name = $company['name'] ?? $this->name;
+                $this->billingAddress = $company['address'] ?? $this->billingAddress;
+
+                // Extract province/city dynamically from the address (last segment, ignoring "Việt Nam")
+                $address = $company['address'] ?? '';
+                if ($address !== '') {
+                    $parts = array_map('trim', explode(',', $address));
+                    $lastPart = end($parts);
+
+                    if (in_array(strtolower($lastPart), ['việt nam', 'vietnam']) && count($parts) > 1) {
+                        array_pop($parts);
+                        $lastPart = end($parts);
+                    }
+
+                    $this->province = $lastPart;
+                }
+
+                $this->dispatch('swal:alert', [
+                    'icon' => 'success',
+                    'title' => 'Đã tải thông tin doanh nghiệp',
+                    'toast' => true,
+                    'position' => 'top-end',
+                    'timer' => 2500,
+                ]);
+            } else {
+                $this->addError('taxCode', $data['desc'] ?? 'Không tìm thấy thông tin doanh nghiệp.');
+            }
+        } catch (\Throwable $e) {
+            $this->addError('taxCode', 'Lỗi khi kết nối tới dịch vụ tra cứu.');
+        }
+    }
+
+    public function save(CustomerService $service): void
+    {
+        $customer = $this->editingId > 0
+            ? Customer::query()->findOrFail($this->editingId)
+            : null;
+        Gate::authorize($customer ? 'update' : 'create', $customer ?? Customer::class);
+
+        $validated = $this->validate([
+            'name' => ['required', 'string', 'max:191'],
+            'taxCode' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('customers', 'tax_code')->ignore($customer?->id),
+            ],
+            'contactName' => ['nullable', 'string', 'max:191'],
+            'email' => ['nullable', 'email', 'max:191'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'billingAddress' => ['nullable', 'string', 'max:2000'],
+            'workAddress' => ['nullable', 'string', 'max:2000'],
+            'province' => ['nullable', 'string', 'max:191'],
+            'industry' => ['nullable', 'string', 'max:191'],
+            'notes' => ['nullable', 'string', 'max:3000'],
+        ], [
+            'name.required' => 'Vui lòng nhập tên khách hàng.',
+            'taxCode.unique' => 'Mã số thuế đã tồn tại.',
+            'email.email' => 'Email không đúng định dạng.',
+        ]);
+
+        $service->save([
+            'name' => trim($validated['name']),
+            'tax_code' => $validated['taxCode'] ?: null,
+            'contact_name' => $validated['contactName'] ?: null,
+            'email' => $validated['email'] ?: null,
+            'phone' => $validated['phone'] ?: null,
+            'billing_address' => $validated['billingAddress'] ?: null,
+            'work_address' => $validated['workAddress'] ?: null,
+            'province' => $validated['province'] ?: null,
+            'industry' => $validated['industry'] ?: null,
+            'notes' => $validated['notes'] ?: null,
+        ], $customer);
+
+        $this->dispatch('customer-form:hide');
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Đã lưu khách hàng',
+            'toast' => true,
+            'position' => 'top-end',
+            'timer' => 2500,
+        ]);
+        $this->resetForm();
+    }
+
+    public function render(CustomerService $service): View
+    {
+        return view('livewire.customers.customer-index', [
+            'customers' => $service->paginate(trim($this->search)),
+        ]);
+    }
+
+    private function resetForm(): void
+    {
+        $this->reset([
+            'editingId',
+            'name',
+            'taxCode',
+            'contactName',
+            'email',
+            'phone',
+            'billingAddress',
+            'workAddress',
+            'province',
+            'industry',
+            'notes',
+        ]);
+        $this->resetValidation();
+    }
+}
