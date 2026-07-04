@@ -197,7 +197,315 @@
         </div>
     @endif
 
-    <div class="card border-0 shadow-sm">
+    <div class="row g-4 mb-4">
+        <!-- Cơ cấu hợp đồng theo dịch vụ -->
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100" x-data="donutChart({{ json_encode($contractServicesStructure) }})">
+                <div id="service-structure-bridge" style="display: none;" data-values="{{ json_encode($contractServicesStructure) }}" x-effect="updateData($el)"></div>
+                <div class="card-header bg-white py-3">
+                    <h2 class="h6 mb-1">Cơ cấu hợp đồng theo dịch vụ</h2>
+                    <div class="sales-supporting-text small">Phân bố doanh số ký theo từng loại dịch vụ.</div>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div wire:ignore class="w-100">
+                        <div x-ref="container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tỉ lệ doanh số theo nguồn thông tin -->
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100" x-data="donutChart({{ json_encode($salesBySource) }})">
+                <div id="sales-source-bridge" style="display: none;" data-values="{{ json_encode($salesBySource) }}" x-effect="updateData($el)"></div>
+                <div class="card-header bg-white py-3">
+                    <h2 class="h6 mb-1">Tỉ lệ doanh số theo nguồn thông tin</h2>
+                    <div class="sales-supporting-text small">Phân bổ đóng góp doanh số theo kênh thông tin tiếp cận.</div>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div wire:ignore class="w-100">
+                        <div x-ref="container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Tỉ lệ chuyển đổi dịch vụ -->
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100" x-data="conversionChart({{ json_encode($serviceConversionRates) }})">
+                <div id="service-conversion-bridge" style="display: none;" data-values="{{ json_encode($serviceConversionRates) }}" x-effect="updateData($el)"></div>
+                <div class="card-header bg-white py-3">
+                    <h2 class="h6 mb-1">Tỉ lệ chuyển đổi Dịch vụ: báo giá vs ký hợp đồng</h2>
+                    <div class="sales-supporting-text small">So sánh số lượng Báo giá và Hợp đồng thực tế của mỗi dịch vụ.</div>
+                </div>
+                <div class="card-body">
+                    <div wire:ignore class="w-100">
+                        <div x-ref="container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phân tích theo Khu vực -->
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100" x-data="regionalChart({{ json_encode($regionalBreakdown) }})">
+                <div id="regional-breakdown-bridge" style="display: none;" data-values="{{ json_encode($regionalBreakdown) }}" x-effect="updateData($el)"></div>
+                <div class="card-header bg-white py-3">
+                    <h2 class="h6 mb-1">Phân tích theo Khu vực</h2>
+                    <div class="sales-supporting-text small">Báo giá, hợp đồng và doanh số phân bổ theo tỉnh/thành.</div>
+                </div>
+                <div class="card-body">
+                    <div wire:ignore class="w-100">
+                        <div x-ref="container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('alpine:init', () => {
+            if (window.greecoReportsAlpineInitialized) return;
+            window.greecoReportsAlpineInitialized = true;
+
+            Alpine.data('donutChart', (initialData, isCurrency = true) => ({
+                chart: null,
+                raw: initialData,
+                init() {
+                    const options = {
+                        series: this.getSeries(),
+                        labels: this.getLabels(),
+                        chart: {
+                            type: 'donut',
+                            height: 320,
+                            fontFamily: 'Plus Jakarta Sans, sans-serif'
+                        },
+                        colors: ['var(--bs-primary)', 'var(--bs-success)', 'var(--bs-info)', 'var(--bs-warning)', 'var(--bs-danger)', '#6f42c1', '#fd7e14', '#20c997'],
+                        dataLabels: { enabled: false },
+                        legend: {
+                            position: 'bottom',
+                            horizontalAlign: 'center',
+                            labels: { colors: 'var(--bs-heading-color)' }
+                        },
+                        tooltip: {
+                            y: {
+                                formatter: (val) => {
+                                    if (isCurrency) {
+                                        return new Intl.NumberFormat('vi-VN').format(val) + 'đ';
+                                    }
+                                    return val;
+                                }
+                            }
+                        }
+                    };
+                    this.chart = new ApexCharts(this.$refs.container, options);
+                    this.chart.render();
+                },
+                updateData(el) {
+                    this.raw = JSON.parse(el.dataset.values);
+                    if (this.chart) {
+                        this.chart.updateOptions({
+                            series: this.getSeries(),
+                            labels: this.getLabels()
+                        });
+                    }
+                },
+                getSeries() {
+                    return this.raw.map(item => item.value || 0);
+                },
+                getLabels() {
+                    return this.raw.map(item => item.label || '');
+                }
+            }));
+
+            Alpine.data('conversionChart', (initialData) => ({
+                chart: null,
+                raw: initialData,
+                init() {
+                    const options = {
+                        series: [
+                            { name: 'Báo giá', data: this.getQuotations() },
+                            { name: 'Hợp đồng', data: this.getContracts() }
+                        ],
+                        chart: {
+                            type: 'bar',
+                            height: 320,
+                            fontFamily: 'Plus Jakarta Sans, sans-serif',
+                            toolbar: { show: false }
+                        },
+                        colors: ['var(--bs-secondary)', 'var(--bs-success)'],
+                        plotOptions: {
+                            bar: {
+                                horizontal: true,
+                                dataLabels: { position: 'top' }
+                            }
+                        },
+                        dataLabels: {
+                            enabled: true,
+                            offsetX: -6,
+                            style: {
+                                fontSize: '11px',
+                                colors: ['#fff']
+                            }
+                        },
+                        xaxis: {
+                            categories: this.getCategories(),
+                            labels: {
+                                formatter: (val) => Number.isInteger(val) ? val : '',
+                                style: { colors: 'var(--bs-body-color)' }
+                            }
+                        },
+                        yaxis: {
+                            labels: { style: { colors: 'var(--bs-body-color)' } }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: { colors: 'var(--bs-heading-color)' }
+                        },
+                        tooltip: {
+                            shared: true,
+                            intersect: false
+                        }
+                    };
+                    this.chart = new ApexCharts(this.$refs.container, options);
+                    this.chart.render();
+                },
+                updateData(el) {
+                    this.raw = JSON.parse(el.dataset.values);
+                    if (this.chart) {
+                        this.chart.updateOptions({
+                            series: [
+                                { name: 'Báo giá', data: this.getQuotations() },
+                                { name: 'Hợp đồng', data: this.getContracts() }
+                            ],
+                            xaxis: {
+                                categories: this.getCategories()
+                            }
+                        });
+                    }
+                },
+                getQuotations() {
+                    return this.raw.map(item => item.quotations_count || 0);
+                },
+                getContracts() {
+                    return this.raw.map(item => item.contracts_count || 0);
+                },
+                getCategories() {
+                    return this.raw.map(item => item.label || '');
+                }
+            }));
+
+            Alpine.data('regionalChart', (initialData) => ({
+                chart: null,
+                raw: initialData,
+                init() {
+                    const options = {
+                        series: [
+                            { name: 'Báo giá', type: 'column', data: this.getQuotations() },
+                            { name: 'Ký hợp đồng', type: 'column', data: this.getContracts() },
+                            { name: 'Doanh số (HĐ)', type: 'column', data: this.getSales() }
+                        ],
+                        chart: {
+                            type: 'line',
+                            height: 320,
+                            fontFamily: 'Plus Jakarta Sans, sans-serif',
+                            toolbar: { show: false }
+                        },
+                        stroke: {
+                            width: [0, 0, 0]
+                        },
+                        colors: ['var(--bs-warning)', 'var(--bs-primary)', 'var(--bs-success)'],
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '60%',
+                                borderRadius: 3
+                            }
+                        },
+                        xaxis: {
+                            categories: this.getCategories(),
+                            labels: { style: { colors: 'var(--bs-body-color)' } }
+                        },
+                        yaxis: [
+                            {
+                                title: { text: 'Số lượng hồ sơ' },
+                                labels: {
+                                    formatter: (val) => Number.isInteger(val) ? val : '',
+                                    style: { colors: 'var(--bs-body-color)' }
+                                }
+                            },
+                            {
+                                show: false,
+                                title: { text: 'Số lượng hồ sơ' },
+                                labels: {
+                                    formatter: (val) => Number.isInteger(val) ? val : '',
+                                    style: { colors: 'var(--bs-body-color)' }
+                                }
+                            },
+                            {
+                                opposite: true,
+                                title: { text: 'Doanh số (VND)' },
+                                labels: {
+                                    formatter: (val) => new Intl.NumberFormat('vi-VN').format(val) + 'đ',
+                                    style: { colors: 'var(--bs-body-color)' }
+                                }
+                            }
+                        ],
+                        legend: {
+                            position: 'top',
+                            labels: { colors: 'var(--bs-heading-color)' }
+                        },
+                        tooltip: {
+                            shared: true,
+                            intersect: false,
+                            y: {
+                                formatter: (val, opts) => {
+                                    if (opts.seriesIndex === 2) {
+                                        return new Intl.NumberFormat('vi-VN').format(val) + 'đ';
+                                    }
+                                    return val;
+                                }
+                            }
+                        }
+                    };
+                    this.chart = new ApexCharts(this.$refs.container, options);
+                    this.chart.render();
+                },
+                updateData(el) {
+                    this.raw = JSON.parse(el.dataset.values);
+                    if (this.chart) {
+                        this.chart.updateOptions({
+                            series: [
+                                { name: 'Báo giá', type: 'column', data: this.getQuotations() },
+                                { name: 'Ký hợp đồng', type: 'column', data: this.getContracts() },
+                                { name: 'Doanh số (HĐ)', type: 'column', data: this.getSales() }
+                            ],
+                            xaxis: {
+                                categories: this.getCategories()
+                            }
+                        });
+                    }
+                },
+                getQuotations() {
+                    return this.raw.map(item => item.quotations_count || 0);
+                },
+                getContracts() {
+                    return this.raw.map(item => item.contracts_count || 0);
+                },
+                getSales() {
+                    return this.raw.map(item => item.sales_value || 0);
+                },
+                getCategories() {
+                    return this.raw.map(item => item.province || 'Chưa xác định');
+                }
+            }));
+        });
+    </script>
+    @endpush
+
+    <div class="card border-0 shadow-sm mt-4">
         <div class="card-header bg-white py-3">
             <h2 class="h6 mb-1">Khoản phải thu quá hạn</h2>
             <div class="sales-supporting-text small">Danh sách cần Kinh doanh và Kế toán cùng xử lý.</div>

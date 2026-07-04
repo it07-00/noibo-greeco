@@ -106,19 +106,15 @@
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table align-middle mb-0 sales-table">
-                <thead>
+                 <thead>
                     <tr>
                         <th>STT</th>
-                        <th>Sale</th>
-                        <th>Số báo giá</th>
+                        <th>Báo giá / Sale</th>
                         <th>Công ty / Khách hàng</th>
-                        <th style="min-width: 220px">Dịch vụ</th>
-                        <th style="min-width: 240px">Tình hình làm việc</th>
+                        <th style="min-width: 200px">Dịch vụ</th>
+                        <th style="min-width: 220px">Tình hình làm việc</th>
                         <th>Tình hình</th>
-                        <th class="text-end">Giá trị gốc</th>
-                        <th class="text-end">Hoa hồng KH</th>
-                        <th class="text-end">Thuế HH</th>
-                        <th class="text-end">Giá trị HĐ</th>
+                        <th class="text-end" style="min-width: 140px">Giá trị HĐ</th>
                         <th class="text-end">#</th>
                     </tr>
                 </thead>
@@ -126,10 +122,12 @@
                     @forelse ($quotations as $index => $quotation)
                         <tr wire:key="quotation-{{ $quotation->id }}">
                             <td>{{ ($quotations->firstItem() ?? 1) + $index }}</td>
-                            <td class="fw-semibold">{{ $quotation->owner?->name ?: 'Chưa phân công' }}</td>
                             <td>
                                 <div class="fw-semibold">{{ $quotation->quotation_number }}</div>
                                 <div class="small sales-supporting-text">{{ $quotation->issued_at?->format('d/m/Y') ?: 'Chưa có ngày' }}</div>
+                                <div class="small text-primary text-nowrap mt-1" style="font-size: 0.76rem;">
+                                    <i class="fi fi-rr-user me-1" style="font-size: 0.72rem;"></i>{{ $quotation->owner?->name ?: 'Chưa phân công' }}
+                                </div>
                             </td>
                             <td>
                                 <div class="fw-medium">{{ $quotation->customer->name }}</div>
@@ -140,7 +138,7 @@
                                     <div class="small {{ ! $loop->first ? 'mt-1' : '' }}">{{ $service->service_type->label() }}</div>
                                 @endforeach
                                 @if ($quotation->services_count > 2)
-                                    <div class="small sales-supporting-text">+{{ $quotation->services_count - 2 }} dịch vụ</div>
+                                    <div class="small sales-supporting-text mt-1">+{{ $quotation->services_count - 2 }} dịch vụ</div>
                                 @endif
                             </td>
                             <td>
@@ -151,10 +149,16 @@
                                     {{ $quotation->status->label() }}
                                 </span>
                             </td>
-                            <td class="text-end sales-number text-nowrap">{{ number_format($quotation->original_amount, 0, ',', '.') }}₫</td>
-                            <td class="text-end sales-number text-nowrap">{{ number_format($quotation->customer_commission, 0, ',', '.') }}₫</td>
-                            <td class="text-end sales-number text-nowrap">{{ number_format($quotation->commission_tax, 0, ',', '.') }}₫</td>
-                            <td class="text-end sales-number fw-semibold text-nowrap">{{ number_format($quotation->contract_value, 0, ',', '.') }}₫</td>
+                            <td class="text-end">
+                                <div class="text-nowrap">
+                                    <span class="text-muted small" style="font-size: 0.78rem;">HĐ:</span>
+                                    <span class="fw-semibold sales-number">{{ number_format($quotation->contract_value, 0, ',', '.') }}₫</span>
+                                </div>
+                                @if ($quotation->customer_commission > 0)
+                                    <div class="small text-muted text-nowrap" style="font-size: 0.76rem; opacity: 0.85;">Gốc: {{ number_format($quotation->original_amount, 0, ',', '.') }}₫</div>
+                                    <div class="small text-danger text-nowrap" style="font-size: 0.76rem;">HH: {{ number_format($quotation->customer_commission, 0, ',', '.') }}₫</div>
+                                @endif
+                            </td>
                             <td class="text-end">
                                 <div class="d-inline-flex gap-1">
                                     @can('update', $quotation)
@@ -196,9 +200,9 @@
                                                 type="button"
                                                 class="btn btn-sm btn-outline-success sales-action-button"
                                                 wire:click="transitionStatus({{ $quotation->id }}, 'won')"
-                                                wire:confirm="Khách hàng đã đồng ý với báo giá này?"
+                                                wire:confirm="Khách hàng đã duyệt báo giá này?"
                                             >
-                                                Thành công
+                                                Khách duyệt
                                             </button>
                                         @endcan
                                     @elseif ($quotation->status === \App\Enums\QuotationStatus::Won)
@@ -226,7 +230,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="12" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <i class="fi fi-rr-document-signed d-block fs-2 mb-2" aria-hidden="true"></i>
                                 <div class="fw-semibold">Chưa có báo giá phù hợp</div>
                                 <div class="small sales-supporting-text">Tạo báo giá đầu tiên hoặc thay đổi bộ lọc.</div>
@@ -306,19 +310,19 @@
                         <textarea id="quotationWorkingSituation" rows="3" class="form-control" wire:model="formWorkingSituation" placeholder="Lần liên hệ gần nhất, phản hồi của khách hàng, bước tiếp theo..."></textarea>
                         <div class="mt-2 small d-flex flex-wrap gap-2 align-items-center">
                             <span class="text-muted">Gợi ý nhanh:</span>
-                            <button type="button" class="btn btn-sm btn-light text-success border-success border-opacity-25" style="font-size: 0.78rem;" 
+                            <button type="button" class="btn btn-sm btn-light text-secondary border" style="font-size: 0.78rem;" 
                                 wire:click="$set('formWorkingSituation', 'Khách hàng đã thống nhất phạm vi và đang chuẩn bị ký hợp đồng.')">
                                 Đồng ý ký HĐ
                             </button>
-                            <button type="button" class="btn btn-sm btn-light text-success border-success border-opacity-25" style="font-size: 0.78rem;" 
+                            <button type="button" class="btn btn-sm btn-light text-secondary border" style="font-size: 0.78rem;" 
                                 wire:click="$set('formWorkingSituation', 'Khách hàng đang xem xét phạm vi công việc.')">
                                 Đang xem xét phạm vi
                             </button>
-                            <button type="button" class="btn btn-sm btn-light text-success border-success border-opacity-25" style="font-size: 0.78rem;" 
+                            <button type="button" class="btn btn-sm btn-light text-secondary border" style="font-size: 0.78rem;" 
                                 wire:click="$set('formWorkingSituation', 'Đang chờ phản hồi từ khách hàng.')">
                                 Chờ phản hồi
                             </button>
-                            <button type="button" class="btn btn-sm btn-light text-success border-success border-opacity-25" style="font-size: 0.78rem;" 
+                            <button type="button" class="btn btn-sm btn-light text-secondary border" style="font-size: 0.78rem;" 
                                 wire:click="$set('formWorkingSituation', 'Khách hàng đề xuất đàm phán giá.')">
                                 Đàm phán giá
                             </button>

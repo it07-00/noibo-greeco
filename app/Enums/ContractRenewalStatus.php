@@ -23,10 +23,10 @@ enum ContractRenewalStatus: string
     public function badgeClass(): string
     {
         return match ($this) {
-            self::NotApplicable => 'bg-secondary-subtle text-secondary',
-            self::Pending => 'bg-warning-subtle text-warning',
-            self::Renewed => 'bg-success-subtle text-success',
-            self::NotRenewed => 'bg-danger-subtle text-danger',
+            self::NotApplicable => 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle',
+            self::Pending => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+            self::Renewed => 'bg-success-subtle text-success-emphasis border border-success-subtle',
+            self::NotRenewed => 'bg-danger-subtle text-danger-emphasis border border-danger-subtle',
         };
     }
 }

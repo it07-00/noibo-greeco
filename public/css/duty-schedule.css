@@ -103,7 +103,7 @@
 
 /* GREECO Event Card styling */
 .greeco-event-card {
-    border-left: 3px solid var(--border-color) !important;
+    border: 1px solid var(--border-color) !important;
     background-color: var(--bg-color) !important;
     border-radius: 6px;
     padding: 6px 10px;
@@ -502,7 +502,6 @@
     .greeco-event-card {
         padding: 3px 6px !important;
         border-radius: 4px !important;
-        border-left-width: 2px !important;
     }
     .greeco-event-title {
         font-size: 9.5px !important;
@@ -514,7 +513,6 @@
     .fc .fc-daygrid-day-frame {
         min-height: 85px !important; /* Reduce height slightly for a tighter layout on small screens */
     }
-    
     /* Toolbar adjustments on mobile */
     .fc .fc-toolbar-title {
         font-size: 1.05rem !important;
@@ -622,8 +620,7 @@
     position: relative;
     margin: 1px 0;
     padding: 8px 10px 9px;
-    border: 1px solid color-mix(in srgb, var(--border-color) 24%, transparent) !important;
-    border-left: 4px solid var(--border-color) !important;
+    border: 1px solid color-mix(in srgb, var(--border-color) 32%, transparent) !important;
     border-radius: 9px;
     background: linear-gradient(135deg, #ffffff 0%, var(--bg-color) 100%) !important;
     box-shadow: 0 2px 8px -5px rgba(15, 23, 42, 0.2);
@@ -649,9 +646,9 @@
 .greeco-event-owner {
     min-width: 0;
     overflow: hidden;
-    color: var(--text-color);
+    color: #475569; /* Soft neutral dark grey for better readability */
     font-size: 10px;
-    font-weight: 750;
+    font-weight: 700;
     letter-spacing: 0.01em;
     text-overflow: ellipsis;
     white-space: nowrap;

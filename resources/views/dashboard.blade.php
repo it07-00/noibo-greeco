@@ -32,8 +32,14 @@
         <section class="sales-page mb-4" aria-labelledby="commerceDashboardTitle">
             <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-3">
                 <div>
-                    <div class="sales-eyebrow text-uppercase fw-bold mb-1">Tổng quan thương mại tháng {{ now()->month }}</div>
-                    <h2 id="commerceDashboardTitle" class="h5 mb-1">Kinh doanh & dòng tiền</h2>
+                    <div class="sales-eyebrow text-uppercase fw-bold mb-1">Kinh doanh & dòng tiền</div>
+                    <h2 id="commerceDashboardTitle" class="h5 mb-1">
+                        @if ($selectedMonth === null)
+                            Tổng quan thương mại năm {{ $selectedYear }}
+                        @else
+                            Tổng quan thương mại tháng {{ $selectedMonth }} / {{ $selectedYear }}
+                        @endif
+                    </h2>
                     <div class="sales-supporting-text">Dữ liệu hợp đồng ký, KPI, tiền thực nhận và cơ hội đang theo dõi.</div>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
@@ -49,13 +55,51 @@
                 </div>
             </div>
 
+            <form method="GET" action="{{ route('dashboard') }}" class="card border-0 shadow-sm mb-4">
+                <div class="card-body py-3">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-12 col-md-3">
+                            <label for="filterYear" class="form-label small fw-semibold mb-1">Năm</label>
+                            <select id="filterYear" name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                                @foreach (range(now()->year - 2, now()->year + 1) as $y)
+                                    <option value="{{ $y }}" @selected($selectedYear === $y)>{{ $y }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label for="filterMonth" class="form-label small fw-semibold mb-1">Tháng</label>
+                            <select id="filterMonth" name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="all" @selected($selectedMonth === null)>Tất cả các tháng</option>
+                                @foreach (range(1, 12) as $m)
+                                    <option value="{{ $m }}" @selected($selectedMonth === $m)>Tháng {{ $m }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if ($canChooseOwner)
+                            <div class="col-12 col-md-4">
+                                <label for="filterOwner" class="form-label small fw-semibold mb-1">Nhân viên kinh doanh</label>
+                                <select id="filterOwner" name="owner_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="" @selected($selectedOwnerId === null)>Tất cả nhân viên</option>
+                                    @foreach ($salesUsers as $salesUser)
+                                        <option value="{{ $salesUser->id }}" @selected($selectedOwnerId === $salesUser->id)>{{ $salesUser->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                        <div class="col-12 col-md-2 d-md-flex justify-content-end">
+                            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-sm w-100 w-md-auto py-1">Đặt lại bộ lọc</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
             <div class="row g-3">
                 <div class="col-6 col-xl-3">
                     <div class="card border-0 shadow-sm sales-kpi-card h-100">
                         <div class="card-body">
                             <div class="sales-kpi-label">Doanh số ký</div>
                             <div class="sales-kpi-value sales-money">{{ number_format($commerce['signed_value'], 0, ',', '.') }}₫</div>
-                            <div class="sales-supporting-text small">{{ $commerce['contract_count'] }} hợp đồng trong tháng</div>
+                            <div class="sales-supporting-text small">{{ $commerce['contract_count'] }} hợp đồng trong kỳ</div>
                         </div>
                     </div>
                 </div>
@@ -83,6 +127,70 @@
                             <div class="sales-kpi-label">Cơ hội</div>
                             <div class="sales-kpi-value sales-money">{{ number_format($commerce['pipeline'], 0, ',', '.') }}₫</div>
                             <div class="sales-supporting-text small">Tỷ lệ thắng {{ number_format($commerce['conversion_rate'], 1, ',', '.') }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <!-- Cơ cấu hợp đồng theo dịch vụ -->
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h6 mb-1">Cơ cấu hợp đồng theo dịch vụ</h2>
+                            <div class="sales-supporting-text small">Phân bố doanh số ký theo từng loại dịch vụ.</div>
+                        </div>
+                        <div class="card-body d-flex align-items-center justify-content-center">
+                            <div class="w-100">
+                                <div id="dashboardServiceStructureChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tỉ lệ doanh số theo nguồn thông tin -->
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h6 mb-1">Tỉ lệ doanh số theo nguồn thông tin</h2>
+                            <div class="sales-supporting-text small">Phân bổ đóng góp doanh số theo kênh thông tin tiếp cận.</div>
+                        </div>
+                        <div class="card-body d-flex align-items-center justify-content-center">
+                            <div class="w-100">
+                                <div id="dashboardSalesSourceChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mt-1">
+                <!-- Tỉ lệ chuyển đổi dịch vụ -->
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h6 mb-1">Tỉ lệ chuyển đổi Dịch vụ: báo giá vs ký hợp đồng</h2>
+                            <div class="sales-supporting-text small">So sánh số lượng Báo giá và Hợp đồng thực tế của mỗi dịch vụ.</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="w-100">
+                                <div id="dashboardServiceConversionChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phân tích theo Khu vực -->
+                <div class="col-12 col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white py-3">
+                            <h2 class="h6 mb-1">Phân tích theo Khu vực</h2>
+                            <div class="sales-supporting-text small">Báo giá, hợp đồng và doanh số phân bổ theo tỉnh/thành.</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="w-100">
+                                <div id="dashboardRegionalChart"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -357,4 +465,188 @@
         </div>
     </div>
     </div>
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const serviceStructureEl = document.querySelector("#dashboardServiceStructureChart");
+            if (serviceStructureEl) {
+                const data = @json($contractServicesStructure ?? []);
+                const options = {
+                    series: data.map(item => item.value || 0),
+                    labels: data.map(item => item.label || ''),
+                    chart: {
+                        type: 'donut',
+                        height: 320,
+                        fontFamily: 'Plus Jakarta Sans, sans-serif'
+                    },
+                    colors: ['var(--bs-primary)', 'var(--bs-success)', 'var(--bs-info)', 'var(--bs-warning)', 'var(--bs-danger)', '#6f42c1', '#fd7e14', '#20c997'],
+                    dataLabels: { enabled: false },
+                    legend: {
+                        position: 'bottom',
+                        horizontalAlign: 'center',
+                        labels: { colors: 'var(--bs-heading-color)' }
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: (val) => new Intl.NumberFormat('vi-VN').format(val) + 'đ'
+                        }
+                    }
+                };
+                new ApexCharts(serviceStructureEl, options).render();
+            }
+
+            const salesSourceEl = document.querySelector("#dashboardSalesSourceChart");
+            if (salesSourceEl) {
+                const data = @json($salesBySource ?? []);
+                const options = {
+                    series: data.map(item => item.value || 0),
+                    labels: data.map(item => item.label || ''),
+                    chart: {
+                        type: 'donut',
+                        height: 320,
+                        fontFamily: 'Plus Jakarta Sans, sans-serif'
+                    },
+                    colors: ['var(--bs-primary)', 'var(--bs-success)', 'var(--bs-info)', 'var(--bs-warning)', 'var(--bs-danger)', '#6f42c1', '#fd7e14', '#20c997'],
+                    dataLabels: { enabled: false },
+                    legend: {
+                        position: 'bottom',
+                        horizontalAlign: 'center',
+                        labels: { colors: 'var(--bs-heading-color)' }
+                    },
+                    tooltip: {
+                        y: {
+                            formatter: (val) => new Intl.NumberFormat('vi-VN').format(val) + 'đ'
+                        }
+                    }
+                };
+                new ApexCharts(salesSourceEl, options).render();
+            }
+
+            const serviceConversionEl = document.querySelector("#dashboardServiceConversionChart");
+            if (serviceConversionEl) {
+                const data = @json($serviceConversionRates ?? []);
+                const options = {
+                    series: [
+                        { name: 'Báo giá', data: data.map(item => item.quotations_count || 0) },
+                        { name: 'Hợp đồng', data: data.map(item => item.contracts_count || 0) }
+                    ],
+                    chart: {
+                        type: 'bar',
+                        height: 320,
+                        fontFamily: 'Plus Jakarta Sans, sans-serif',
+                        toolbar: { show: false }
+                    },
+                    colors: ['var(--bs-secondary)', 'var(--bs-success)'],
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            dataLabels: { position: 'top' }
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        offsetX: -6,
+                        style: {
+                            fontSize: '11px',
+                            colors: ['#fff']
+                        }
+                    },
+                    xaxis: {
+                        categories: data.map(item => item.label || ''),
+                        labels: {
+                            formatter: (val) => Number.isInteger(val) ? val : '',
+                            style: { colors: 'var(--bs-body-color)' }
+                        }
+                    },
+                    yaxis: {
+                        labels: { style: { colors: 'var(--bs-body-color)' } }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: { colors: 'var(--bs-heading-color)' }
+                    },
+                    tooltip: {
+                        shared: true,
+                        intersect: false
+                    }
+                };
+                new ApexCharts(serviceConversionEl, options).render();
+            }
+
+            const regionalEl = document.querySelector("#dashboardRegionalChart");
+            if (regionalEl) {
+                const data = @json($regionalBreakdown ?? []);
+                const options = {
+                    series: [
+                        { name: 'Báo giá', type: 'column', data: data.map(item => item.quotations_count || 0) },
+                        { name: 'Ký hợp đồng', type: 'column', data: data.map(item => item.contracts_count || 0) },
+                        { name: 'Doanh số (HĐ)', type: 'column', data: data.map(item => item.sales_value || 0) }
+                    ],
+                    chart: {
+                        type: 'line',
+                        height: 320,
+                        fontFamily: 'Plus Jakarta Sans, sans-serif',
+                        toolbar: { show: false }
+                    },
+                    stroke: {
+                        width: [0, 0, 0]
+                    },
+                    colors: ['var(--bs-warning)', 'var(--bs-primary)', 'var(--bs-success)'],
+                    plotOptions: {
+                        bar: {
+                            columnWidth: '60%',
+                            borderRadius: 3
+                        }
+                    },
+                    xaxis: {
+                        categories: data.map(item => item.province || 'Chưa xác định'),
+                        labels: { style: { colors: 'var(--bs-body-color)' } }
+                    },
+                    yaxis: [
+                        {
+                            title: { text: 'Số lượng hồ sơ' },
+                            labels: {
+                                formatter: (val) => Number.isInteger(val) ? val : '',
+                                style: { colors: 'var(--bs-body-color)' }
+                            }
+                        },
+                        {
+                            show: false,
+                            title: { text: 'Số lượng hồ sơ' },
+                            labels: {
+                                formatter: (val) => Number.isInteger(val) ? val : '',
+                                style: { colors: 'var(--bs-body-color)' }
+                            }
+                        },
+                        {
+                            opposite: true,
+                            title: { text: 'Doanh số (VND)' },
+                            labels: {
+                                formatter: (val) => new Intl.NumberFormat('vi-VN').format(val) + 'đ',
+                                style: { colors: 'var(--bs-body-color)' }
+                            }
+                        }
+                    ],
+                    legend: {
+                        position: 'top',
+                        labels: { colors: 'var(--bs-heading-color)' }
+                    },
+                    tooltip: {
+                        shared: true,
+                        intersect: false,
+                        y: {
+                            formatter: (val, opts) => {
+                                if (opts.seriesIndex === 2) {
+                                    return new Intl.NumberFormat('vi-VN').format(val) + 'đ';
+                                }
+                                return val;
+                            }
+                        }
+                    }
+                };
+                new ApexCharts(regionalEl, options).render();
+            }
+        });
+    </script>
+    @endpush
 @endsection

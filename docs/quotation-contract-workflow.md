@@ -150,7 +150,7 @@ Sent/FollowingUp → Expired
 | `draft` | Đang soạn | Kinh doanh |
 | `sent` | Đã gửi khách hàng | Kinh doanh |
 | `following_up` | Đang chăm sóc/theo dõi | Kinh doanh |
-| `won` | Khách hàng đồng ý, chuẩn bị hợp đồng | Kinh doanh |
+| `won` | Khách hàng duyệt, chuẩn bị hợp đồng | Kinh doanh |
 | `lost` | Không thành công | Kinh doanh |
 | `expired` | Hết hiệu lực | Hệ thống/Kinh doanh |
 | `cancelled` | Dừng báo giá | Người có quyền |

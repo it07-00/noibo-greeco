@@ -15,17 +15,34 @@ use Illuminate\Support\Facades\Auth;
 final class DashboardController extends Controller
 {
     public function __invoke(
+        \Illuminate\Http\Request $request,
         DashboardService $dashboard,
         BusinessReportService $businessReports,
     ): View {
         $user = Auth::user();
         $canViewCommerce = $user instanceof User
             && $user->can(PermissionEnum::SalesReportView->value);
-        $ownerId = $user instanceof User
-            && $user->hasRole(RoleEnum::Sales->value)
-            && ! $user->can(PermissionEnum::ManagementDashboardView->value)
-                ? $user->id
-                : null;
+
+        $ownerId = null;
+        $isRestrictedSales = false;
+
+        if ($user instanceof User) {
+            $isRestrictedSales = $user->hasRole(RoleEnum::Sales->value)
+                && !$user->can(PermissionEnum::ManagementDashboardView->value);
+            if ($isRestrictedSales) {
+                $ownerId = $user->id;
+            }
+        }
+
+        $canChooseOwner = !$isRestrictedSales && $canViewCommerce;
+        if ($canChooseOwner && $request->filled('owner_id')) {
+            $ownerId = $request->integer('owner_id');
+        }
+
+        $year = $request->integer('year', (int) now()->year);
+        $month = $request->has('month') && $request->input('month') !== ''
+            ? ($request->input('month') === 'all' ? null : $request->integer('month'))
+            : (int) now()->month;
 
         return view('dashboard', [
             'stats' => $dashboard->stats(),
@@ -33,7 +50,16 @@ final class DashboardController extends Controller
             'roleDistribution' => $dashboard->roleDistribution(),
             'recentSchedules' => $dashboard->recentSchedules(),
             'recentReports' => $dashboard->recentReports(),
-            'commerce' => $canViewCommerce ? $businessReports->homeSnapshot($ownerId) : null,
+            'commerce' => $canViewCommerce ? $businessReports->summary($year, $month, $ownerId) : null,
+            'contractServicesStructure' => $canViewCommerce ? $businessReports->contractServicesStructure($year, $month, $ownerId) : null,
+            'salesBySource' => $canViewCommerce ? $businessReports->salesBySource($year, $month, $ownerId) : null,
+            'serviceConversionRates' => $canViewCommerce ? $businessReports->serviceConversionRates($year, $month, $ownerId) : null,
+            'regionalBreakdown' => $canViewCommerce ? $businessReports->regionalBreakdown($year, $month, $ownerId) : null,
+            'selectedYear' => $year,
+            'selectedMonth' => $month,
+            'selectedOwnerId' => $ownerId,
+            'canChooseOwner' => $canChooseOwner,
+            'salesUsers' => $canChooseOwner ? User::role(RoleEnum::Sales->value)->orderBy('name')->get(['id', 'name']) : collect(),
         ]);
     }
 }

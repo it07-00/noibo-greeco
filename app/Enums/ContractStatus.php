@@ -27,14 +27,14 @@ enum ContractStatus: string
     public function badgeClass(): string
     {
         return match ($this) {
-            self::Draft => 'bg-secondary-subtle text-secondary',
-            self::InternalReview => 'bg-info-subtle text-info',
-            self::WaitingCustomerSignature => 'bg-warning-subtle text-warning',
-            self::Active => 'bg-primary-subtle text-primary',
-            self::Suspended => 'bg-warning-subtle text-warning',
-            self::Completed => 'bg-success-subtle text-success',
+            self::Draft => 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle',
+            self::InternalReview => 'bg-info-subtle text-info-emphasis border border-info-subtle',
+            self::WaitingCustomerSignature => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+            self::Active => 'bg-primary-subtle text-primary-emphasis border border-primary-subtle',
+            self::Suspended => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+            self::Completed => 'bg-success-subtle text-success-emphasis border border-success-subtle',
             self::Liquidated => 'bg-success text-white',
-            self::Cancelled => 'bg-danger-subtle text-danger',
+            self::Cancelled => 'bg-danger-subtle text-danger-emphasis border border-danger-subtle',
         };
     }
 }

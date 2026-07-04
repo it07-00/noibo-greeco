@@ -26,13 +26,13 @@ enum QuotationStatus: string
     public function badgeClass(): string
     {
         return match ($this) {
-            self::Draft => 'bg-secondary-subtle text-secondary',
-            self::Sent => 'bg-info-subtle text-info',
-            self::FollowingUp => 'bg-warning-subtle text-warning',
-            self::Won => 'bg-success-subtle text-success',
-            self::Lost => 'bg-danger-subtle text-danger',
-            self::Expired => 'bg-dark-subtle text-dark',
-            self::Cancelled => 'bg-secondary-subtle text-secondary',
+            self::Draft => 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle',
+            self::Sent => 'bg-info-subtle text-info-emphasis border border-info-subtle',
+            self::FollowingUp => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+            self::Won => 'bg-success-subtle text-success-emphasis border border-success-subtle',
+            self::Lost => 'bg-danger-subtle text-danger-emphasis border border-danger-subtle',
+            self::Expired => 'bg-dark-subtle text-dark-emphasis border border-dark-subtle',
+            self::Cancelled => 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle',
         };
     }
 }

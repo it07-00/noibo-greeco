@@ -347,14 +347,14 @@
                                         <div class="d-flex align-items-start justify-content-between mb-2">
                                             <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-1 gap-sm-2">
                                                 <span class="badge
-                                                    @if($schedule['label_color'] === 'success') bg-success-subtle text-success border border-success
-                                                    @elseif($schedule['label_color'] === 'warning') bg-warning-subtle text-warning border border-warning
-                                                    @elseif($schedule['label_color'] === 'danger') bg-danger-subtle text-danger border border-danger
-                                                    @elseif($schedule['label_color'] === 'info') bg-info-subtle text-info border border-info
-                                                    @elseif($schedule['label_color'] === 'purple') bg-purple-subtle text-purple border border-purple
-                                                    @elseif($schedule['label_color'] === 'noibo') bg-warning-subtle text-dark border border-warning
-                                                    @elseif($schedule['label_color'] === 'private') bg-secondary-subtle text-secondary border border-secondary opacity-75
-                                                    @else bg-primary-subtle text-primary border border-primary
+                                                    @if($schedule['label_color'] === 'success') bg-success-subtle text-success-emphasis border border-success-subtle
+                                                    @elseif($schedule['label_color'] === 'warning') bg-warning-subtle text-warning-emphasis border border-warning-subtle
+                                                    @elseif($schedule['label_color'] === 'danger') bg-danger-subtle text-danger-emphasis border border-danger-subtle
+                                                    @elseif($schedule['label_color'] === 'info') bg-info-subtle text-info-emphasis border border-info-subtle
+                                                    @elseif($schedule['label_color'] === 'purple') bg-purple-subtle text-purple border border-purple-subtle
+                                                    @elseif($schedule['label_color'] === 'noibo') bg-warning-subtle text-dark-emphasis border border-warning-subtle
+                                                    @elseif($schedule['label_color'] === 'private') bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle opacity-75
+                                                    @else bg-primary-subtle text-primary-emphasis border border-primary-subtle
                                                     @endif
                                                     fw-semibold px-2 py-1"
                                                 >

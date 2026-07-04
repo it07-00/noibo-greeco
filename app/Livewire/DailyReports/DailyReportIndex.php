@@ -369,9 +369,9 @@ final class DailyReportIndex extends Component
     private function getEventClasses(string $color): array
     {
         return match ($color) {
-            'success' => ['bg-success-subtle', 'text-success', 'border-success', 'p-1', 'fw-semibold'],
-            'warning' => ['bg-warning-subtle', 'text-warning', 'border-warning', 'p-1', 'fw-semibold'],
-            default => ['bg-primary-subtle', 'text-primary', 'border-primary', 'p-1', 'fw-semibold'],
+            'success' => ['bg-success-subtle', 'text-success-emphasis', 'border-success-subtle', 'fw-semibold'],
+            'warning' => ['bg-warning-subtle', 'text-warning-emphasis', 'border-warning-subtle', 'fw-semibold'],
+            default => ['bg-primary-subtle', 'text-primary-emphasis', 'border-primary-subtle', 'fw-semibold'],
         };
     }
 

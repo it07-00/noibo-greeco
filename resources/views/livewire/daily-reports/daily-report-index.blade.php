@@ -553,6 +553,7 @@
 </div>
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.1.0">
     <link rel="stylesheet" href="{{ asset('css/daily-report.css') }}?v=1.0.0">
 @endpush
 
@@ -614,6 +615,46 @@
                         console.error('Error fetching reports calendar events:', err);
                         failureCallback(err);
                     });
+            },
+            eventContent: function(arg) {
+                const event = arg.event;
+                const props = event.extendedProps;
+
+                // Create DOM structure
+                const card = document.createElement('div');
+                const hasIssues = !!props.issues;
+                const themeClass = hasIssues ? 'event-theme-warning' : 'event-theme-success';
+                card.className = `greeco-event-card ${themeClass}`;
+                card.title = `${props.user_name} · ${props.work_done}`;
+
+                const contextEl = document.createElement('span');
+                contextEl.className = 'greeco-event-context';
+
+                const ownerEl = document.createElement('span');
+                ownerEl.className = 'greeco-event-owner';
+                ownerEl.innerText = props.user_name || 'Nhân viên';
+                contextEl.appendChild(ownerEl);
+
+                const badgeEl = document.createElement('span');
+                badgeEl.className = 'greeco-event-time';
+                if (hasIssues) {
+                    badgeEl.classList.add('bg-warning', 'text-dark-emphasis', 'border', 'border-warning');
+                    badgeEl.style.fontSize = '8px';
+                    badgeEl.innerText = 'Phát sinh';
+                } else {
+                    badgeEl.classList.add('bg-success', 'text-success-emphasis', 'border', 'border-success');
+                    badgeEl.style.fontSize = '8px';
+                    badgeEl.innerText = 'Hoàn thành';
+                }
+                contextEl.appendChild(badgeEl);
+                card.appendChild(contextEl);
+
+                const titleEl = document.createElement('span');
+                titleEl.className = 'greeco-event-title';
+                titleEl.innerText = props.work_done;
+                card.appendChild(titleEl);
+
+                return { domNodes: [card] };
             },
             dateClick: function(info) {
                 @can('create', \App\Models\DailyReport::class)
