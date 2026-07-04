@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ContractRenewalStatus;
 use App\Enums\ContractStatus;
 use App\Enums\ContractType;
 use App\Enums\PaymentMethod;
@@ -26,8 +27,12 @@ final class Contract extends Model
         'contract_number',
         'type',
         'status',
+        'renewal_status',
         'title',
         'value',
+        'original_amount',
+        'customer_commission',
+        'commission_tax',
         'currency',
         'payment_method',
         'signed_at',
@@ -45,7 +50,11 @@ final class Contract extends Model
         return [
             'type' => ContractType::class,
             'status' => ContractStatus::class,
+            'renewal_status' => ContractRenewalStatus::class,
             'value' => 'integer',
+            'original_amount' => 'integer',
+            'customer_commission' => 'integer',
+            'commission_tax' => 'integer',
             'payment_method' => PaymentMethod::class,
             'signed_at' => 'date',
             'starts_at' => 'date',

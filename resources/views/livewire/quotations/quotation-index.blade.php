@@ -355,12 +355,9 @@
                                     </div>
                                     <div class="col-5 col-lg-2">
                                         <label class="form-label" for="serviceQuantity{{ $index }}">Số lượng</label>
-                                        <input id="serviceQuantity{{ $index }}" type="number" min="0.01" step="0.01" class="form-control" wire:model.live.debounce.300ms="serviceRows.{{ $index }}.quantity">
+                                        <input id="serviceQuantity{{ $index }}" type="number" min="1" step="1" class="form-control" wire:model.live.debounce.300ms="serviceRows.{{ $index }}.quantity">
                                     </div>
-                                    <div class="col-7 col-lg-3">
-                                        <label class="form-label" for="servicePrice{{ $index }}">Đơn giá (VND)</label>
-                                        <input id="servicePrice{{ $index }}" type="number" min="0" step="1000" class="form-control sales-number" wire:model.live.debounce.300ms="serviceRows.{{ $index }}.unit_price">
-                                    </div>
+                                    <x-currency-input class="col-7 col-lg-3" id="servicePrice{{ $index }}" wire="serviceRows.{{ $index }}.unit_price" label="Đơn giá (VND)" :suffix="false" />
                                     <div class="col-10 col-lg-1">
                                         <div class="small sales-supporting-text">Thành tiền</div>
                                         <div class="fw-semibold sales-number text-nowrap">
@@ -395,22 +392,10 @@
                     </div>
 
                     <div class="row g-3 mt-1">
-                        <div class="col-6 col-lg-3">
-                            <label for="quotationOriginalAmount" class="form-label">Giá trị gốc</label>
-                            <input id="quotationOriginalAmount" type="number" min="0" step="1000" class="form-control sales-number" wire:model="formOriginalAmount" placeholder="Theo tổng dịch vụ">
-                        </div>
-                        <div class="col-6 col-lg-3">
-                            <label for="quotationCommission" class="form-label">Hoa hồng KH</label>
-                            <input id="quotationCommission" type="number" min="0" step="1000" class="form-control sales-number" wire:model="formCustomerCommission">
-                        </div>
-                        <div class="col-6 col-lg-3">
-                            <label for="quotationCommissionTax" class="form-label">Thuế hoa hồng</label>
-                            <input id="quotationCommissionTax" type="number" min="0" step="1000" class="form-control sales-number" wire:model="formCommissionTax">
-                        </div>
-                        <div class="col-6 col-lg-3">
-                            <label for="quotationContractValue" class="form-label">Giá trị HĐ</label>
-                            <input id="quotationContractValue" type="number" min="0" step="1000" class="form-control sales-number fw-semibold" wire:model="formContractValue" placeholder="Theo tổng dịch vụ">
-                        </div>
+                        <x-currency-input class="col-6 col-lg-3" id="quotationOriginalAmount" wire="formOriginalAmount" label="Giá trị gốc" :suffix="false" placeholder="Theo tổng dịch vụ" />
+                        <x-currency-input class="col-6 col-lg-3" id="quotationCommission" wire="formCustomerCommission" label="Hoa hồng KH" :suffix="false" />
+                        <x-currency-input class="col-6 col-lg-3" id="quotationCommissionTax" wire="formCommissionTax" label="Thuế hoa hồng" :suffix="false" />
+                        <x-currency-input class="col-6 col-lg-3" id="quotationContractValue" wire="formContractValue" label="Giá trị HĐ" :suffix="false" placeholder="Theo tổng dịch vụ" />
                     </div>
 
                     <div class="mt-3">
@@ -468,40 +453,16 @@
                             Giá trị & tài chính
                         </div>
                         <div class="row g-3">
-                            @if ($conversionSource)
-                                <div class="col-6 col-lg-3">
-                                    <div class="sales-finance-fact">
-                                        <span>Giá trị gốc</span>
-                                        <strong>{{ number_format($conversionSource->original_amount, 0, ',', '.') }}₫</strong>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-lg-3">
-                                    <div class="sales-finance-fact">
-                                        <span>Hoa hồng KH</span>
-                                        <strong>{{ number_format($conversionSource->customer_commission, 0, ',', '.') }}₫</strong>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-lg-3">
-                                    <div class="sales-finance-fact">
-                                        <span>Thuế hoa hồng</span>
-                                        <strong>{{ number_format($conversionSource->commission_tax, 0, ',', '.') }}₫</strong>
-                                    </div>
-                                </div>
-                                <div class="col-6 col-lg-3">
-                                    <div class="sales-finance-fact">
-                                        <span>Giá trị báo giá</span>
-                                        <strong>{{ number_format($conversionSource->contract_value, 0, ',', '.') }}₫</strong>
-                                    </div>
-                                </div>
-                            @endif
-                            <div class="col-12 col-lg-4">
-                                <label for="convertValue" class="form-label">Giá trị hợp đồng (VND) <span class="text-danger">*</span></label>
+                            <x-currency-input class="col-6 col-lg-3" id="convertOriginalAmount" wire="convertOriginalAmount" label="Giá trị gốc" error="convertOriginalAmount" />
+                            <x-currency-input class="col-6 col-lg-3" id="convertCustomerCommission" wire="convertCustomerCommission" label="Hoa hồng KH" error="convertCustomerCommission" />
+                            <x-currency-input class="col-6 col-lg-3" id="convertCommissionTax" wire="convertCommissionTax" label="Thuế hoa hồng" error="convertCommissionTax" />
+                            <div class="col-6 col-lg-3">
+                                <label class="form-label">Giá trị báo giá gốc</label>
                                 <div class="input-group">
-                                    <input id="convertValue" type="number" min="0" step="1000" class="form-control sales-number @error('convertValue') is-invalid @enderror" wire:model="convertValue">
-                                    <span class="input-group-text bg-light">đ</span>
+                                    <input type="text" class="form-control bg-light" readonly value="{{ $conversionSource ? number_format($conversionSource->contract_value, 0, ',', '.') : '0' }}đ">
                                 </div>
-                                @error('convertValue') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                             </div>
+                            <x-currency-input class="col-12 col-lg-4" id="convertValue" wire="convertValue" label="Giá trị hợp đồng (VND)" :required="true" error="convertValue" />
                             <div class="col-12 col-lg-3">
                                 <label for="convertPaymentMethod" class="form-label">Phương thức thanh toán</label>
                                 <select id="convertPaymentMethod" class="form-select" wire:model="convertPaymentMethod">
@@ -575,11 +536,7 @@
                                             <input id="convertPaymentName{{ $index }}" class="form-control @error('convertPaymentRows.'.$index.'.name') is-invalid @enderror" wire:model="convertPaymentRows.{{ $index }}.name">
                                             @error('convertPaymentRows.'.$index.'.name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                         </div>
-                                        <div class="col-7 col-lg-3">
-                                            <label class="form-label" for="convertPaymentAmount{{ $index }}">Số tiền <span class="text-danger">*</span></label>
-                                            <input id="convertPaymentAmount{{ $index }}" type="number" min="1" class="form-control sales-number @error('convertPaymentRows.'.$index.'.amount') is-invalid @enderror" wire:model="convertPaymentRows.{{ $index }}.amount">
-                                            @error('convertPaymentRows.'.$index.'.amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                        </div>
+                                        <x-currency-input class="col-7 col-lg-3" id="convertPaymentAmount{{ $index }}" wire="convertPaymentRows.{{ $index }}.amount" label="Số tiền" :required="true" error="convertPaymentRows.{{ $index }}.amount" :suffix="false" />
                                         <div class="col-5 col-lg-2">
                                             <label class="form-label" for="convertPaymentPercent{{ $index }}">Tỷ lệ (%)</label>
                                             <input id="convertPaymentPercent{{ $index }}" type="number" min="0.01" max="100" step="0.01" class="form-control" wire:model="convertPaymentRows.{{ $index }}.percentage">

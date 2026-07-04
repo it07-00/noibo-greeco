@@ -111,4 +111,10 @@ return [
         'rejected' => 'Từ chối',
         'archived' => 'Đã lưu trữ',
     ],
+    'contract_renewal_status' => [
+        'not_applicable' => 'Không áp dụng',
+        'pending' => 'Chờ tái ký',
+        'renewed' => 'Đã tái ký',
+        'not_renewed' => 'Không tái ký',
+    ],
 ];

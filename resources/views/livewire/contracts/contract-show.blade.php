@@ -22,6 +22,9 @@
                 <span class="badge rounded-pill {{ $contract->status->badgeClass() }}">
                     {{ $contract->status->label() }}
                 </span>
+                <span class="badge rounded-pill {{ $contract->renewal_status->badgeClass() }}">
+                    Tái ký: {{ $contract->renewal_status->label() }}
+                </span>
             </div>
             <p class="sales-supporting-text mb-0 mt-1">{{ $contract->title }}</p>
         </div>
@@ -158,6 +161,12 @@
                         </dd>
                         <dt class="col-sm-4">Phương thức thanh toán</dt>
                         <dd class="col-sm-8">{{ $contract->payment_method?->label() ?: 'Chưa thỏa thuận' }}</dd>
+                        <dt class="col-sm-4">Tình trạng tái ký</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge rounded-pill {{ $contract->renewal_status->badgeClass() }}">
+                                {{ $contract->renewal_status->label() }}
+                            </span>
+                        </dd>
                     </dl>
                 </div>
             </div>
@@ -588,6 +597,14 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-12 col-md-6">
+                            <label for="contractRenewalStatus" class="form-label">Tình trạng tái ký</label>
+                            <select id="contractRenewalStatus" class="form-select" wire:model="contractRenewalStatus">
+                                @foreach ($renewalStatusOptions as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="col-12">
                             <label for="contractNotes" class="form-label">Ghi chú</label>
                             <textarea id="contractNotes" rows="3" class="form-control" wire:model="contractNotes"></textarea>
@@ -624,11 +641,7 @@
                             <label for="schedulePercentage" class="form-label">Tỷ lệ (%)</label>
                             <input id="schedulePercentage" type="number" min="0.01" max="100" step="0.01" class="form-control" wire:model="schedulePercentage">
                         </div>
-                        <div class="col-7 col-md-4">
-                            <label for="scheduleAmount" class="form-label">Số tiền (VND) <span class="text-danger">*</span></label>
-                            <input id="scheduleAmount" type="number" min="1" class="form-control @error('scheduleAmount') is-invalid @enderror sales-number" wire:model="scheduleAmount">
-                            @error('scheduleAmount') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
+                        <x-currency-input class="col-7 col-md-4" id="scheduleAmount" wire="scheduleAmount" label="Số tiền (VND)" :required="true" error="scheduleAmount" :suffix="false" />
                         <div class="col-12 col-md-6">
                             <label for="scheduleConditionType" class="form-label">Điều kiện thanh toán</label>
                             <select id="scheduleConditionType" class="form-select" wire:model.live="scheduleConditionType">
@@ -704,11 +717,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for="paymentAmount" class="form-label">Số tiền thực nhận (VND) <span class="text-danger">*</span></label>
-                            <input id="paymentAmount" type="number" min="1" class="form-control @error('paymentAmount') is-invalid @enderror sales-number" wire:model.live="paymentAmount">
-                            @error('paymentAmount') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
+                        <x-currency-input class="col-12 col-md-6" id="paymentAmount" wire="paymentAmount" label="Số tiền thực nhận (VND)" :required="true" error="paymentAmount" :suffix="false" />
                         <div class="col-12 col-md-6">
                             <label for="paymentReference" class="form-label">Mã giao dịch / tham chiếu</label>
                             <input id="paymentReference" class="form-control" wire:model="paymentReference">
@@ -734,13 +743,24 @@
                                             Phải thu {{ number_format($allocationSchedule->amount, 0, ',', '.') }}₫
                                         </span>
                                     </span>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        class="form-control sales-number payment-allocation-input"
-                                        wire:model.live="allocationRows.{{ $index }}.amount"
-                                        aria-label="Phân bổ vào {{ $allocationSchedule->name }}"
-                                    >
+                                    <div x-data="{
+                                        raw: @entangle('allocationRows.' . $index . '.amount'),
+                                        get display() {
+                                            if (!this.raw) return '';
+                                            return Number(this.raw).toLocaleString('vi-VN');
+                                        },
+                                        set display(val) {
+                                            let clean = val.replace(/\D/g, '');
+                                            this.raw = clean ? clean : '';
+                                        }
+                                    }">
+                                        <input
+                                            type="text"
+                                            class="form-control sales-number payment-allocation-input"
+                                            x-model="display"
+                                            aria-label="Phân bổ vào {{ $allocationSchedule->name }}"
+                                        >
+                                    </div>
                                 </label>
                             @endif
                         @endforeach

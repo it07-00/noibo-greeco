@@ -100,6 +100,21 @@ final class ContractUiTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_sales_can_update_contract_renewal_status(): void
+    {
+        [$contract, $sales] = $this->contractForSales(100_000_000);
+        $this->actingAs($sales);
+
+        Livewire::test(ContractShow::class, ['contract' => $contract])
+            ->call('openContractInfo')
+            ->assertSet('contractRenewalStatus', 'not_applicable')
+            ->set('contractRenewalStatus', 'pending')
+            ->call('saveContractInfo')
+            ->assertHasNoErrors();
+
+        self::assertSame('pending', $contract->refresh()->renewal_status->value);
+    }
+
     private function contractForSales(int $value): array
     {
         $sales = $this->userWithRole(RoleEnum::Sales);

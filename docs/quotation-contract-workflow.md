@@ -173,12 +173,18 @@ Sent/FollowingUp → Expired
 Khi người có quyền chọn **Tạo hợp đồng**:
 
 1. Hệ thống kiểm tra báo giá đang ở trạng thái `won`.
-2. Người dùng xác nhận loại hợp đồng và các dịch vụ.
-3. Hệ thống sao chép khách hàng, dịch vụ, người phụ trách và giá trị được chấp thuận.
-4. Hệ thống tạo `contract` ở trạng thái `draft`.
-5. Người dùng khai báo lịch thanh toán động.
-6. Hệ thống liên kết `contracts.quotation_id`.
-7. Sự kiện chuyển đổi được ghi vào activity log.
+2. Người dùng được hiển thị một form modal để kiểm tra và điều chỉnh thông tin trước khi tạo, bao gồm:
+   - Tên hợp đồng (mặc định khởi tạo theo khách hàng).
+   - Số hợp đồng.
+   - Các thông tin tài chính thương mại có khả năng chỉnh sửa trực tiếp: **Giá trị gốc (VND)**, **Hoa hồng KH (VND)**, **Thuế hoa hồng (VND)**, và **Giá trị hợp đồng (VND)**.
+   - Phương thức thanh toán mặc định.
+   - Ngày ký, Ngày bắt đầu, Ngày kết thúc.
+   - Lịch thanh toán nhiều đợt động (tổng số tiền các đợt phải bằng giá trị hợp đồng).
+   - Các file đính kèm hồ sơ chứng từ ban đầu (lưu thành tài liệu dự thảo đi kèm).
+3. Hệ thống sao chép khách hàng, dịch vụ, người phụ trách và các giá trị tài chính thương mại đã được tinh chỉnh.
+4. Hệ thống tạo `contract` ở trạng thái `draft` cùng các cột tài chính tương ứng (`original_amount`, `customer_commission`, `commission_tax`, `value`).
+5. Hệ thống lưu lịch thanh toán, tài liệu và liên kết `contracts.quotation_id`.
+6. Sự kiện chuyển đổi được ghi vào activity log.
 
 Không sao chép file bằng đường dẫn rời rạc. File cần dùng chung phải được liên kết qua
 quan hệ tài liệu hoặc tạo bản sao có nguồn gốc rõ ràng.

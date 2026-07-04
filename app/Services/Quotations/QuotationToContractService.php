@@ -51,6 +51,9 @@ final class QuotationToContractService
                 'value' => isset($customData['value']) ? (int) $customData['value'] : ($lockedQuotation->contract_value > 0
                     ? $lockedQuotation->contract_value
                     : $lockedQuotation->total_amount),
+                'original_amount' => isset($customData['original_amount']) ? (int) $customData['original_amount'] : $lockedQuotation->original_amount,
+                'customer_commission' => isset($customData['customer_commission']) ? (int) $customData['customer_commission'] : $lockedQuotation->customer_commission,
+                'commission_tax' => isset($customData['commission_tax']) ? (int) $customData['commission_tax'] : $lockedQuotation->commission_tax,
                 'currency' => $lockedQuotation->currency,
                 'payment_method' => $customData['payment_method'] ?? null,
                 'signed_at' => $customData['signed_at'] ?? null,

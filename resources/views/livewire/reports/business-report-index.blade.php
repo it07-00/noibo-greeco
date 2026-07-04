@@ -263,11 +263,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-7">
-                            <label for="targetAmount" class="form-label">Doanh số mục tiêu</label>
-                            <input id="targetAmount" type="number" min="0" step="1000000" class="form-control sales-number @error('targetAmount') is-invalid @enderror" wire:model="targetAmount">
-                            @error('targetAmount') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
+                        <x-currency-input class="col-7" id="targetAmount" wire="targetAmount" label="Doanh số mục tiêu" error="targetAmount" :suffix="false" />
                         <div class="col-12">
                             <label for="targetCount" class="form-label">Số hợp đồng mục tiêu</label>
                             <input id="targetCount" type="number" min="0" class="form-control @error('targetContractCount') is-invalid @enderror" wire:model="targetContractCount">

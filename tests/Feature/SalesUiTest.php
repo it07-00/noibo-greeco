@@ -223,6 +223,9 @@ final class SalesUiTest extends TestCase
             ->assertSet('convertTitle', 'Hợp đồng - Công ty Chuyển đổi Xanh')
             ->assertSet('convertValue', '120000000')
             ->set('convertValue', '115000000') // Adjusting the price down
+            ->set('convertOriginalAmount', '100000000')
+            ->set('convertCustomerCommission', '10000000')
+            ->set('convertCommissionTax', '1000000')
             ->set('convertContractNumber', 'HD-2026-999')
             ->set('convertNotes', 'Khách hàng đề nghị giảm giá trị hợp đồng')
             ->call('saveConversion')
@@ -231,6 +234,9 @@ final class SalesUiTest extends TestCase
         $contract = Contract::query()->firstOrFail();
         self::assertSame($quotation->id, $contract->quotation_id);
         self::assertSame(115_000_000, $contract->value); // Correct adjusted price
+        self::assertSame(100_000_000, $contract->original_amount);
+        self::assertSame(10_000_000, $contract->customer_commission);
+        self::assertSame(1_000_000, $contract->commission_tax);
         self::assertSame('HD-2026-999', $contract->contract_number);
         self::assertSame('Khách hàng đề nghị giảm giá trị hợp đồng', $contract->notes);
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Contracts;
 
+use App\Enums\ContractRenewalStatus;
 use App\Enums\ContractStatus;
 use App\Enums\DocumentStatus;
 use App\Enums\DocumentType;
@@ -95,6 +96,8 @@ final class ContractShow extends Component
 
     public string $contractPaymentMethod = '';
 
+    public string $contractRenewalStatus = '';
+
     public int $documentRevisionSourceId = 0;
 
     public string $documentType = '';
@@ -127,6 +130,7 @@ final class ContractShow extends Component
         $this->contractEndsAt = $this->contract->ends_at?->toDateString() ?? '';
         $this->contractNotes = $this->contract->notes ?? '';
         $this->contractPaymentMethod = $this->contract->payment_method?->value ?? '';
+        $this->contractRenewalStatus = $this->contract->renewal_status?->value ?? '';
         $this->resetValidation();
         $this->dispatch('contract-info:show');
     }
@@ -148,6 +152,7 @@ final class ContractShow extends Component
             'contractEndsAt' => ['nullable', 'date', 'after_or_equal:contractStartsAt'],
             'contractNotes' => ['nullable', 'string', 'max:3000'],
             'contractPaymentMethod' => ['nullable', Rule::enum(PaymentMethod::class)],
+            'contractRenewalStatus' => ['nullable', Rule::enum(ContractRenewalStatus::class)],
         ], [
             'contractTitle.required' => 'Vui lòng nhập tên hợp đồng.',
             'contractNumber.unique' => 'Số hợp đồng đã tồn tại.',
@@ -162,6 +167,7 @@ final class ContractShow extends Component
             'ends_at' => $validated['contractEndsAt'] ?: null,
             'notes' => $validated['contractNotes'] ?: null,
             'payment_method' => $validated['contractPaymentMethod'] ?: null,
+            'renewal_status' => $validated['contractRenewalStatus'] ?: ContractRenewalStatus::NotApplicable->value,
         ]);
 
         $this->contract->refresh();
@@ -597,6 +603,7 @@ final class ContractShow extends Component
             'conditionOptions' => PaymentConditionType::options(),
             'termUnitOptions' => PaymentTermUnit::options(),
             'paymentMethodOptions' => PaymentMethod::options(),
+            'renewalStatusOptions' => ContractRenewalStatus::options(),
             'canConfirmPlan' => $this->actor()->can(PermissionEnum::PaymentScheduleConfirm->value),
             'canRecordPayment' => $this->actor()->can(PermissionEnum::PaymentRecord->value),
             'canManagePlan' => $this->actor()->can(PermissionEnum::PaymentScheduleManage->value),

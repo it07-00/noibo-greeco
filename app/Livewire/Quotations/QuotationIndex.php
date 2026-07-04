@@ -79,6 +79,12 @@ final class QuotationIndex extends Component
 
     public string $convertValue = '';
 
+    public string $convertOriginalAmount = '';
+
+    public string $convertCustomerCommission = '';
+
+    public string $convertCommissionTax = '';
+
     public string $convertPaymentMethod = '';
 
     public string $convertSignedAt = '';
@@ -227,12 +233,13 @@ final class QuotationIndex extends Component
             'serviceRows' => ['required', 'array', 'min:1'],
             'serviceRows.*.service_type' => ['required', Rule::in($allowedServices)],
             'serviceRows.*.description' => ['nullable', 'string', 'max:2000'],
-            'serviceRows.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'serviceRows.*.quantity' => ['required', 'integer', 'gt:0'],
             'serviceRows.*.unit_price' => ['required', 'integer', 'min:0'],
         ], [
             'formCustomerId.required' => 'Vui lòng chọn khách hàng.',
             'formValidUntil.after_or_equal' => 'Ngày hết hiệu lực phải sau ngày báo giá.',
             'serviceRows.*.service_type.in' => 'Dịch vụ không thuộc loại hợp đồng.',
+            'serviceRows.*.quantity.integer' => 'Số lượng phải là số nguyên.',
             'serviceRows.*.quantity.gt' => 'Số lượng phải lớn hơn 0.',
         ]);
 
@@ -310,6 +317,9 @@ final class QuotationIndex extends Component
         $this->convertContractNumber = '';
         $this->convertTitle = 'Hợp đồng - '.$quotation->customer->name;
         $this->convertValue = (string) ($quotation->contract_value > 0 ? $quotation->contract_value : $quotation->total_amount);
+        $this->convertOriginalAmount = (string) $quotation->original_amount;
+        $this->convertCustomerCommission = (string) $quotation->customer_commission;
+        $this->convertCommissionTax = (string) $quotation->commission_tax;
         $this->convertPaymentMethod = PaymentMethod::BankTransfer->value;
         $this->convertSignedAt = now()->toDateString();
         $this->convertStartsAt = now()->toDateString();
@@ -386,6 +396,9 @@ final class QuotationIndex extends Component
             'convertContractNumber' => ['nullable', 'string', 'max:191'],
             'convertTitle' => ['required', 'string', 'max:191'],
             'convertValue' => ['required', 'integer', 'min:1'],
+            'convertOriginalAmount' => ['required', 'integer', 'min:0'],
+            'convertCustomerCommission' => ['required', 'integer', 'min:0'],
+            'convertCommissionTax' => ['required', 'integer', 'min:0'],
             'convertPaymentMethod' => ['nullable', Rule::enum(PaymentMethod::class)],
             'convertSignedAt' => ['nullable', 'date'],
             'convertStartsAt' => ['nullable', 'date'],
@@ -457,6 +470,9 @@ final class QuotationIndex extends Component
                 'contract_number' => $validated['convertContractNumber'] ?: null,
                 'title' => trim($validated['convertTitle']),
                 'value' => (int) $validated['convertValue'],
+                'original_amount' => (int) $validated['convertOriginalAmount'],
+                'customer_commission' => (int) $validated['convertCustomerCommission'],
+                'commission_tax' => (int) $validated['convertCommissionTax'],
                 'payment_method' => $validated['convertPaymentMethod'] ?: null,
                 'signed_at' => $validated['convertSignedAt'] ?: null,
                 'starts_at' => $validated['convertStartsAt'] ?: null,
