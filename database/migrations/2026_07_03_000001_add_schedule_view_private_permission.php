@@ -13,7 +13,7 @@ return new class extends Migration
 
     private const array ROLE_NAMES = [
         'Super Admin',
-        'Giám đốc',
+        'Viện Trưởng',
     ];
 
     public function up(): void

@@ -7,7 +7,7 @@ namespace App\Enums;
 enum RoleEnum: string
 {
     case SuperAdmin = 'Super Admin';
-    case Director = 'Giám đốc';
+    case Director = 'Viện Trưởng';
     case IT = 'IT';
     case Sales = 'Phòng Kinh doanh';
     case Consultant = 'Tư vấn';

@@ -34,7 +34,7 @@ return new class extends Migration
         // 2. Map default roles to departments
         $deptMap = [
             'Super Admin' => 'IT',
-            'Giám đốc' => 'BGĐ',
+            'Viện Trưởng' => 'BGĐ',
             'IT' => 'IT',
             'Kinh doanh' => 'KD',
             'Tư vấn' => 'TV',

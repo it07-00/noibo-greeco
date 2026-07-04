@@ -55,7 +55,7 @@ final class PermissionSeeder extends Seeder
 
         $director = Role::findOrCreate(RoleEnum::Director->value, 'web');
         $director->update([
-            'description' => 'Ban Giám đốc, xem báo cáo tổng quan và duyệt lịch trình',
+            'description' => 'Viện Trưởng, xem báo cáo tổng quan và duyệt lịch trình',
             'department_id' => $deptBgd,
         ]);
 

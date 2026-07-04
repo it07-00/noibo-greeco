@@ -254,6 +254,43 @@ final class RolesPermissionsIndex extends Component
             'Truy cập chung' => [
                 PermissionEnum::DashboardView->value => 'Truy cập Dashboard chính',
             ],
+            'Khách hàng' => [
+                PermissionEnum::CustomerView->value => 'Xem khách hàng',
+                PermissionEnum::CustomerManage->value => 'Quản lý khách hàng',
+            ],
+            'Theo dõi báo giá' => [
+                PermissionEnum::QuotationView->value => 'Xem báo giá',
+                PermissionEnum::QuotationCreate->value => 'Tạo báo giá',
+                PermissionEnum::QuotationUpdate->value => 'Cập nhật báo giá',
+                PermissionEnum::QuotationSend->value => 'Gửi báo giá',
+                PermissionEnum::QuotationConvert->value => 'Chuyển báo giá thành hợp đồng',
+            ],
+            'Hợp đồng' => [
+                PermissionEnum::ContractView->value => 'Xem hợp đồng',
+                PermissionEnum::ContractCreate->value => 'Tạo hợp đồng',
+                PermissionEnum::ContractUpdate->value => 'Cập nhật hợp đồng',
+                PermissionEnum::ContractApprove->value => 'Phê duyệt hợp đồng',
+                PermissionEnum::ContractActivate->value => 'Kích hoạt hợp đồng',
+                PermissionEnum::ContractComplete->value => 'Hoàn thành hợp đồng',
+                PermissionEnum::ContractCancel->value => 'Hủy hợp đồng',
+            ],
+            'Lịch thanh toán & Chứng từ' => [
+                PermissionEnum::PaymentScheduleView->value => 'Xem lịch thanh toán',
+                PermissionEnum::PaymentScheduleManage->value => 'Quản lý lịch thanh toán',
+                PermissionEnum::PaymentScheduleConfirm->value => 'Xác nhận lịch thanh toán',
+                PermissionEnum::PaymentRecord->value => 'Ghi nhận thanh toán',
+                PermissionEnum::PaymentAdjust->value => 'Điều chỉnh thanh toán',
+                PermissionEnum::ContractDocumentView->value => 'Xem chứng từ hợp đồng',
+                PermissionEnum::ContractDocumentSubmit->value => 'Gửi chứng từ hợp đồng',
+                PermissionEnum::ContractDocumentReview->value => 'Kiểm tra chứng từ hợp đồng',
+            ],
+            'Kinh doanh & Báo cáo' => [
+                PermissionEnum::BusinessDashboardView->value => 'Xem dashboard kinh doanh',
+                PermissionEnum::AccountingDashboardView->value => 'Xem dashboard kế toán',
+                PermissionEnum::ManagementDashboardView->value => 'Xem dashboard quản trị',
+                PermissionEnum::SalesReportView->value => 'Xem báo cáo kinh doanh',
+                PermissionEnum::SalesTargetManage->value => 'Thiết lập KPI kinh doanh',
+            ],
         ];
 
         $activeRolePermissions = $activeRole ? $activeRole->permissions->pluck('name')->toArray() : [];
