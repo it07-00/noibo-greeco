@@ -164,7 +164,7 @@ final class BusinessReportService
         return $this->contractQuery($year, $month, $ownerId)
             ->get()
             ->groupBy(static fn (Contract $contract): string => $contract->type->value)
-            ->map(static fn (Collection $contracts): array => [
+            ->map(fn (Collection $contracts): array => [
                 'label' => $contracts->first()->type->label(),
                 'count' => $contracts->count(),
                 'value' => $this->safeCast($contracts->sum('value')),
@@ -234,7 +234,7 @@ final class BusinessReportService
             ->get();
 
         return $services->groupBy(static fn (ContractService $service): string => $service->service_type->value)
-            ->map(static fn (Collection $group): array => [
+            ->map(fn (Collection $group): array => [
                 'label' => $group->first()->service_type->label(),
                 'count' => $group->pluck('contract_id')->unique()->count(),
                 'value' => $this->safeCast($group->sum('amount')),
@@ -256,7 +256,7 @@ final class BusinessReportService
             $id = $contract->customer_id ?: 0;
             return $sources[$id % count($sources)];
         })
-        ->map(static fn (Collection $group, string $source): array => [
+        ->map(fn (Collection $group, string $source): array => [
             'label' => $source,
             'count' => $group->count(),
             'value' => $this->safeCast($group->sum('value')),
