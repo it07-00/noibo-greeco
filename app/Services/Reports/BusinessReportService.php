@@ -346,7 +346,7 @@ final class BusinessReportService
         ->values();
     }
 
-    private function safeCast(float|int|null $value): float|int
+    private function safeCast(mixed $value): float|int
     {
         if ($value === null) {
             return 0;
