@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\CommissionRequestStatus;
+use App\Enums\RoleEnum;
 use App\Models\CommissionRequest;
 use App\Models\User;
+use App\Notifications\CommissionRequestUpdated;
 use DomainException;
+use Illuminate\Support\Facades\Notification;
 
 final class CommissionRequestService
 {
@@ -16,10 +19,14 @@ final class CommissionRequestService
      */
     public function create(array $data, User $actor): CommissionRequest
     {
-        return CommissionRequest::query()->create(array_merge($data, [
+        $request = CommissionRequest::query()->create(array_merge($data, [
             'user_id' => $actor->id,
             'status' => CommissionRequestStatus::Estimated,
         ]));
+
+        $this->notifyAccountants($request, $actor);
+
+        return $request;
     }
 
     /**
@@ -55,6 +62,8 @@ final class CommissionRequestService
             'processed_by' => $actor->id,
         ]);
 
+        $this->notifyRequester($request, $actor, 'approved');
+
         return $request->refresh();
     }
 
@@ -75,6 +84,8 @@ final class CommissionRequestService
             'notes' => trim(($request->notes ? rtrim($request->notes)."\n\n" : '').'Lý do từ chối (kế toán): '.trim($reason)),
         ]);
 
+        $this->notifyRequester($request, $actor, 'rejected');
+
         return $request->refresh();
     }
 
@@ -91,6 +102,25 @@ final class CommissionRequestService
             'processed_by' => $actor->id,
         ]);
 
+        $this->notifyRequester($request, $actor, 'paid');
+
         return $request->refresh();
+    }
+
+    private function notifyAccountants(CommissionRequest $request, User $actor): void
+    {
+        $accountants = User::role(RoleEnum::Accountant->value)->get();
+        if ($accountants->isNotEmpty()) {
+            Notification::send($accountants, new CommissionRequestUpdated($request, $actor->name, 'created'));
+        }
+    }
+
+    private function notifyRequester(CommissionRequest $request, User $actor, string $action): void
+    {
+        $request->loadMissing('requester');
+        $requester = $request->requester;
+        if ($requester) {
+            $requester->notify(new CommissionRequestUpdated($request, $actor->name, $action));
+        }
     }
 }

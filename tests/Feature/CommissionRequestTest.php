@@ -12,6 +12,7 @@ use App\Enums\RoleEnum;
 use App\Enums\ServiceType;
 use App\Livewire\Commissions\CommissionRequestForm;
 use App\Livewire\Commissions\CommissionRequestIndex;
+use App\Notifications\CommissionRequestUpdated;
 use App\Models\CommissionRequest;
 use App\Models\Contract;
 use App\Models\Customer;
@@ -39,6 +40,7 @@ final class CommissionRequestTest extends TestCase
         ]);
 
         [$contract, $sales] = $this->contractForSales();
+        $accountant = $this->userWithRole(RoleEnum::Accountant);
         $this->actingAs($sales);
 
         Livewire::test(CommissionRequestForm::class)
@@ -61,6 +63,11 @@ final class CommissionRequestTest extends TestCase
         self::assertSame(CommissionRequestStatus::Estimated, $request->status);
         self::assertStringContainsString('https://img.vietqr.io/image/970436-123456789-compact2.png', $request->qr_url);
         self::assertStringContainsString('amount=5000000', $request->qr_url);
+
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $accountant->id,
+            'type' => CommissionRequestUpdated::class,
+        ]);
     }
 
     public function test_accountant_can_approve_and_mark_commission_request_paid(): void
@@ -97,6 +104,11 @@ final class CommissionRequestTest extends TestCase
         self::assertNotNull($request->processed_at);
         self::assertNotNull($request->payment_bill_path);
         Storage::disk('local')->assertExists($request->payment_bill_path);
+
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $sales->id,
+            'type' => CommissionRequestUpdated::class,
+        ]);
     }
 
     public function test_sales_cannot_approve_commission_request(): void
