@@ -31,7 +31,7 @@ final class DailyReportIndex extends Component
     // ── Filters ──────────────────────────────────────────────────────────────
     public string $filterDate = '';
 
-    public int $filterUserId = 0;
+    public int|string $filterUserId = 0;
 
     public string $search = '';
 
@@ -298,6 +298,13 @@ final class DailyReportIndex extends Component
     {
         $this->dispatch('report:close-day-reports');
         $this->openEditModal($id);
+    }
+
+    public function openCreateFromList(): void
+    {
+        $this->dispatch('report:close-day-reports');
+        $dateStr = Carbon::createFromFormat('d/m/Y', $this->selectedDateStr)->toDateString();
+        $this->openCreateModalForDate($dateStr);
     }
 
     public function deleteFromList(DailyReportService $service, int $id): void

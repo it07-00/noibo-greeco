@@ -31,7 +31,7 @@ final class DutyScheduleIndex extends Component
     public array $daySchedules = [];
 
     // Filters
-    public int $filterUserId = 0;
+    public int|string $filterUserId = 0;
 
     public bool $showNoiboSchedules = true;
 

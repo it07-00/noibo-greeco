@@ -152,6 +152,34 @@ final class SalesUiTest extends TestCase
         self::assertStringStartsWith('BG-2026-', (string) $quotation->quotation_number);
     }
 
+    public function test_quotation_form_accepts_browser_string_ids_from_select_fields(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $admin = User::query()->where('username', 'superadmin')->firstOrFail();
+        $owner = User::factory()->create();
+        $owner->assignRole(RoleEnum::Sales->value);
+        $customer = Customer::query()->create(['name' => 'Browser String Customer']);
+        $this->actingAs($admin);
+
+        Livewire::test(QuotationIndex::class)
+            ->set('formCustomerId', (string) $customer->id)
+            ->set('formOwnerId', (string) $owner->id)
+            ->set('formContractType', ContractType::Consulting->value)
+            ->set('serviceRows', [[
+                'service_type' => ServiceType::EsgConsulting->value,
+                'description' => '',
+                'quantity' => '1',
+                'unit_price' => '10000000',
+            ]])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('quotations', [
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+        ]);
+    }
+
     public function test_quotation_form_rejects_service_from_another_contract_type(): void
     {
         $sales = $this->salesUser();

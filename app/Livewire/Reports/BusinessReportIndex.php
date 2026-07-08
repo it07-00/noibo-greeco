@@ -26,9 +26,9 @@ final class BusinessReportIndex extends Component
 
     public string $ownerId = '';
 
-    public int $targetUserId = 0;
+    public int|string $targetUserId = 0;
 
-    public int $targetMonth = 1;
+    public int|string $targetMonth = 1;
 
     public string $targetAmount = '';
 

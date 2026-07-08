@@ -49,9 +49,9 @@ final class QuotationIndex extends Component
 
     public int $editingId = 0;
 
-    public int $formCustomerId = 0;
+    public int|string $formCustomerId = 0;
 
-    public int $formOwnerId = 0;
+    public int|string $formOwnerId = 0;
 
     public string $formContractType = '';
 
