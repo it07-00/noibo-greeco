@@ -320,14 +320,23 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-6">
+                        <div class="col-12 col-md-4">
                             <label for="quotationIssuedAt" class="form-label">Ngày báo giá</label>
                             <input id="quotationIssuedAt" type="date" class="form-control" wire:model="formIssuedAt">
                         </div>
-                        <div class="col-6">
+                        <div class="col-12 col-md-4">
                             <label for="quotationValidUntil" class="form-label">Hiệu lực đến</label>
                             <input id="quotationValidUntil" type="date" class="form-control @error('formValidUntil') is-invalid @enderror" wire:model="formValidUntil">
                             @error('formValidUntil') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="formStatus" class="form-label">Trạng thái báo giá <span class="text-danger">*</span></label>
+                            <select id="formStatus" class="form-select @error('formStatus') is-invalid @enderror" wire:model="formStatus">
+                                @foreach ($statusOptions as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('formStatus') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
 

@@ -115,6 +115,24 @@ final class ContractUiTest extends TestCase
         self::assertSame('pending', $contract->refresh()->renewal_status->value);
     }
 
+    public function test_can_edit_contract_status(): void
+    {
+        [$contract, $sales] = $this->contractForSales(100_000_000);
+        $this->actingAs($sales);
+
+        self::assertSame(ContractStatus::Draft, $contract->status);
+
+        Livewire::test(ContractShow::class, ['contract' => $contract])
+            ->call('openContractInfo')
+            ->assertSet('contractStatus', ContractStatus::Draft->value)
+            ->set('contractStatus', ContractStatus::Active->value)
+            ->set('contractTitle', 'Hợp đồng ESG đã sửa')
+            ->call('saveContractInfo')
+            ->assertHasNoErrors();
+
+        self::assertSame(ContractStatus::Active, $contract->refresh()->status);
+    }
+
     private function contractForSales(int $value): array
     {
         $sales = $this->userWithRole(RoleEnum::Sales);

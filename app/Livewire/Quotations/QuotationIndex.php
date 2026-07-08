@@ -71,6 +71,8 @@ final class QuotationIndex extends Component
 
     public string $formContractValue = '';
 
+    public string $formStatus = 'draft';
+
     public int $convertingQuotationId = 0;
 
     public string $convertContractNumber = '';
@@ -147,6 +149,7 @@ final class QuotationIndex extends Component
         $this->resetForm();
         $this->formContractType = ContractType::Consulting->value;
         $this->formOwnerId = (int) Auth::id();
+        $this->formStatus = QuotationStatus::Draft->value;
         $this->formIssuedAt = now()->toDateString();
         $this->addServiceRow();
         $this->dispatch('quotation-form:show');
@@ -169,13 +172,14 @@ final class QuotationIndex extends Component
         $this->formCustomerCommission = (string) $quotation->customer_commission;
         $this->formCommissionTax = (string) $quotation->commission_tax;
         $this->formContractValue = (string) $quotation->contract_value;
+        $this->formStatus = $quotation->status->value;
         $this->existingFilePath = $quotation->file_path;
         $this->formFile = null;
         $this->serviceRows = $quotation->services
             ->map(static fn ($service): array => [
                 'service_type' => $service->service_type->value,
                 'description' => $service->description ?? '',
-                'quantity' => (string) $service->quantity,
+                'quantity' => (string) (int) $service->quantity,
                 'unit_price' => (string) $service->unit_price,
             ])
             ->values()
@@ -236,6 +240,7 @@ final class QuotationIndex extends Component
             'formCustomerCommission' => ['nullable', 'numeric', 'min:0'],
             'formCommissionTax' => ['nullable', 'numeric', 'min:0'],
             'formContractValue' => ['nullable', 'numeric', 'min:0'],
+            'formStatus' => ['required', Rule::enum(QuotationStatus::class)],
             'formFile' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
             'serviceRows' => ['required', 'array', 'min:1'],
             'serviceRows.*.service_type' => ['required', Rule::in($allowedServices)],
@@ -247,6 +252,7 @@ final class QuotationIndex extends Component
             'formValidUntil.after_or_equal' => 'Ngày hết hiệu lực phải sau ngày báo giá.',
             'formFile.max' => 'Dung lượng file không được vượt quá 20 MB.',
             'formFile.mimes' => 'Định dạng file không hỗ trợ.',
+            'formStatus.required' => 'Vui lòng chọn trạng thái báo giá.',
             'serviceRows.*.service_type.in' => 'Dịch vụ không thuộc loại hợp đồng.',
             'serviceRows.*.quantity.integer' => 'Số lượng phải là số nguyên.',
             'serviceRows.*.quantity.gt' => 'Số lượng phải lớn hơn 0.',
@@ -265,6 +271,7 @@ final class QuotationIndex extends Component
                 'customer_commission' => $validated['formCustomerCommission'] !== '' ? (float) $validated['formCustomerCommission'] : 0.0,
                 'commission_tax' => $validated['formCommissionTax'] !== '' ? (float) $validated['formCommissionTax'] : 0.0,
                 'contract_value' => $validated['formContractValue'] !== '' ? (float) $validated['formContractValue'] : null,
+                'status' => $validated['formStatus'],
             ], $validated['serviceRows'], Auth::user(), $quotation);
 
             if ($this->formFile) {
@@ -659,6 +666,7 @@ final class QuotationIndex extends Component
             'formCustomerCommission',
             'formCommissionTax',
             'formContractValue',
+            'formStatus',
             'serviceRows',
             'formFile',
             'existingFilePath',

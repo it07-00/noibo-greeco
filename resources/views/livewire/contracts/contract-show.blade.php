@@ -578,7 +578,7 @@
                             <input id="contractEndsAt" type="date" class="form-control @error('contractEndsAt') is-invalid @enderror" wire:model="contractEndsAt">
                             @error('contractEndsAt') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4">
                             <label for="contractPaymentMethod" class="form-label">Phương thức thanh toán dự kiến</label>
                             <select id="contractPaymentMethod" class="form-select" wire:model="contractPaymentMethod">
                                 <option value="">Chưa thỏa thuận</option>
@@ -587,13 +587,22 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4">
                             <label for="contractRenewalStatus" class="form-label">Tình trạng tái ký</label>
                             <select id="contractRenewalStatus" class="form-select" wire:model="contractRenewalStatus">
                                 @foreach ($renewalStatusOptions as $value => $label)
                                     <option value="{{ $value }}">{{ $label }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="contractStatus" class="form-label">Trạng thái hợp đồng <span class="text-danger">*</span></label>
+                            <select id="contractStatus" class="form-select @error('contractStatus') is-invalid @enderror" wire:model="contractStatus">
+                                @foreach ($statusOptions as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('contractStatus') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-12">
                             <label for="contractNotes" class="form-label">Ghi chú</label>

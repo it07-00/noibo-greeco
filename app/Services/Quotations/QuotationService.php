@@ -91,7 +91,7 @@ final class QuotationService
             QuotationStatus::Lost,
             QuotationStatus::Expired,
             QuotationStatus::Cancelled,
-        ], true)) {
+        ], true) && (! isset($data['status']) || $data['status'] === $quotation->status->value)) {
             throw new DomainException('Không thể sửa báo giá đã kết thúc.');
         }
 

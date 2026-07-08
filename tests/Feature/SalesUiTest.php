@@ -483,6 +483,42 @@ final class SalesUiTest extends TestCase
         $this->assertEquals(3_000_000_000, $contract->value);
     }
 
+    public function test_can_edit_quotation_status(): void
+    {
+        $sales = $this->salesUser();
+        $customer = Customer::query()->create(['name' => 'Công ty Test Sửa Trạng Thái BG']);
+        $this->actingAs($sales);
+
+        $quotation = Quotation::query()->create([
+            'customer_id' => $customer->id,
+            'owner_id' => $sales->id,
+            'contract_type' => ContractType::Consulting->value,
+            'issued_at' => now()->toDateString(),
+            'valid_until' => now()->addDays(30)->toDateString(),
+            'status' => QuotationStatus::Draft->value,
+            'total_amount' => 100_000_000,
+            'original_amount' => 100_000_000,
+            'contract_value' => 100_000_000,
+        ]);
+        $quotation->services()->create([
+            'service_type' => ServiceType::EsgConsulting->value,
+            'description' => 'Tư vấn ESG',
+            'quantity' => 1,
+            'unit_price' => 100_000_000,
+            'total_amount' => 100_000_000,
+            'sort_order' => 0,
+        ]);
+
+        Livewire::test(QuotationIndex::class)
+            ->call('openEdit', $quotation->id)
+            ->assertSet('formStatus', QuotationStatus::Draft->value)
+            ->set('formStatus', QuotationStatus::Sent->value)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        self::assertSame(QuotationStatus::Sent, $quotation->refresh()->status);
+    }
+
     private function salesUser(): User
     {
         $this->seed(PermissionSeeder::class);
