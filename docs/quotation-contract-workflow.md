@@ -193,21 +193,19 @@ quan hệ tài liệu hoặc tạo bản sao có nguồn gốc rõ ràng.
 
 ```text
 Draft
-  → InternalReview
   → WaitingCustomerSignature
   → Active
   → Completed
   → Liquidated
 
 Active → Suspended → Active
-Draft/InternalReview/WaitingCustomerSignature/Active/Suspended → Cancelled
+Draft/WaitingCustomerSignature/Active/Suspended → Cancelled
 ```
 
 | Trạng thái | Điều kiện chuyển vào |
 |---|---|
 | `draft` | Hợp đồng vừa tạo |
-| `internal_review` | Đủ thông tin bắt buộc và lịch thanh toán hợp lệ |
-| `waiting_customer_signature` | Đã duyệt nội bộ |
+| `waiting_customer_signature` | Đủ thông tin bắt buộc và lịch thanh toán hợp lệ |
 | `active` | Có ngày ký và hợp đồng đã được xác nhận |
 | `suspended` | Có lý do tạm dừng |
 | `completed` | Hoàn thành phạm vi công việc |

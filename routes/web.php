@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ContractDocumentDownloadController;
 use App\Http\Controllers\DashboardController;
+use App\Livewire\Commissions\CommissionRequestForm;
+use App\Livewire\Commissions\CommissionRequestIndex;
 use App\Livewire\Contracts\ContractIndex;
 use App\Livewire\Contracts\ContractShow;
 use App\Livewire\Customers\CustomerIndex;
@@ -84,6 +86,18 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/business-reports', BusinessReportIndex::class)
         ->middleware('can:sales-report.view')
         ->name('business-reports.index');
+
+    Route::get('/commissions', CommissionRequestIndex::class)
+        ->middleware('can:commission.view')
+        ->name('commissions.index');
+
+    Route::get('/commissions/create', CommissionRequestForm::class)
+        ->middleware('can:commission.create')
+        ->name('commissions.create');
+
+    Route::get('/commissions/{id}/edit', CommissionRequestForm::class)
+        ->middleware('can:commission.update')
+        ->name('commissions.edit');
 
     Route::get('/document-regulations', DocumentRegulationIndex::class)
         ->middleware('can:document.view')

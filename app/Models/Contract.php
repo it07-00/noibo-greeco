@@ -108,4 +108,9 @@ final class Contract extends Model
     {
         return $this->hasMany(ContractDocument::class)->latest();
     }
+
+    public function commissionRequests(): HasMany
+    {
+        return $this->hasMany(CommissionRequest::class)->latest();
+    }
 }

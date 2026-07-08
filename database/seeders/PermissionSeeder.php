@@ -129,10 +129,14 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::ManagementDashboardView->value,
             PermissionEnum::SalesReportView->value,
             PermissionEnum::SalesTargetManage->value,
+            PermissionEnum::CommissionView->value,
         ]);
 
         $it->syncPermissions($staffPermissions);
-        $it->givePermissionTo(PermissionEnum::DocumentManage->value);
+        $it->givePermissionTo([
+            PermissionEnum::DocumentManage->value,
+            PermissionEnum::CommissionView->value,
+        ]);
 
         $sales->syncPermissions($staffPermissions);
         $sales->givePermissionTo([
@@ -154,6 +158,10 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::BusinessDashboardView->value,
             PermissionEnum::SalesReportView->value,
             PermissionEnum::SalesTargetManage->value,
+            PermissionEnum::CommissionView->value,
+            PermissionEnum::CommissionCreate->value,
+            PermissionEnum::CommissionUpdate->value,
+            PermissionEnum::CommissionDelete->value,
         ]);
 
         $consultant->syncPermissions($staffPermissions);
@@ -182,6 +190,9 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::ContractDocumentReview->value,
             PermissionEnum::AccountingDashboardView->value,
             PermissionEnum::SalesReportView->value,
+            PermissionEnum::CommissionView->value,
+            PermissionEnum::CommissionApprove->value,
+            PermissionEnum::CommissionPay->value,
         ]);
 
         $itDeptId = DB::table('departments')

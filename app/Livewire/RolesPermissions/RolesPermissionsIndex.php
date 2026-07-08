@@ -8,13 +8,13 @@ use App\DTOs\RoleDTO;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Models\Department;
+use App\Models\Role;
 use App\Services\RolePermissionService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
-use App\Models\Role;
 
 #[Layout('layouts.app')]
 #[Title('Quản lý Vai trò & Quyền')]
@@ -290,6 +290,12 @@ final class RolesPermissionsIndex extends Component
                 PermissionEnum::ManagementDashboardView->value => 'Xem dashboard quản trị',
                 PermissionEnum::SalesReportView->value => 'Xem báo cáo kinh doanh',
                 PermissionEnum::SalesTargetManage->value => 'Thiết lập KPI kinh doanh',
+                PermissionEnum::CommissionView->value => 'Xem yêu cầu chi hoa hồng',
+                PermissionEnum::CommissionCreate->value => 'Tạo yêu cầu chi hoa hồng',
+                PermissionEnum::CommissionUpdate->value => 'Cập nhật yêu cầu chi hoa hồng',
+                PermissionEnum::CommissionDelete->value => 'Xóa yêu cầu chi hoa hồng',
+                PermissionEnum::CommissionApprove->value => 'Duyệt yêu cầu chi hoa hồng',
+                PermissionEnum::CommissionPay->value => 'Xác nhận đã chi hoa hồng',
             ],
         ];
 

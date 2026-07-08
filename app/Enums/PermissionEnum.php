@@ -55,6 +55,12 @@ enum PermissionEnum: string
     case ManagementDashboardView = 'management-dashboard.view';
     case SalesReportView = 'sales-report.view';
     case SalesTargetManage = 'sales-target.manage';
+    case CommissionView = 'commission.view';
+    case CommissionCreate = 'commission.create';
+    case CommissionUpdate = 'commission.update';
+    case CommissionDelete = 'commission.delete';
+    case CommissionApprove = 'commission.approve';
+    case CommissionPay = 'commission.pay';
 
     public function label(): string
     {
@@ -108,6 +114,12 @@ enum PermissionEnum: string
             self::ManagementDashboardView => 'Xem dashboard quản trị',
             self::SalesReportView => 'Xem báo cáo kinh doanh',
             self::SalesTargetManage => 'Thiết lập KPI kinh doanh',
+            self::CommissionView => 'Xem yêu cầu chi hoa hồng',
+            self::CommissionCreate => 'Tạo yêu cầu chi hoa hồng',
+            self::CommissionUpdate => 'Cập nhật yêu cầu chi hoa hồng',
+            self::CommissionDelete => 'Xóa yêu cầu chi hoa hồng',
+            self::CommissionApprove => 'Duyệt yêu cầu chi hoa hồng',
+            self::CommissionPay => 'Xác nhận đã chi hoa hồng',
         };
     }
 }

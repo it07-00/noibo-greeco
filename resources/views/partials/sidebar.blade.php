@@ -59,7 +59,7 @@
                 </li>
             @endif
 
-            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view'))
+            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view') || auth()->user()?->can('commission.view'))
                 <li class="menu-heading">
                     <span class="menu-label">Kinh doanh</span>
                 </li>
@@ -97,6 +97,15 @@
                     <a class="menu-link {{ request()->routeIs('business-reports.*') ? 'active' : '' }}" href="{{ route('business-reports.index') }}">
                         <i class="fi fi-rr-chart-histogram"></i>
                         <span class="menu-label">Báo cáo kinh doanh</span>
+                    </a>
+                </li>
+            @endif
+
+            @if (auth()->user()?->can('commission.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('commissions.*') ? 'active' : '' }}" href="{{ route('commissions.index') }}">
+                        <i class="fi fi-rr-receipt"></i>
+                        <span class="menu-label">Hoa hồng</span>
                     </a>
                 </li>
             @endif
