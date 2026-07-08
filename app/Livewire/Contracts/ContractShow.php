@@ -402,7 +402,6 @@ final class ContractShow extends Component
     ): void {
         $status = ContractStatus::from($target);
         $ability = match ($status) {
-            ContractStatus::WaitingCustomerSignature => 'approve',
             ContractStatus::Active => 'activate',
             ContractStatus::Completed => 'complete',
             ContractStatus::Cancelled => 'cancel',

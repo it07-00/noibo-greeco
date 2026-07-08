@@ -42,20 +42,10 @@
                     <button
                         type="button"
                         class="btn btn-primary sales-primary-action"
-                        wire:click="transitionContract('internal_review')"
-                        wire:confirm="Gửi hợp đồng sang bước kiểm tra nội bộ?"
-                    >
-                        Gửi kiểm tra
-                    </button>
-                @endcan
-            @elseif ($contract->status === \App\Enums\ContractStatus::InternalReview)
-                @can('approve', $contract)
-                    <button
-                        type="button"
-                        class="btn btn-primary sales-primary-action"
                         wire:click="transitionContract('waiting_customer_signature')"
+                        wire:confirm="Xác nhận gửi hợp đồng chờ khách ký?"
                     >
-                        Duyệt, chờ khách ký
+                        Chờ khách ký
                     </button>
                 @endcan
             @elseif ($contract->status === \App\Enums\ContractStatus::WaitingCustomerSignature)

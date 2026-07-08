@@ -18,16 +18,11 @@ final class ContractWorkflowService
      */
     private const TRANSITIONS = [
         'draft' => [
-            ContractStatus::InternalReview,
-            ContractStatus::Cancelled,
-        ],
-        'internal_review' => [
-            ContractStatus::Draft,
             ContractStatus::WaitingCustomerSignature,
             ContractStatus::Cancelled,
         ],
         'waiting_customer_signature' => [
-            ContractStatus::InternalReview,
+            ContractStatus::Draft,
             ContractStatus::Active,
             ContractStatus::Cancelled,
         ],
@@ -67,7 +62,7 @@ final class ContractWorkflowService
             );
         }
 
-        if ($target === ContractStatus::InternalReview) {
+        if ($target === ContractStatus::WaitingCustomerSignature) {
             $this->ensureReadyForReview($contract);
         }
 

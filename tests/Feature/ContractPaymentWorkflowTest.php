@@ -35,8 +35,8 @@ final class ContractPaymentWorkflowTest extends TestCase
         $workflow = app(ContractWorkflowService::class);
 
         try {
-            $workflow->transition($contract, ContractStatus::InternalReview);
-            self::fail('Contract without services must not enter review.');
+            $workflow->transition($contract, ContractStatus::WaitingCustomerSignature);
+            self::fail('Contract without services must not transition to waiting signature.');
         } catch (DomainException $exception) {
             self::assertStringContainsString('ít nhất một dịch vụ', $exception->getMessage());
         }
@@ -48,7 +48,6 @@ final class ContractPaymentWorkflowTest extends TestCase
         ]);
         $this->createSchedule($contract, 1, 100_000_000, '100.00');
 
-        $contract = $workflow->transition($contract, ContractStatus::InternalReview);
         $contract = $workflow->transition($contract, ContractStatus::WaitingCustomerSignature);
 
         try {
