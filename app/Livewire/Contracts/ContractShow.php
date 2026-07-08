@@ -218,7 +218,7 @@ final class ContractShow extends Component
         $validated = $this->validate([
             'scheduleName' => ['required', 'string', 'max:191'],
             'schedulePercentage' => ['nullable', 'numeric', 'min:0.01', 'max:100'],
-            'scheduleAmount' => ['required', 'integer', 'min:1'],
+            'scheduleAmount' => ['required', 'numeric', 'min:1'],
             'scheduleConditionType' => ['required', Rule::enum(PaymentConditionType::class)],
             'scheduleCustomCondition' => ['nullable', 'string', 'max:2000'],
             'scheduleExpectedTriggerDate' => ['nullable', 'date'],
@@ -235,7 +235,7 @@ final class ContractShow extends Component
             $service->save($this->contract, [
                 'name' => trim($validated['scheduleName']),
                 'percentage' => $validated['schedulePercentage'] ?: null,
-                'amount' => (int) $validated['scheduleAmount'],
+                'amount' => (float) $validated['scheduleAmount'],
                 'condition_type' => $validated['scheduleConditionType'],
                 'custom_condition' => $validated['scheduleCustomCondition'] ?: null,
                 'expected_trigger_date' => $validated['scheduleExpectedTriggerDate'] ?: null,
@@ -358,22 +358,22 @@ final class ContractShow extends Component
 
         $validated = $this->validate([
             'paymentPaidAt' => ['required', 'date'],
-            'paymentAmount' => ['required', 'integer', 'min:1'],
+            'paymentAmount' => ['required', 'numeric', 'min:1'],
             'paymentMethod' => ['required', Rule::enum(PaymentMethod::class)],
             'paymentReference' => ['nullable', 'string', 'max:191'],
             'paymentNotes' => ['nullable', 'string', 'max:2000'],
             'allocationRows' => ['array'],
             'allocationRows.*.payment_schedule_id' => ['required', 'integer'],
-            'allocationRows.*.amount' => ['required', 'integer', 'min:0'],
+            'allocationRows.*.amount' => ['required', 'numeric', 'min:0'],
         ], [
             'paymentAmount.min' => 'Số tiền nhận phải lớn hơn 0.',
         ]);
 
         $allocations = collect($validated['allocationRows'])
-            ->filter(static fn (array $row): bool => (int) $row['amount'] > 0)
+            ->filter(static fn (array $row): bool => (float) $row['amount'] > 0)
             ->map(static fn (array $row): array => [
                 'payment_schedule_id' => (int) $row['payment_schedule_id'],
-                'amount' => (int) $row['amount'],
+                'amount' => (float) $row['amount'],
             ])
             ->values()
             ->all();
@@ -381,7 +381,7 @@ final class ContractShow extends Component
         try {
             $service->record($this->contract, [
                 'paid_at' => $validated['paymentPaidAt'],
-                'amount' => (int) $validated['paymentAmount'],
+                'amount' => (float) $validated['paymentAmount'],
                 'payment_method' => $validated['paymentMethod'],
                 'reference_number' => $validated['paymentReference'] ?: null,
                 'notes' => $validated['paymentNotes'] ?: null,

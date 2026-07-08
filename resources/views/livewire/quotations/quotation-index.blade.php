@@ -128,6 +128,19 @@
                                 <div class="small text-primary text-nowrap mt-1" style="font-size: 0.76rem;">
                                     <i class="fi fi-rr-user me-1" style="font-size: 0.72rem;"></i>{{ $quotation->owner?->name ?: 'Chưa phân công' }}
                                 </div>
+                                @if ($quotation->file_path)
+                                    <div class="mt-1">
+                                        <button
+                                            type="button"
+                                            class="btn btn-link p-0 text-success text-decoration-none small text-start"
+                                            style="font-size: 0.76rem;"
+                                            wire:click="downloadFile({{ $quotation->id }})"
+                                            title="Tải file báo giá"
+                                        >
+                                            <i class="fi fi-rr-download me-1" style="font-size: 0.72rem;"></i>File báo giá
+                                        </button>
+                                    </div>
+                                @endif
                             </td>
                             <td>
                                 <div class="fw-medium">{{ $quotation->customer->name }}</div>
@@ -170,6 +183,19 @@
                                             title="Chỉnh sửa"
                                         >
                                             <i class="fi fi-rr-edit" aria-hidden="true"></i>
+                                        </button>
+                                    @endcan
+
+                                    @can('delete', $quotation)
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger sales-icon-button"
+                                            wire:click="delete({{ $quotation->id }})"
+                                            wire:confirm="Bạn có chắc chắn muốn xóa báo giá {{ $quotation->quotation_number }}?"
+                                            aria-label="Xóa {{ $quotation->quotation_number }}"
+                                            title="Xóa"
+                                        >
+                                            <i class="fi fi-rr-trash" aria-hidden="true"></i>
                                         </button>
                                     @endcan
 
@@ -405,6 +431,35 @@
                     <div class="mt-3">
                         <label for="quotationNotes" class="form-label">Ghi chú nội bộ</label>
                         <textarea id="quotationNotes" rows="3" class="form-control" wire:model="formNotes"></textarea>
+                    </div>
+
+                    <div class="mt-3">
+                        <label for="formFile" class="form-label">File báo giá đính kèm</label>
+                        
+                        @if ($existingFilePath)
+                            <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fi fi-rr-file-pdf text-danger fs-5 me-2" aria-hidden="true"></i>
+                                    <span class="small text-truncate" style="max-width: 300px;">{{ basename($existingFilePath) }}</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="downloadFile({{ $editingId }})">
+                                        <i class="fi fi-rr-download" aria-hidden="true"></i> Tải về
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" wire:click="deleteFile" wire:confirm="Bạn có chắc chắn muốn xóa file đính kèm này?">
+                                        <i class="fi fi-rr-trash" aria-hidden="true"></i> Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
+
+                        <input type="file" id="formFile" class="form-control @error('formFile') is-invalid @enderror" wire:model="formFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                        @error('formFile') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div wire:loading wire:target="formFile" class="small text-success mt-2">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            Đang tải file lên...
+                        </div>
+                        <div class="form-text mt-1">Định dạng hỗ trợ: pdf, doc, docx, xls, xlsx, jpg, jpeg, png. Tối đa 20MB.</div>
                     </div>
                 </div>
 

@@ -29,7 +29,7 @@ final class PaymentRecordingService
         array $allocations,
         User $actor,
     ): ContractPayment {
-        $amount = (int) $paymentData['amount'];
+        $amount = (float) $paymentData['amount'];
 
         if ($amount <= 0) {
             throw new DomainException('Số tiền nhận phải lớn hơn 0.');
@@ -55,7 +55,7 @@ final class PaymentRecordingService
             ]));
 
             foreach ($allocations as $allocation) {
-                if ((int) $allocation['amount'] <= 0) {
+                if ((float) $allocation['amount'] <= 0) {
                     continue;
                 }
 
@@ -63,7 +63,7 @@ final class PaymentRecordingService
                     ->where('contract_id', $contract->id)
                     ->findOrFail((int) $allocation['payment_schedule_id']);
 
-                $this->allocationService->allocate($payment, $schedule, (int) $allocation['amount']);
+                $this->allocationService->allocate($payment, $schedule, (float) $allocation['amount']);
 
                 if ($schedule->refresh()->status === PaymentScheduleStatus::Paid) {
                     $schedule->update([

@@ -63,7 +63,7 @@ final class QuotationService
                 ])
                 ->count(),
             'won' => Quotation::query()->where('status', QuotationStatus::Won->value)->count(),
-            'pipeline_value' => (int) Quotation::query()
+            'pipeline_value' => (float) Quotation::query()
                 ->whereIn('status', [
                     QuotationStatus::Draft->value,
                     QuotationStatus::Sent->value,
@@ -163,7 +163,7 @@ final class QuotationService
             }
 
             $quantity = (float) $service['quantity'];
-            $unitPrice = (int) $service['unit_price'];
+            $unitPrice = (float) $service['unit_price'];
 
             if ($quantity <= 0 || $unitPrice < 0) {
                 throw new DomainException('Số lượng và đơn giá dịch vụ không hợp lệ.');
@@ -176,7 +176,7 @@ final class QuotationService
                     : trim((string) $service['description']),
                 'quantity' => $quantity,
                 'unit_price' => $unitPrice,
-                'total_amount' => (int) round($quantity * $unitPrice),
+                'total_amount' => (float) round($quantity * $unitPrice),
             ];
         }
 

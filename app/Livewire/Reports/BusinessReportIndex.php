@@ -85,7 +85,7 @@ final class BusinessReportIndex extends Component
         $validated = $this->validate([
             'targetUserId' => ['required', 'integer', 'exists:users,id'],
             'targetMonth' => ['required', 'integer', 'between:1,12'],
-            'targetAmount' => ['required', 'integer', 'min:0'],
+            'targetAmount' => ['required', 'numeric', 'min:0'],
             'targetContractCount' => ['required', 'integer', 'min:0'],
             'targetNotes' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -97,7 +97,7 @@ final class BusinessReportIndex extends Component
                 'user_id' => $validated['targetUserId'],
             ],
             [
-                'target_amount' => (int) $validated['targetAmount'],
+                'target_amount' => (float) $validated['targetAmount'],
                 'target_contract_count' => (int) $validated['targetContractCount'],
                 'notes' => $validated['targetNotes'] ?: null,
                 'set_by' => $this->actor()->id,

@@ -95,6 +95,10 @@ final class QuotationIndex extends Component
 
     public string $convertNotes = '';
 
+    public $formFile;
+
+    public ?string $existingFilePath = null;
+
     /**
      * @var list<array<string, mixed>>
      */
@@ -165,6 +169,8 @@ final class QuotationIndex extends Component
         $this->formCustomerCommission = (string) $quotation->customer_commission;
         $this->formCommissionTax = (string) $quotation->commission_tax;
         $this->formContractValue = (string) $quotation->contract_value;
+        $this->existingFilePath = $quotation->file_path;
+        $this->formFile = null;
         $this->serviceRows = $quotation->services
             ->map(static fn ($service): array => [
                 'service_type' => $service->service_type->value,
@@ -226,25 +232,28 @@ final class QuotationIndex extends Component
             'formValidUntil' => ['nullable', 'date', 'after_or_equal:formIssuedAt'],
             'formNotes' => ['nullable', 'string', 'max:3000'],
             'formWorkingSituation' => ['nullable', 'string', 'max:3000'],
-            'formOriginalAmount' => ['nullable', 'integer', 'min:0'],
-            'formCustomerCommission' => ['nullable', 'integer', 'min:0'],
-            'formCommissionTax' => ['nullable', 'integer', 'min:0'],
-            'formContractValue' => ['nullable', 'integer', 'min:0'],
+            'formOriginalAmount' => ['nullable', 'numeric', 'min:0'],
+            'formCustomerCommission' => ['nullable', 'numeric', 'min:0'],
+            'formCommissionTax' => ['nullable', 'numeric', 'min:0'],
+            'formContractValue' => ['nullable', 'numeric', 'min:0'],
+            'formFile' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
             'serviceRows' => ['required', 'array', 'min:1'],
             'serviceRows.*.service_type' => ['required', Rule::in($allowedServices)],
             'serviceRows.*.description' => ['nullable', 'string', 'max:2000'],
             'serviceRows.*.quantity' => ['required', 'integer', 'gt:0'],
-            'serviceRows.*.unit_price' => ['required', 'integer', 'min:0'],
+            'serviceRows.*.unit_price' => ['required', 'numeric', 'min:0'],
         ], [
             'formCustomerId.required' => 'Vui lòng chọn khách hàng.',
             'formValidUntil.after_or_equal' => 'Ngày hết hiệu lực phải sau ngày báo giá.',
+            'formFile.max' => 'Dung lượng file không được vượt quá 20 MB.',
+            'formFile.mimes' => 'Định dạng file không hỗ trợ.',
             'serviceRows.*.service_type.in' => 'Dịch vụ không thuộc loại hợp đồng.',
             'serviceRows.*.quantity.integer' => 'Số lượng phải là số nguyên.',
             'serviceRows.*.quantity.gt' => 'Số lượng phải lớn hơn 0.',
         ]);
 
         try {
-            $service->saveDraft([
+            $savedQuotation = $service->saveDraft([
                 'customer_id' => $validated['formCustomerId'],
                 'owner_id' => $validated['formOwnerId'],
                 'contract_type' => $validated['formContractType'],
@@ -252,11 +261,24 @@ final class QuotationIndex extends Component
                 'valid_until' => $validated['formValidUntil'] ?: null,
                 'notes' => $validated['formNotes'] ?: null,
                 'working_situation' => $validated['formWorkingSituation'] ?: null,
-                'original_amount' => $validated['formOriginalAmount'] !== '' ? (int) $validated['formOriginalAmount'] : null,
-                'customer_commission' => $validated['formCustomerCommission'] !== '' ? (int) $validated['formCustomerCommission'] : 0,
-                'commission_tax' => $validated['formCommissionTax'] !== '' ? (int) $validated['formCommissionTax'] : 0,
-                'contract_value' => $validated['formContractValue'] !== '' ? (int) $validated['formContractValue'] : null,
+                'original_amount' => $validated['formOriginalAmount'] !== '' ? (float) $validated['formOriginalAmount'] : null,
+                'customer_commission' => $validated['formCustomerCommission'] !== '' ? (float) $validated['formCustomerCommission'] : 0.0,
+                'commission_tax' => $validated['formCommissionTax'] !== '' ? (float) $validated['formCommissionTax'] : 0.0,
+                'contract_value' => $validated['formContractValue'] !== '' ? (float) $validated['formContractValue'] : null,
             ], $validated['serviceRows'], Auth::user(), $quotation);
+
+            if ($this->formFile) {
+                if ($savedQuotation->file_path && Storage::disk('local')->exists($savedQuotation->file_path)) {
+                    Storage::disk('local')->delete($savedQuotation->file_path);
+                }
+
+                $path = $this->formFile->store(
+                    path: 'quotations/' . $savedQuotation->id,
+                    options: 'local',
+                );
+
+                $savedQuotation->update(['file_path' => $path]);
+            }
         } catch (DomainException $exception) {
             $this->addError('serviceRows', $exception->getMessage());
 
@@ -395,10 +417,10 @@ final class QuotationIndex extends Component
         $validated = $this->validate([
             'convertContractNumber' => ['nullable', 'string', 'max:191'],
             'convertTitle' => ['required', 'string', 'max:191'],
-            'convertValue' => ['required', 'integer', 'min:1'],
-            'convertOriginalAmount' => ['required', 'integer', 'min:0'],
-            'convertCustomerCommission' => ['required', 'integer', 'min:0'],
-            'convertCommissionTax' => ['required', 'integer', 'min:0'],
+            'convertValue' => ['required', 'numeric', 'min:1'],
+            'convertOriginalAmount' => ['required', 'numeric', 'min:0'],
+            'convertCustomerCommission' => ['required', 'numeric', 'min:0'],
+            'convertCommissionTax' => ['required', 'numeric', 'min:0'],
             'convertPaymentMethod' => ['nullable', Rule::enum(PaymentMethod::class)],
             'convertSignedAt' => ['nullable', 'date'],
             'convertStartsAt' => ['nullable', 'date'],
@@ -407,7 +429,7 @@ final class QuotationIndex extends Component
             'convertPaymentRows' => ['array'],
             'convertPaymentRows.*.name' => ['required', 'string', 'max:191'],
             'convertPaymentRows.*.percentage' => ['nullable', 'numeric', 'min:0.01', 'max:100'],
-            'convertPaymentRows.*.amount' => ['required', 'integer', 'min:1'],
+            'convertPaymentRows.*.amount' => ['required', 'numeric', 'min:1'],
             'convertPaymentRows.*.condition_type' => ['required', Rule::enum(PaymentConditionType::class)],
             'convertPaymentRows.*.custom_condition' => ['nullable', 'string', 'max:2000'],
             'convertPaymentRows.*.expected_trigger_date' => ['nullable', 'date'],
@@ -434,7 +456,7 @@ final class QuotationIndex extends Component
             ->map(static fn (array $row): array => [
                 'name' => trim($row['name']),
                 'percentage' => $row['percentage'] !== '' ? (float) $row['percentage'] : null,
-                'amount' => (int) $row['amount'],
+                'amount' => (float) $row['amount'],
                 'condition_type' => $row['condition_type'],
                 'custom_condition' => $row['custom_condition'] ?: null,
                 'expected_trigger_date' => $row['expected_trigger_date'] ?: null,
@@ -469,10 +491,10 @@ final class QuotationIndex extends Component
             $contract = $creator->create($quotation, [
                 'contract_number' => $validated['convertContractNumber'] ?: null,
                 'title' => trim($validated['convertTitle']),
-                'value' => (int) $validated['convertValue'],
-                'original_amount' => (int) $validated['convertOriginalAmount'],
-                'customer_commission' => (int) $validated['convertCustomerCommission'],
-                'commission_tax' => (int) $validated['convertCommissionTax'],
+                'value' => (float) $validated['convertValue'],
+                'original_amount' => (float) $validated['convertOriginalAmount'],
+                'customer_commission' => (float) $validated['convertCustomerCommission'],
+                'commission_tax' => (float) $validated['convertCommissionTax'],
                 'payment_method' => $validated['convertPaymentMethod'] ?: null,
                 'signed_at' => $validated['convertSignedAt'] ?: null,
                 'starts_at' => $validated['convertStartsAt'] ?: null,
@@ -529,6 +551,70 @@ final class QuotationIndex extends Component
         );
     }
 
+    public function delete(int $quotationId): void
+    {
+        $quotation = Quotation::query()->findOrFail($quotationId);
+        Gate::authorize('delete', $quotation);
+
+        $quotation->delete();
+
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Đã xóa báo giá',
+            'toast' => true,
+            'position' => 'top-end',
+            'timer' => 2200,
+        ]);
+    }
+
+    public function downloadFile(int $id): mixed
+    {
+        $quotation = Quotation::findOrFail($id);
+        Gate::authorize('view', $quotation);
+
+        if (! $quotation->file_path || ! Storage::disk('local')->exists($quotation->file_path)) {
+            $this->dispatch('swal:alert', [
+                'icon' => 'error',
+                'title' => 'Không tìm thấy file báo giá',
+                'toast' => true,
+                'position' => 'top-end',
+                'timer' => 2200,
+            ]);
+
+            return null;
+        }
+
+        $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
+        $fileName = 'Bao_gia_' . ($quotation->quotation_number ?: $quotation->id) . '.' . $extension;
+
+        return Storage::disk('local')->download($quotation->file_path, $fileName);
+    }
+
+    public function deleteFile(): void
+    {
+        if ($this->editingId > 0) {
+            $quotation = Quotation::query()->findOrFail($this->editingId);
+            Gate::authorize('update', $quotation);
+
+            if ($quotation->file_path && Storage::disk('local')->exists($quotation->file_path)) {
+                Storage::disk('local')->delete($quotation->file_path);
+            }
+
+            $quotation->update(['file_path' => null]);
+            $this->existingFilePath = null;
+
+            $this->dispatch('swal:alert', [
+                'icon' => 'success',
+                'title' => 'Đã xóa file báo giá',
+                'toast' => true,
+                'position' => 'top-end',
+                'timer' => 2000,
+            ]);
+        } else {
+            $this->formFile = null;
+        }
+    }
+
     public function render(QuotationService $service): View
     {
         $selectedContractType = ContractType::tryFrom($this->formContractType);
@@ -574,6 +660,8 @@ final class QuotationIndex extends Component
             'formCommissionTax',
             'formContractValue',
             'serviceRows',
+            'formFile',
+            'existingFilePath',
         ]);
         $this->resetValidation();
     }

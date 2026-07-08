@@ -34,6 +34,7 @@ final class Quotation extends Model
         'currency',
         'working_situation',
         'notes',
+        'file_path',
         'lost_reason',
         'sent_at',
         'won_at',

@@ -11,7 +11,7 @@
         </li>
         <li>
             <a href="javascript:void(0)">
-                <div class="avatar avatar-sm bg-secondary shadow-sharp-secondary rounded-circle text-white mx-auto mb-2">
+                <div class="avatar avatar-sm bg-danger shadow-sharp-danger rounded-circle text-white mx-auto mb-2">
                     <i class="fi fi-rr-interrogation"></i>
                 </div>
                 <span class="text-dark">Hỗ trợ</span>

@@ -27,7 +27,7 @@ final class BusinessReportService
     public function summary(int $year, ?int $month = null, ?int $ownerId = null): array
     {
         $periodContracts = $this->contractQuery($year, $month, $ownerId);
-        $signedValue = (int) (clone $periodContracts)->sum('value');
+        $signedValue = $this->safeCast((clone $periodContracts)->sum('value'));
         $contractCount = (clone $periodContracts)->count();
 
         $collectionQuery = ContractPayment::query()
@@ -43,14 +43,14 @@ final class BusinessReportService
             ->where('year', $year)
             ->when($month !== null, static fn (Builder $query) => $query->where('month', $month))
             ->when($ownerId !== null, static fn (Builder $query) => $query->where('user_id', $ownerId));
-        $target = (int) $targetQuery->sum('target_amount');
+        $target = $this->safeCast($targetQuery->sum('target_amount'));
         $targetContractCount = (int) (clone $targetQuery)->sum('target_contract_count');
 
         $currentContracts = Contract::query()
             ->where('status', '!=', ContractStatus::Cancelled->value)
             ->when($ownerId !== null, static fn (Builder $query) => $query->where('owner_id', $ownerId));
-        $currentContractValue = (int) (clone $currentContracts)->sum('value');
-        $receivedToDate = (int) ContractPayment::query()
+        $currentContractValue = (float) (clone $currentContracts)->sum('value');
+        $receivedToDate = (float) ContractPayment::query()
             ->whereNull('voided_at')
             ->when($ownerId !== null, static fn (Builder $query) => $query->whereHas(
                 'contract',
@@ -58,10 +58,10 @@ final class BusinessReportService
             ))
             ->sum('amount');
 
-        $pipeline = (int) Quotation::query()
+        $pipeline = $this->safeCast(Quotation::query()
             ->whereIn('status', [QuotationStatus::Sent->value, QuotationStatus::FollowingUp->value])
             ->when($ownerId !== null, static fn (Builder $query) => $query->where('owner_id', $ownerId))
-            ->sum('contract_value');
+            ->sum('contract_value'));
 
         $closedQuotations = Quotation::query()
             ->whereYear('issued_at', $year)
@@ -74,14 +74,14 @@ final class BusinessReportService
         return [
             'signed_value' => $signedValue,
             'contract_count' => $contractCount,
-            'collected' => (int) $collectionQuery->sum('amount'),
+            'collected' => $this->safeCast($collectionQuery->sum('amount')),
             'target' => $target,
-            'target_percent' => $target > 0 ? round($signedValue / $target * 100, 1) : 0,
+            'target_percent' => $target > 0 ? round((float)$signedValue / (float)$target * 100, 1) : 0,
             'target_contract_count' => $targetContractCount,
             'contract_count_percent' => $targetContractCount > 0
                 ? round($contractCount / $targetContractCount * 100, 1)
                 : 0,
-            'outstanding' => max(0, $currentContractValue - $receivedToDate),
+            'outstanding' => $this->safeCast(max(0.0, $currentContractValue - $receivedToDate)),
             'pipeline' => $pipeline,
             'conversion_rate' => $closedCount > 0 ? round($wonCount / $closedCount * 100, 1) : 0,
         ];
@@ -96,18 +96,18 @@ final class BusinessReportService
 
         for ($month = 1; $month <= 12; $month++) {
             $contracts = $this->contractQuery($year, $month, $ownerId);
-            $signed = (int) (clone $contracts)->sum('value');
-            $target = (int) SalesTarget::query()
+            $signed = $this->safeCast((clone $contracts)->sum('value'));
+            $target = $this->safeCast(SalesTarget::query()
                 ->where('year', $year)
                 ->where('month', $month)
                 ->when($ownerId !== null, static fn (Builder $query) => $query->where('user_id', $ownerId))
-                ->sum('target_amount');
+                ->sum('target_amount'));
             $targetContracts = (int) SalesTarget::query()
                 ->where('year', $year)
                 ->where('month', $month)
                 ->when($ownerId !== null, static fn (Builder $query) => $query->where('user_id', $ownerId))
                 ->sum('target_contract_count');
-            $collected = (int) ContractPayment::query()
+            $collected = $this->safeCast(ContractPayment::query()
                 ->whereNull('voided_at')
                 ->whereYear('paid_at', $year)
                 ->whereMonth('paid_at', $month)
@@ -115,7 +115,7 @@ final class BusinessReportService
                     'contract',
                     static fn (Builder $contractQuery) => $contractQuery->where('owner_id', $ownerId),
                 ))
-                ->sum('amount');
+                ->sum('amount'));
 
             $rows[] = [
                 'month' => $month,
@@ -167,7 +167,7 @@ final class BusinessReportService
             ->map(static fn (Collection $contracts): array => [
                 'label' => $contracts->first()->type->label(),
                 'count' => $contracts->count(),
-                'value' => (int) $contracts->sum('value'),
+                'value' => $this->safeCast($contracts->sum('value')),
             ])
             ->sortByDesc('value')
             ->values();
@@ -237,7 +237,7 @@ final class BusinessReportService
             ->map(static fn (Collection $group): array => [
                 'label' => $group->first()->service_type->label(),
                 'count' => $group->pluck('contract_id')->unique()->count(),
-                'value' => (int) $group->sum('amount'),
+                'value' => $this->safeCast($group->sum('amount')),
             ])
             ->sortByDesc('value')
             ->values();
@@ -259,7 +259,7 @@ final class BusinessReportService
         ->map(static fn (Collection $group, string $source): array => [
             'label' => $source,
             'count' => $group->count(),
-            'value' => (int) $group->sum('value'),
+            'value' => $this->safeCast($group->sum('value')),
         ])
         ->sortByDesc('value')
         ->values();
@@ -333,7 +333,7 @@ final class BusinessReportService
         return $allProvinces->map(function (string $province) use ($quotationProvinces, $contractProvinces): array {
             $qCount = isset($quotationProvinces[$province]) ? $quotationProvinces[$province]->count() : 0;
             $cCount = isset($contractProvinces[$province]) ? $contractProvinces[$province]->count() : 0;
-            $salesValue = isset($contractProvinces[$province]) ? (int) $contractProvinces[$province]->sum('value') : 0;
+            $salesValue = isset($contractProvinces[$province]) ? $this->safeCast($contractProvinces[$province]->sum('value')) : 0;
 
             return [
                 'province' => $province,
@@ -344,5 +344,14 @@ final class BusinessReportService
         })
         ->sortByDesc('sales_value')
         ->values();
+    }
+
+    private function safeCast(float|int|null $value): float|int
+    {
+        if ($value === null) {
+            return 0;
+        }
+        $val = (float) $value;
+        return $val > PHP_INT_MAX ? $val : (int) $val;
     }
 }

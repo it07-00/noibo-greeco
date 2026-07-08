@@ -332,6 +332,157 @@ final class SalesUiTest extends TestCase
         Storage::disk('local')->assertExists($contract->documents()->firstOrFail()->file_path);
     }
 
+    public function test_sales_can_delete_draft_quotation_but_cannot_delete_won_quotation(): void
+    {
+        $sales = $this->salesUser();
+        $customer = Customer::query()->create(['name' => 'Công ty Test Xóa']);
+        
+        $draftQuotation = Quotation::query()->create([
+            'customer_id' => $customer->id,
+            'owner_id' => $sales->id,
+            'contract_type' => ContractType::Consulting,
+            'status' => QuotationStatus::Draft,
+            'total_amount' => 50_000_000,
+        ]);
+
+        $wonQuotation = Quotation::query()->create([
+            'customer_id' => $customer->id,
+            'owner_id' => $sales->id,
+            'contract_type' => ContractType::Consulting,
+            'status' => QuotationStatus::Won,
+            'total_amount' => 100_000_000,
+        ]);
+
+        $this->actingAs($sales);
+
+        // Delete draft should work
+        Livewire::test(QuotationIndex::class)
+            ->call('delete', $draftQuotation->id)
+            ->assertHasNoErrors();
+
+        $this->assertSoftDeleted('quotations', [
+            'id' => $draftQuotation->id,
+        ]);
+
+        // Delete won should fail authorization
+        Livewire::test(QuotationIndex::class)
+            ->call('delete', $wonQuotation->id)
+            ->assertForbidden();
+    }
+
+    public function test_sales_can_upload_and_download_and_delete_quotation_file(): void
+    {
+        Storage::fake('local');
+
+        $sales = $this->salesUser();
+        $customer = Customer::query()->create(['name' => 'Công ty Test File']);
+
+        $this->actingAs($sales);
+
+        $file = \Illuminate\Http\UploadedFile::fake()->create('quotation_offer.pdf', 500, 'application/pdf');
+
+        // Create quotation with file
+        Livewire::test(QuotationIndex::class)
+            ->set('formCustomerId', $customer->id)
+            ->set('formOwnerId', $sales->id)
+            ->set('formContractType', ContractType::Consulting->value)
+            ->set('formIssuedAt', now()->toDateString())
+            ->set('formValidUntil', now()->addDays(30)->toDateString())
+            ->set('serviceRows', [
+                [
+                    'service_type' => ServiceType::EsgConsulting->value,
+                    'description' => 'Test Service',
+                    'quantity' => 1,
+                    'unit_price' => 5_000_000,
+                ],
+            ])
+            ->set('formFile', $file)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $quotation = Quotation::query()->latest('id')->firstOrFail();
+        $this->assertNotNull($quotation->file_path);
+        Storage::disk('local')->assertExists($quotation->file_path);
+
+        // Download file should work
+        Livewire::test(QuotationIndex::class)
+            ->call('downloadFile', $quotation->id)
+            ->assertFileDownloaded();
+
+        // Edit and clear file
+        Livewire::test(QuotationIndex::class)
+            ->call('openEdit', $quotation->id)
+            ->assertSet('existingFilePath', $quotation->file_path)
+            ->call('deleteFile')
+            ->assertSet('existingFilePath', null);
+
+        $quotation->refresh();
+        $this->assertNull($quotation->file_path);
+        Storage::disk('local')->assertMissing($quotation->file_path);
+    }
+
+    public function test_can_create_and_convert_quotation_over_2_billion_vnd(): void
+    {
+        $sales = $this->salesUser();
+        $customer = Customer::query()->create(['name' => 'Công ty Test Trên 2 Tỷ']);
+
+        $this->actingAs($sales);
+
+        // Create quotation with 3 billion VND value
+        Livewire::test(QuotationIndex::class)
+            ->set('formCustomerId', $customer->id)
+            ->set('formOwnerId', $sales->id)
+            ->set('formContractType', ContractType::Consulting->value)
+            ->set('formIssuedAt', now()->toDateString())
+            ->set('formValidUntil', now()->addDays(30)->toDateString())
+            ->set('serviceRows', [
+                [
+                    'service_type' => ServiceType::EsgConsulting->value,
+                    'description' => 'Test Service 3 Tỷ',
+                    'quantity' => 1,
+                    'unit_price' => 3_000_000_000,
+                ],
+            ])
+            ->set('formOriginalAmount', 3_000_000_000)
+            ->set('formContractValue', 3_000_000_000)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $quotation = Quotation::query()->latest('id')->firstOrFail();
+        $this->assertEquals(3_000_000_000, $quotation->contract_value);
+
+        // Now transition status to Won
+        $quotation->update(['status' => QuotationStatus::Won]);
+
+        // Convert quotation to contract
+        Livewire::test(QuotationIndex::class)
+            ->call('openConvertModal', $quotation->id)
+            ->set('convertTitle', 'Hợp đồng 3 Tỷ')
+            ->set('convertValue', 3_000_000_000)
+            ->set('convertOriginalAmount', 3_000_000_000)
+            ->set('convertCustomerCommission', 0)
+            ->set('convertCommissionTax', 0)
+            ->set('convertPaymentRows', [
+                [
+                    'name' => 'Đợt 1',
+                    'percentage' => 100,
+                    'amount' => 3_000_000_000,
+                    'condition_type' => PaymentConditionType::AfterContractSigned->value,
+                    'custom_condition' => '',
+                    'expected_trigger_date' => '',
+                    'payment_term_days' => 15,
+                    'payment_term_unit' => \App\Enums\PaymentTermUnit::CalendarDays->value,
+                    'due_date' => '',
+                    'notes' => '',
+                ]
+            ])
+            ->call('saveConversion')
+            ->assertHasNoErrors();
+
+        $contract = Contract::query()->latest('id')->firstOrFail();
+        $this->assertEquals(3_000_000_000, $contract->value);
+    }
+
     private function salesUser(): User
     {
         $this->seed(PermissionSeeder::class);

@@ -142,7 +142,7 @@ final class CommissionRequestForm extends Component
             'bankAccount' => ['nullable', 'string', 'max:100'],
             'bankCode' => ['nullable', 'string', 'max:20'],
             'bankNumber' => ['nullable', 'string', 'max:50'],
-            'amount' => ['required', 'integer', 'min:1'],
+            'amount' => ['required', 'numeric', 'min:1'],
             'referrerInfo' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ], [
@@ -167,7 +167,7 @@ final class CommissionRequestForm extends Component
             'bank_account' => $validated['bankAccount'] ?: null,
             'bank_code' => $validated['bankCode'] ?: null,
             'bank_number' => $validated['bankNumber'] ?: null,
-            'amount' => (int) $validated['amount'],
+            'amount' => (float) $validated['amount'],
             'referrer_info' => $validated['referrerInfo'] ?: null,
             'notes' => $validated['notes'] ?: null,
         ];

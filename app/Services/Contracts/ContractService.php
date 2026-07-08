@@ -54,22 +54,22 @@ final class ContractService
         return [
             'total' => Contract::query()->count(),
             'active' => Contract::query()->where('status', ContractStatus::Active->value)->count(),
-            'total_value' => (int) Contract::query()->sum('value'),
-            'received' => (int) ContractPayment::query()
+            'total_value' => (float) Contract::query()->sum('value'),
+            'received' => (float) ContractPayment::query()
                 ->whereNull('voided_at')
                 ->sum('amount'),
         ];
     }
 
     /**
-     * @return array{received: int, allocated: int, unallocated: int, outstanding: int}
+     * @return array{received: float, allocated: float, unallocated: float, outstanding: float}
      */
     public function financialSummary(Contract $contract): array
     {
-        $received = (int) $contract->payments()
+        $received = (float) $contract->payments()
             ->whereNull('voided_at')
             ->sum('amount');
-        $allocated = (int) ContractPaymentAllocation::query()
+        $allocated = (float) ContractPaymentAllocation::query()
             ->whereHas(
                 'payment',
                 static fn ($query) => $query
@@ -81,8 +81,8 @@ final class ContractService
         return [
             'received' => $received,
             'allocated' => $allocated,
-            'unallocated' => max(0, $received - $allocated),
-            'outstanding' => max(0, $contract->value - $allocated),
+            'unallocated' => max(0.0, $received - $allocated),
+            'outstanding' => max(0.0, $contract->value - $allocated),
         ];
     }
 }

@@ -32,15 +32,15 @@ final class QuotationContractCreationService
         array $documentRows,
         User $actor,
     ): Contract {
-        $contractValue = (int) ($contractData['value'] ?? 0);
+        $contractValue = (float) ($contractData['value'] ?? 0);
 
         if ($scheduleRows !== []) {
             $scheduledAmount = array_sum(array_map(
-                static fn (array $row): int => (int) $row['amount'],
+                static fn (array $row): float => (float) $row['amount'],
                 $scheduleRows,
             ));
 
-            if ($scheduledAmount !== $contractValue) {
+            if (abs($scheduledAmount - $contractValue) > 0.01) {
                 throw new DomainException('Tổng các đợt thanh toán phải bằng giá trị hợp đồng.');
             }
 

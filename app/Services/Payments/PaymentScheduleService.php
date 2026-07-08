@@ -41,7 +41,7 @@ final class PaymentScheduleService
             throw new DomainException('Đợt đã phát sinh thanh toán, không thể sửa trực tiếp.');
         }
 
-        if ((int) $data['amount'] <= 0) {
+        if ((float) $data['amount'] <= 0) {
             throw new DomainException('Số tiền của đợt phải lớn hơn 0.');
         }
 

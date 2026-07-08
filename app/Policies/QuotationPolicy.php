@@ -45,4 +45,13 @@ final class QuotationPolicy
     {
         return $user->can(PermissionEnum::QuotationConvert->value);
     }
+
+    public function delete(User $user, Quotation $quotation): bool
+    {
+        if ($quotation->status === \App\Enums\QuotationStatus::Won) {
+            return false;
+        }
+
+        return $user->can(PermissionEnum::QuotationUpdate->value);
+    }
 }

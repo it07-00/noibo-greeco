@@ -19,7 +19,7 @@ final class PaymentPlanValidator
             throw new DomainException('Hợp đồng phải có ít nhất một đợt thanh toán.');
         }
 
-        if ((int) $activeSchedules->sum('amount') !== $contract->value) {
+        if (abs((float) $activeSchedules->sum('amount') - (float) $contract->value) > 0.01) {
             throw new DomainException('Tổng số tiền các đợt phải bằng giá trị hợp đồng.');
         }
 

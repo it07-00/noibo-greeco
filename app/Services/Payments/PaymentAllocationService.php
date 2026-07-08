@@ -19,9 +19,9 @@ final class PaymentAllocationService
     public function allocate(
         ContractPayment $payment,
         ContractPaymentSchedule $schedule,
-        int $amount,
+        float $amount,
     ): ContractPaymentAllocation {
-        if ($amount <= 0) {
+        if ($amount <= 0.0) {
             throw new DomainException('Số tiền phân bổ phải lớn hơn 0.');
         }
 
@@ -46,7 +46,7 @@ final class PaymentAllocationService
                 ->where('payment_schedule_id', $lockedSchedule->id)
                 ->first();
 
-            $paymentAllocatedElsewhere = (int) $lockedPayment->allocations()
+            $paymentAllocatedElsewhere = (float) $lockedPayment->allocations()
                 ->when(
                     $existingAllocation,
                     static fn ($query) => $query->whereKeyNot($existingAllocation->id),
@@ -57,7 +57,7 @@ final class PaymentAllocationService
                 throw new DomainException('Tổng tiền phân bổ vượt quá giá trị giao dịch.');
             }
 
-            $scheduleAllocatedElsewhere = (int) $lockedSchedule->allocations()
+            $scheduleAllocatedElsewhere = (float) $lockedSchedule->allocations()
                 ->whereHas('payment', static fn ($query) => $query->whereNull('voided_at'))
                 ->when(
                     $existingAllocation,
@@ -87,11 +87,13 @@ final class PaymentAllocationService
         return $allocation;
     }
 
-    public function unallocatedAmount(ContractPayment $payment): int
+    public function unallocatedAmount(ContractPayment $payment): int|float
     {
-        return max(
-            0,
-            $payment->amount - (int) $payment->allocations()->sum('allocated_amount'),
+        $val = max(
+            0.0,
+            $payment->amount - (float) $payment->allocations()->sum('allocated_amount'),
         );
+
+        return $val > PHP_INT_MAX ? (float) $val : (int) $val;
     }
 }

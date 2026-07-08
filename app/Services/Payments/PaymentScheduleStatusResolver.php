@@ -19,7 +19,7 @@ final class PaymentScheduleStatusResolver
             return PaymentScheduleStatus::Cancelled;
         }
 
-        $allocatedAmount = (int) $schedule->allocations()
+        $allocatedAmount = (float) $schedule->allocations()
             ->whereHas('payment', static fn ($query) => $query->whereNull('voided_at'))
             ->sum('allocated_amount');
 
