@@ -268,51 +268,49 @@
                     @else
                         <div class="d-flex flex-column gap-3">
                             @foreach ($daySchedules as $schedule)
-                                <div class="card border border-light-subtle shadow-sm mb-0">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex align-items-start justify-content-between mb-2">
-                                            <div
-                                                class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-1 gap-sm-2">
+                                <div class="card daily-report-card">
+                                    <div class="card-body p-4">
+                                        {{-- Header: badge + time + actions --}}
+                                        <div class="report-header">
+                                            <div class="d-flex flex-wrap align-items-center gap-2">
                                                 <span class="badge
-                                                            @if($schedule['label_color'] === 'success') bg-success-subtle text-success-emphasis border border-success-subtle
-                                                            @elseif($schedule['label_color'] === 'warning') bg-warning-subtle text-warning-emphasis border border-warning-subtle
-                                                            @elseif($schedule['label_color'] === 'danger') bg-danger-subtle text-danger-emphasis border border-danger-subtle
-                                                            @elseif($schedule['label_color'] === 'info') bg-info-subtle text-info-emphasis border border-info-subtle
-                                                            @elseif($schedule['label_color'] === 'purple') bg-purple-subtle text-purple border border-purple-subtle
-                                                            @elseif($schedule['label_color'] === 'noibo') bg-warning-subtle text-dark-emphasis border border-warning-subtle
-                                                            @elseif($schedule['label_color'] === 'private') bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle opacity-75
-                                                            @else bg-primary-subtle text-primary-emphasis border border-primary-subtle
-                                                            @endif
-                                                            fw-semibold px-2 py-1">
+                                                    @if($schedule['label_color'] === 'success') bg-success-subtle text-success-emphasis border border-success-subtle
+                                                    @elseif($schedule['label_color'] === 'warning') bg-warning-subtle text-warning-emphasis border border-warning-subtle
+                                                    @elseif($schedule['label_color'] === 'danger') bg-danger-subtle text-danger-emphasis border border-danger-subtle
+                                                    @elseif($schedule['label_color'] === 'info') bg-info-subtle text-info-emphasis border border-info-subtle
+                                                    @elseif($schedule['label_color'] === 'purple') bg-purple-subtle text-purple border border-purple-subtle
+                                                    @elseif($schedule['label_color'] === 'noibo') bg-warning-subtle text-dark-emphasis border border-warning-subtle
+                                                    @elseif($schedule['label_color'] === 'private') bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle opacity-75
+                                                    @else bg-primary-subtle text-primary-emphasis border border-primary-subtle
+                                                    @endif fw-semibold px-2 py-1">
                                                     @if($schedule['label_color'] === 'success') Hoàn thành
                                                     @elseif($schedule['label_color'] === 'warning') Cá nhân / Nháp
                                                     @elseif($schedule['label_color'] === 'danger') Khẩn cấp
                                                     @elseif($schedule['label_color'] === 'info') Cuộc họp
                                                     @elseif($schedule['label_color'] === 'purple') Họp công tác
-                                                    @elseif($schedule['label_color'] === 'noibo') <span class="noibo-badge">Bảo
-                                                        Châu</span>
+                                                    @elseif($schedule['label_color'] === 'noibo') <span class="noibo-badge">Bảo Châu</span>
                                                     @elseif($schedule['label_color'] === 'private') Lịch riêng tư
                                                     @else Mặc định
                                                     @endif
                                                 </span>
-                                                <span class="text-muted text-sm">
-                                                    <i class="fi fi-rr-clock me-1"></i>
+                                                <span class="report-time">
+                                                    <i class="fi fi-rr-clock"></i>
                                                     {{ $schedule['start_formatted'] }}
                                                     @if ($schedule['end_formatted'])
                                                         - {{ $schedule['end_formatted'] }}
                                                     @endif
                                                 </span>
                                             </div>
-                                            <div class="d-flex gap-1">
+                                            <div class="d-flex align-items-center gap-1">
                                                 @if (($schedule['source'] ?? 'greeco') !== 'noibo')
                                                     @if ($schedule['can_edit'])
-                                                        <button type="button" class="btn btn-sm btn-outline-warning p-1 lh-1"
+                                                        <button type="button" class="report-action-btn btn-edit"
                                                             title="Chỉnh sửa" wire:click="openEditFromList({{ $schedule['id'] }})">
                                                             <i class="fi fi-rr-edit"></i>
                                                         </button>
                                                     @endif
                                                     @if ($schedule['can_delete'])
-                                                        <button type="button" class="btn btn-sm btn-outline-danger p-1 lh-1" title="Xóa"
+                                                        <button type="button" class="report-action-btn btn-delete" title="Xóa"
                                                             wire:click="deleteFromList({{ $schedule['id'] }})"
                                                             wire:confirm="Bạn có chắc chắn muốn xóa lịch công tác này không?">
                                                             <i class="fi fi-rr-trash"></i>
@@ -321,35 +319,44 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        <h6 class="text-dark fw-bold mb-2">{{ $schedule['title'] }}</h6>
-                                        <div class="row g-2 mb-2 text-sm text-muted">
-                                            <div class="col-sm-6">
-                                                <strong><i class="fi fi-rr-marker me-1"></i> Địa điểm:</strong>
-                                                {{ $schedule['location'] ?: 'Không có' }}
+
+                                        {{-- Title --}}
+                                        <h6 class="fw-bold text-dark mb-3" style="font-size: 15px;">{{ $schedule['title'] }}</h6>
+
+                                        {{-- Details --}}
+                                        <div class="d-flex flex-column gap-2">
+                                            <div class="report-section-title text-muted" style="font-size: 13px; font-weight: 600;">
+                                                <i class="fi fi-rr-marker" style="color: #64748b;"></i>
+                                                <span><strong>Địa điểm:</strong> {{ $schedule['location'] ?: 'Không có' }}</span>
                                             </div>
-                                            <div class="col-sm-6">
-                                                <strong><i class="fi fi-rr-user me-1"></i> Người tạo:</strong>
-                                                <span
-                                                    class="badge bg-info-subtle text-info border border-info text-xs">{{ $schedule['creator_name'] }}</span>
+                                            <div class="report-section-title text-muted" style="font-size: 13px; font-weight: 600;">
+                                                <i class="fi fi-rr-user" style="color: #64748b;"></i>
+                                                <span>
+                                                    <strong>Người tạo:</strong>
+                                                    <span class="badge bg-info-subtle text-info border border-info text-xs ms-1">{{ $schedule['creator_name'] }}</span>
+                                                </span>
                                             </div>
-                                        </div>
-                                        <div class="mb-2 text-sm text-muted">
-                                            <strong><i class="fi fi-rr-users me-1"></i> Thành viên:</strong>
-                                            @if (empty($schedule['participants']))
-                                                <span class="text-muted">Không có</span>
-                                            @else
-                                                <div class="d-inline-flex flex-wrap gap-1 align-items-center">
-                                                    @foreach ($schedule['participants'] as $p)
-                                                        <span
-                                                            class="badge bg-primary-subtle text-primary border border-primary text-xs">{{ $p['name'] }}</span>
-                                                    @endforeach
+                                            <div class="report-section-title text-muted" style="font-size: 13px; font-weight: 600;">
+                                                <i class="fi fi-rr-users" style="color: #64748b;"></i>
+                                                <span>
+                                                    <strong>Thành viên:</strong>
+                                                    @if (empty($schedule['participants']))
+                                                        <span class="text-muted ms-1">Không có</span>
+                                                    @else
+                                                        <span class="d-inline-flex flex-wrap gap-1 align-items-center ms-1">
+                                                            @foreach ($schedule['participants'] as $p)
+                                                                <span class="badge bg-primary-subtle text-primary border border-primary text-xs">{{ $p['name'] }}</span>
+                                                            @endforeach
+                                                        </span>
+                                                    @endif
+                                                </span>
+                                            </div>
+                                            @if ($schedule['description'])
+                                                <div class="report-section-issues mt-1">
+                                                    {{ $schedule['description'] }}
                                                 </div>
                                             @endif
                                         </div>
-                                        @if ($schedule['description'])
-                                            <div class="p-2 bg-light rounded text-body text-sm mb-0" style="white-space: pre-wrap;">
-                                                {{ $schedule['description'] }}</div>
-                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -376,7 +383,7 @@
     </div>
 </div>
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.1.0">
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.2.0">
 @endpush
 
 

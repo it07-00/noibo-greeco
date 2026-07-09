@@ -569,7 +569,7 @@
 </div>
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.1.0">
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.2.0">
     <link rel="stylesheet" href="{{ asset('css/daily-report.css') }}?v=1.0.0">
 @endpush
 
