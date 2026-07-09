@@ -371,48 +371,50 @@
                 </div>
                 <div class="modal-body">
                     @if ($viewingReport)
-                        <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-3">
-                            <div class="avatar bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:42px;height:42px;font-size:1rem;">
-                                {{ strtoupper(substr($viewingReport->user->name ?? 'U', 0, 1)) }}
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-dark">{{ $viewingReport->user->name ?? '—' }}</div>
-                                <div class="text-primary fw-bold">
-                                    <i class="fi fi-rr-calendar me-1"></i>
-                                    {{ $viewingReport->report_date->format('d/m/Y') }} ({{ $viewingReport->report_date->isoFormat('dddd') }})
+                        <div class="report-header">
+                            <div class="report-user-info">
+                                <div class="report-avatar">
+                                    {{ strtoupper(substr($viewingReport->user->name ?? 'U', 0, 1)) }}
+                                </div>
+                                <div>
+                                    <div class="report-user-name">{{ $viewingReport->user->name ?? '—' }}</div>
+                                    <div class="report-time">
+                                        <i class="fi fi-rr-calendar"></i>
+                                        {{ $viewingReport->report_date->format('d/m/Y') }} ({{ $viewingReport->report_date->isoFormat('dddd') }})
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <h6 class="text-dark fw-bold mb-2">
-                                <i class="fi fi-rr-check-circle text-success me-2"></i>
+                        <div class="report-section">
+                            <div class="report-section-title text-success">
+                                <i class="fi fi-rr-check-circle"></i>
                                 Công việc đã thực hiện
-                            </h6>
-                            <div class="p-3 border rounded-3 bg-light text-body" style="white-space: pre-wrap;">{{ $viewingReport->work_done }}</div>
+                            </div>
+                            <div class="report-section-content">{{ $viewingReport->work_done }}</div>
                         </div>
 
                         @if ($viewingReport->plan_tomorrow)
-                            <div class="mb-4">
-                                <h6 class="text-dark fw-bold mb-2">
-                                    <i class="fi fi-rr-arrow-right text-primary me-2"></i>
+                            <div class="report-section">
+                                <div class="report-section-title text-primary">
+                                    <i class="fi fi-rr-arrow-right"></i>
                                     Kế hoạch ngày mai
-                                </h6>
-                                <div class="p-3 border rounded-3 bg-light text-body" style="white-space: pre-wrap;">{{ $viewingReport->plan_tomorrow }}</div>
+                                </div>
+                                <div class="report-section-content">{{ $viewingReport->plan_tomorrow }}</div>
                             </div>
                         @endif
 
                         @if ($viewingReport->issues)
-                            <div class="mb-2">
-                                <h6 class="text-dark fw-bold mb-2">
-                                    <i class="fi fi-rr-exclamation text-warning me-2"></i>
+                            <div class="report-section mb-0">
+                                <div class="report-section-title text-warning">
+                                    <i class="fi fi-rr-exclamation"></i>
                                     Vấn đề phát sinh
-                                </h6>
-                                <div class="p-3 border border-warning rounded-3 bg-warning-subtle text-body" style="white-space: pre-wrap;">{{ $viewingReport->issues }}</div>
+                                </div>
+                                <div class="report-section-issues">{{ $viewingReport->issues }}</div>
                             </div>
                         @endif
 
-                        <div class="text-muted text-xs mt-3">
+                        <div class="text-muted text-xs mt-3 pt-3 border-top">
                             <i class="fi fi-rr-clock me-1"></i>
                             Tạo lúc: {{ $viewingReport->created_at->format('H:i d/m/Y') }}
                             @if ($viewingReport->updated_at->ne($viewingReport->created_at))
@@ -468,23 +470,26 @@
                     @else
                         <div class="d-flex flex-column gap-3">
                             @foreach ($dayReports as $report)
-                                <div class="card border border-light-subtle shadow-sm mb-0">
-                                    <div class="card-body p-3">
-                                        <div class="d-flex align-items-center justify-content-between mb-3 bg-light p-2 rounded-3">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="avatar avatar-sm bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:32px;height:32px;font-size:0.8rem;">
+                                <div class="card daily-report-card">
+                                    <div class="card-body p-4">
+                                        <div class="report-header">
+                                            <div class="report-user-info">
+                                                <div class="report-avatar">
                                                     {{ strtoupper(substr($report['user_name'], 0, 1)) }}
                                                 </div>
                                                 <div>
-                                                    <span class="text-body fw-bold d-block">{{ $report['user_name'] }}</span>
-                                                    <span class="text-muted text-xs"><i class="fi fi-rr-clock me-1"></i>Tạo lúc: {{ $report['created_at_formatted'] }}</span>
+                                                    <div class="report-user-name">{{ $report['user_name'] }}</div>
+                                                    <div class="report-time">
+                                                        <i class="fi fi-rr-clock"></i>
+                                                        Tạo lúc: {{ $report['created_at_formatted'] }}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="d-flex gap-1">
+                                            <div class="d-flex align-items-center gap-1">
                                                 @if ($report['can_edit'])
                                                     <button
                                                         type="button"
-                                                        class="btn btn-sm btn-outline-warning p-1 lh-1"
+                                                        class="report-action-btn btn-edit"
                                                         title="Chỉnh sửa"
                                                         wire:click="openEditFromList({{ $report['id'] }})"
                                                     >
@@ -494,7 +499,7 @@
                                                 @if ($report['can_delete'])
                                                     <button
                                                         type="button"
-                                                        class="btn btn-sm btn-outline-danger p-1 lh-1"
+                                                        class="report-action-btn btn-delete"
                                                         title="Xóa"
                                                         wire:click="deleteFromList({{ $report['id'] }})"
                                                         wire:confirm="Bạn có chắc chắn muốn xóa báo cáo ngày này không?"
@@ -505,31 +510,31 @@
                                             </div>
                                         </div>
 
-                                        <div class="mb-3">
-                                            <h6 class="text-dark fw-bold mb-1 text-sm">
-                                                <i class="fi fi-rr-check-circle text-success me-1"></i>
+                                        <div class="report-section">
+                                            <div class="report-section-title text-success">
+                                                <i class="fi fi-rr-check-circle"></i>
                                                 Công việc đã thực hiện
-                                            </h6>
-                                            <div class="p-2 border rounded bg-light text-body text-sm" style="white-space: pre-wrap;">{{ $report['work_done'] }}</div>
+                                            </div>
+                                            <div class="report-section-content">{{ $report['work_done'] }}</div>
                                         </div>
 
                                         @if ($report['plan_tomorrow'])
-                                            <div class="mb-3">
-                                                <h6 class="text-dark fw-bold mb-1 text-sm">
-                                                    <i class="fi fi-rr-arrow-right text-primary me-1"></i>
+                                            <div class="report-section">
+                                                <div class="report-section-title text-primary">
+                                                    <i class="fi fi-rr-arrow-right"></i>
                                                     Kế hoạch ngày mai
-                                                </h6>
-                                                <div class="p-2 border rounded bg-light text-body text-sm" style="white-space: pre-wrap;">{{ $report['plan_tomorrow'] }}</div>
+                                                </div>
+                                                <div class="report-section-content">{{ $report['plan_tomorrow'] }}</div>
                                             </div>
                                         @endif
 
                                         @if ($report['issues'])
-                                            <div class="mb-0">
-                                                <h6 class="text-dark fw-bold mb-1 text-sm">
-                                                    <i class="fi fi-rr-exclamation text-warning me-1"></i>
+                                            <div class="report-section mb-0">
+                                                <div class="report-section-title text-warning">
+                                                    <i class="fi fi-rr-exclamation"></i>
                                                     Vấn đề phát sinh
-                                                </h6>
-                                                <div class="p-2 border border-warning rounded bg-warning-subtle text-body text-sm" style="white-space: pre-wrap;">{{ $report['issues'] }}</div>
+                                                </div>
+                                                <div class="report-section-issues">{{ $report['issues'] }}</div>
                                             </div>
                                         @endif
                                     </div>
