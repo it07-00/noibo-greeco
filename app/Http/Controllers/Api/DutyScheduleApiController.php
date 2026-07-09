@@ -38,20 +38,6 @@ final class DutyScheduleApiController extends Controller
         $events = DutySchedule::query()
             ->with(['creator:id,name', 'users:id,name'])
             ->where('is_private', false)
-            ->where(function ($query) {
-                // Creator has Director role
-                $query->whereHas('creator', function ($q) {
-                    $q->whereHas('roles', function ($rq) {
-                        $rq->where('name', \App\Enums\RoleEnum::Director->value);
-                    });
-                })
-                // Or a participant has Director role
-                ->orWhereHas('users', function ($q) {
-                    $q->whereHas('roles', function ($rq) {
-                        $rq->where('name', \App\Enums\RoleEnum::Director->value);
-                    });
-                });
-            })
             ->where(function ($query) use ($start, $end) {
                 $query->where(function ($q) use ($start, $end) {
                     $q->whereNotNull('end_at')
