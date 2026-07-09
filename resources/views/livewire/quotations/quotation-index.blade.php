@@ -199,6 +199,17 @@
                                         </button>
                                     @endcan
 
+                                    @if ($quotation->file_path)
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-success sales-icon-button"
+                                            wire:click="downloadFile({{ $quotation->id }})"
+                                            title="Tải file báo giá"
+                                        >
+                                            <i class="fi fi-rr-download" aria-hidden="true"></i>
+                                        </button>
+                                    @endif
+
                                     @if ($quotation->status === \App\Enums\QuotationStatus::Draft)
                                         @can('send', $quotation)
                                             <button

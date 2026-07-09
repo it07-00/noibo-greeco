@@ -619,6 +619,23 @@ final class ContractShow extends Component
         ]);
     }
 
+    public function downloadQuotation(int $id): mixed
+    {
+        $quotation = \App\Models\Quotation::findOrFail($id);
+        Gate::authorize('view', $quotation);
+
+        if (! $quotation->file_path || ! Storage::disk('local')->exists($quotation->file_path)) {
+            $this->errorAlert('Không tìm thấy file báo giá');
+
+            return null;
+        }
+
+        $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
+        $fileName = 'Bao_gia_' . ($quotation->quotation_number ?: $quotation->id) . '.' . $extension;
+
+        return Storage::disk('local')->download($quotation->file_path, $fileName);
+    }
+
     private function findSchedule(int $scheduleId): ContractPaymentSchedule
     {
         return $this->contract->paymentSchedules()->findOrFail($scheduleId);

@@ -61,6 +61,7 @@ enum PermissionEnum: string
     case CommissionDelete = 'commission.delete';
     case CommissionApprove = 'commission.approve';
     case CommissionPay = 'commission.pay';
+    case SalesReportViewAll = 'sales-report.view-all';
 
     public function label(): string
     {
@@ -120,6 +121,7 @@ enum PermissionEnum: string
             self::CommissionDelete => 'Xóa yêu cầu chi hoa hồng',
             self::CommissionApprove => 'Duyệt yêu cầu chi hoa hồng',
             self::CommissionPay => 'Xác nhận đã chi hoa hồng',
+            self::SalesReportViewAll => 'Xem toàn bộ báo cáo kinh doanh phòng',
         };
     }
 }

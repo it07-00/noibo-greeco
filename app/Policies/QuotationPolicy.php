@@ -13,6 +13,10 @@ final class QuotationPolicy
 {
     public function before(User $user, string $ability): ?bool
     {
+        if (in_array($ability, ['update', 'delete'], true)) {
+            return null;
+        }
+
         return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
     }
 
@@ -33,6 +37,10 @@ final class QuotationPolicy
 
     public function update(User $user, Quotation $quotation): bool
     {
+        if ($quotation->contract()->exists()) {
+            return false;
+        }
+
         return $user->can(PermissionEnum::QuotationUpdate->value);
     }
 

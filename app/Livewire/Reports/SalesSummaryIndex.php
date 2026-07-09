@@ -86,7 +86,8 @@ final class SalesSummaryIndex extends Component
 
     private function isRestrictedSales(): bool
     {
-        return ! $this->actor()->can(PermissionEnum::ManagementDashboardView->value);
+        return ! $this->actor()->can(PermissionEnum::ManagementDashboardView->value)
+            && ! $this->actor()->can(PermissionEnum::SalesReportViewAll->value);
     }
 
     private function actor(): User

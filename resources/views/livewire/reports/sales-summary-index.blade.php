@@ -62,9 +62,9 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="fw-semibold text-success ps-3">DS Tái ký</td>
+                            <td class="fw-semibold text-dark ps-3">DS Tái ký</td>
                             @for($m = 1; $m <= $maxMonth; $m++)
-                                <td class="text-end {{ $salesSummary[$m]['renewal'] > 0 ? 'text-success' : 'text-muted' }}">
+                                <td class="text-end {{ $salesSummary[$m]['renewal'] > 0 ? 'text-dark' : 'text-muted' }}">
                                     @if($salesSummary[$m]['renewal'] > 0)
                                         <div class="fw-semibold">{{ number_format($salesSummary[$m]['renewal'], 0, ',', '.') }}</div>
                                         <div class="text-muted small">{{ $salesSummary[$m]['renewal_count'] }} HĐ</div>
@@ -73,7 +73,7 @@
                                     @endif
                                 </td>
                             @endfor
-                            <td class="text-end fw-bold text-success pe-3">
+                            <td class="text-end fw-bold text-dark pe-3">
                                 <div>{{ number_format($totals['renewal'], 0, ',', '.') }} đ</div>
                                 <div class="text-muted small fw-normal">{{ $totals['renewal_count'] }} HĐ</div>
                             </td>
@@ -173,7 +173,7 @@
                                     <td class="text-center text-muted ps-3">{{ $i + 1 }}</td>
                                     <td class="fw-semibold text-dark">{{ $row['customer'] }}</td>
                                     <td class="text-muted">{{ $row['type'] }}</td>
-                                    <td class="text-end fw-semibold text-success">{{ number_format($row['value'], 0, ',', '.') }}</td>
+                                    <td class="text-end fw-semibold text-dark">{{ number_format($row['value'], 0, ',', '.') }}</td>
                                     <td class="text-center">
                                         @if($row['is_renewal'])
                                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Tái ký</span>
@@ -190,7 +190,7 @@
                         <tfoot class="table-light fw-bold">
                             <tr>
                                 <td colspan="3" class="text-end ps-3">Tổng tháng {{ $month }}</td>
-                                <td class="text-end text-success">{{ number_format($detail->sum('value'), 0, ',', '.') }} đ</td>
+                                <td class="text-end text-dark">{{ number_format($detail->sum('value'), 0, ',', '.') }} đ</td>
                                 <td colspan="2" class="text-center text-muted pe-3 fw-normal">{{ $detail->count() }} hợp đồng</td>
                             </tr>
                         </tfoot>

@@ -71,7 +71,7 @@
             <div class="card border-0 shadow-sm sales-kpi-card h-100">
                 <div class="card-body">
                     <div class="sales-kpi-label">Tiền thực nhận</div>
-                    <div class="sales-kpi-value sales-money text-success">{{ number_format($summary['collected'], 0, ',', '.') }}₫</div>
+                    <div class="sales-kpi-value sales-money text-dark">{{ number_format($summary['collected'], 0, ',', '.') }}₫</div>
                     <div class="sales-supporting-text small">Công nợ hiện tại {{ number_format($summary['outstanding'], 0, ',', '.') }}₫</div>
                 </div>
             </div>
@@ -112,7 +112,7 @@
                                     <td class="fw-semibold">T{{ str_pad((string) $row['month'], 2, '0', STR_PAD_LEFT) }}</td>
                                     <td class="text-end sales-number">{{ number_format($row['target'], 0, ',', '.') }}₫</td>
                                     <td class="text-end sales-number fw-semibold">{{ number_format($row['signed'], 0, ',', '.') }}₫</td>
-                                    <td class="text-end sales-number text-success">{{ number_format($row['collected'], 0, ',', '.') }}₫</td>
+                                    <td class="text-end sales-number">{{ number_format($row['collected'], 0, ',', '.') }}₫</td>
                                     <td class="text-end">{{ $row['contracts'] }}/{{ $row['target_contracts'] }}</td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">

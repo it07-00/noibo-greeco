@@ -86,13 +86,8 @@ final class QuotationService
         $contractType = ContractType::from((string) $data['contract_type']);
         $normalizedServices = $this->normalizeServices($services, $contractType);
 
-        if ($quotation !== null && in_array($quotation->status, [
-            QuotationStatus::Won,
-            QuotationStatus::Lost,
-            QuotationStatus::Expired,
-            QuotationStatus::Cancelled,
-        ], true) && (! isset($data['status']) || $data['status'] === $quotation->status->value)) {
-            throw new DomainException('Không thể sửa báo giá đã kết thúc.');
+        if ($quotation !== null && $quotation->contract()->exists()) {
+            throw new DomainException('Không thể sửa báo giá đã được chuyển thành hợp đồng.');
         }
 
         return DB::transaction(function () use (

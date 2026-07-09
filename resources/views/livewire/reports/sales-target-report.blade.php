@@ -71,7 +71,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <p class="text-muted small mb-1">Tổng thực tế đã ký</p>
-                    <div class="sales-kpi-value sales-money text-success">{{ number_format($totals['actual'], 0, ',', '.') }} đ</div>
+                    <div class="sales-kpi-value sales-money text-dark">{{ number_format($totals['actual'], 0, ',', '.') }} đ</div>
                 </div>
             </div>
         </div>
@@ -87,7 +87,7 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <p class="text-muted small mb-1">Chênh lệch so với cam kết</p>
-                    <div class="sales-kpi-value sales-money {{ $this->totalDelta($totals) >= 0 ? 'text-success' : 'text-danger' }}">
+                    <div class="sales-kpi-value sales-money {{ $this->totalDelta($totals) >= 0 ? 'text-dark' : 'text-danger' }}">
                         {{ $this->totalDelta($totals) >= 0 ? '+' : '−' }}{{ number_format(abs($this->totalDelta($totals)), 0, ',', '.') }} đ
                     </div>
                 </div>
@@ -153,13 +153,13 @@
                                 <td class="text-end fw-semibold {{ $this->monthMetrics($data)['target'] > 0 ? 'text-dark' : 'text-muted' }}">
                                     {{ $this->monthMetrics($data)['target'] > 0 ? number_format($this->monthMetrics($data)['target'], 0, ',', '.') : '—' }}
                                 </td>
-                                <td class="text-end fw-semibold {{ $this->monthMetrics($data)['actual'] > 0 ? 'text-success' : 'text-muted' }}">
+                                <td class="text-end fw-semibold {{ $this->monthMetrics($data)['actual'] > 0 ? 'text-dark' : 'text-muted' }}">
                                     {{ $this->monthMetrics($data)['actual'] > 0 ? number_format($this->monthMetrics($data)['actual'], 0, ',', '.') : '—' }}
                                 </td>
                                 <td class="text-end text-warning fw-semibold">
                                     {{ $data['potential'] > 0 ? number_format($data['potential'], 0, ',', '.') : '—' }}
                                 </td>
-                                <td class="text-end fw-semibold {{ $this->monthMetrics($data)['delta'] >= 0 ? 'text-success' : 'text-danger' }}">
+                                <td class="text-end fw-semibold {{ $this->monthMetrics($data)['delta'] >= 0 ? 'text-dark' : 'text-danger' }}">
                                     {{ $this->monthMetrics($data)['target'] > 0 || $this->monthMetrics($data)['actual'] > 0 ? ($this->monthMetrics($data)['delta'] >= 0 ? '+' : '−') . number_format(abs($this->monthMetrics($data)['delta']), 0, ',', '.') : '—' }}
                                 </td>
                                 <td>
@@ -217,7 +217,7 @@
                 <div class="col-md-2-4 col-sm-6">
                     <div class="border rounded p-3 text-center bg-light">
                         <small class="text-muted d-block mb-1">Thực tế đã ký</small>
-                        <div class="sales-kpi-value sales-money text-success">{{ number_format($monthActual, 0, ',', '.') }} đ</div>
+                        <div class="sales-kpi-value sales-money text-dark">{{ number_format($monthActual, 0, ',', '.') }} đ</div>
                     </div>
                 </div>
                 <div class="col-md-2-4 col-sm-6">
@@ -245,7 +245,7 @@
     {{-- Danh sách hợp đồng đã ký --}}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white py-3 border-bottom">
-            <h6 class="mb-0 fw-bold text-success"><i class="fi fi-rr-document-signed me-2"></i>Hợp đồng đã ký trong tháng</h6>
+            <h6 class="mb-0 fw-bold text-primary"><i class="fi fi-rr-document-signed me-2"></i>Hợp đồng đã ký trong tháng</h6>
         </div>
         <div class="card-body p-0">
             @if(empty($detail))
@@ -272,7 +272,7 @@
                                     <td class="text-center text-muted ps-3">{{ $i + 1 }}</td>
                                     <td class="fw-semibold text-dark">{{ $row['customer'] }}</td>
                                     <td class="text-muted">{{ $row['type'] }}</td>
-                                    <td class="text-end fw-semibold text-success">{{ number_format($row['value'], 0, ',', '.') }}</td>
+                                    <td class="text-end fw-semibold text-dark">{{ number_format($row['value'], 0, ',', '.') }}</td>
                                     <td class="text-center">
                                         @if($row['is_renewal'])
                                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Tái ký</span>

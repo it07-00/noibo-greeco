@@ -27,8 +27,8 @@ final class DashboardController extends Controller
         $isRestrictedSales = false;
 
         if ($user instanceof User) {
-            $isRestrictedSales = $user->hasRole(RoleEnum::Sales->value)
-                && !$user->can(PermissionEnum::ManagementDashboardView->value);
+            $isRestrictedSales = ! $user->can(PermissionEnum::ManagementDashboardView->value)
+                && ! $user->can(PermissionEnum::SalesReportViewAll->value);
             if ($isRestrictedSales) {
                 $ownerId = $user->id;
             }
