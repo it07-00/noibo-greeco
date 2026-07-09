@@ -1,6 +1,6 @@
 <div class="sales-page report-page py-4">
     @push('styles')
-        <link rel="stylesheet" href="{{ asset('css/sales.css') }}?v=1.2.0">
+        <link rel="stylesheet" href="{{ asset('css/sales.css') }}?v=1.3.0">
     @endpush
 
     <div class="d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-3 mb-4">
@@ -9,12 +9,6 @@
             <h1 class="h3 mb-1">Báo cáo doanh số</h1>
             <p class="sales-supporting-text mb-0">Theo dõi KPI, hợp đồng ký, dòng tiền, cơ hội và công nợ trên cùng một báo cáo.</p>
         </div>
-        @if ($canSetTarget)
-            <button type="button" class="btn btn-primary sales-primary-action" wire:click="openTarget">
-                <i class="fi fi-rr-target me-2" aria-hidden="true"></i>
-                Đặt KPI
-            </button>
-        @endif
     </div>
 
     <div class="card border-0 shadow-sm mb-4">
@@ -51,6 +45,8 @@
             </div>
         </div>
     </div>
+
+
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
@@ -540,54 +536,4 @@
         </div>
     </div>
 
-    <div wire:ignore.self class="modal fade" id="salesTargetModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content" wire:submit.prevent="saveTarget">
-                <div class="modal-header">
-                    <div>
-                        <h2 class="h5 modal-title mb-1">Thiết lập KPI</h2>
-                        <div class="sales-supporting-text small">Mục tiêu doanh số và số hợp đồng theo tháng.</div>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        @if ($canChooseOwner)
-                            <div class="col-12">
-                                <label for="targetUser" class="form-label">Nhân viên</label>
-                                <select id="targetUser" class="form-select @error('targetUserId') is-invalid @enderror" wire:model="targetUserId">
-                                    @foreach ($salesUsers as $salesUser)
-                                        <option value="{{ $salesUser->id }}">{{ $salesUser->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('targetUserId') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-                        @endif
-                        <div class="col-5">
-                            <label for="targetMonth" class="form-label">Tháng</label>
-                            <select id="targetMonth" class="form-select" wire:model="targetMonth">
-                                @foreach (range(1, 12) as $optionMonth)
-                                    <option value="{{ $optionMonth }}">Tháng {{ $optionMonth }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <x-currency-input class="col-7" id="targetAmount" wire="targetAmount" label="Doanh số mục tiêu" error="targetAmount" :suffix="false" />
-                        <div class="col-12">
-                            <label for="targetCount" class="form-label">Số hợp đồng mục tiêu</label>
-                            <input id="targetCount" type="number" min="0" class="form-control @error('targetContractCount') is-invalid @enderror" wire:model="targetContractCount">
-                            @error('targetContractCount') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-12">
-                            <label for="targetNotes" class="form-label">Ghi chú</label>
-                            <textarea id="targetNotes" rows="3" class="form-control" wire:model="targetNotes"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-success">Lưu KPI</button>
-                </div>
-            </form>
-        </div>
-    </div>
 </div>

@@ -59,7 +59,7 @@
                 </li>
             @endif
 
-            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view') || auth()->user()?->can('commission.view'))
+            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view') || auth()->user()?->hasRole(\App\Enums\RoleEnum::Sales->value) || auth()->user()?->can('commission.view'))
                 <li class="menu-heading">
                     <span class="menu-label">Kinh doanh</span>
                 </li>
@@ -92,13 +92,39 @@
                 </li>
             @endif
 
-            @if (auth()->user()?->can('sales-report.view'))
+            @if (auth()->user()?->can('sales-target.manage') && auth()->user()?->can('business-dashboard.view'))
                 <li class="menu-item">
-                    <a class="menu-link {{ request()->routeIs('business-reports.*') ? 'active' : '' }}" href="{{ route('business-reports.index') }}">
-                        <i class="fi fi-rr-chart-histogram"></i>
-                        <span class="menu-label">Báo cáo kinh doanh</span>
+                    <a class="menu-link {{ request()->routeIs('sales-targets.index') ? 'active' : '' }}" href="{{ route('sales-targets.index') }}">
+                        <i class="fi fi-rr-target"></i>
+                        <span class="menu-label">Đăng ký doanh số cam kết</span>
                     </a>
                 </li>
+            @endif
+
+            {{-- ── Báo cáo & Thống kê ──────────────────────────────────────── --}}
+            @php
+                $canSeeReportsHeading = auth()->user()?->can('sales-report.view');
+            @endphp
+
+            @if ($canSeeReportsHeading)
+                <li class="menu-heading">
+                    <span class="menu-label">Báo cáo & Thống kê</span>
+                </li>
+
+                @if (auth()->user()?->can('sales-report.view'))
+                    <li class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('sales-summaries.*') ? 'active' : '' }}" href="{{ route('sales-summaries.index') }}">
+                            <i class="fi fi-rr-chart-histogram"></i>
+                            <span class="menu-label">Bảng tổng kết doanh số</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('sales-targets.report') ? 'active' : '' }}" href="{{ route('sales-targets.report') }}">
+                            <i class="fi fi-rr-chart-line-up"></i>
+                            <span class="menu-label">Báo cáo doanh số cam kết</span>
+                        </a>
+                    </li>
+                @endif
             @endif
 
             @if (auth()->user()?->can('commission.view'))
@@ -127,6 +153,7 @@
                         @if (auth()->user()?->can('user.view'))
                             <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                                    <i class="fi fi-rr-user"></i>
                                     <span class="menu-label">Người dùng</span>
                                 </a>
                             </li>
@@ -135,11 +162,13 @@
                         @if (auth()->user()?->can('role.manage'))
                             <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('roles-permissions.*') ? 'active' : '' }}" href="{{ route('roles-permissions.index') }}">
+                                    <i class="fi fi-rr-key"></i>
                                     <span class="menu-label">Vai trò & Quyền</span>
                                 </a>
                             </li>
                             <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" href="{{ route('departments.index') }}">
+                                    <i class="fi fi-rr-building"></i>
                                     <span class="menu-label">Phòng ban</span>
                                 </a>
                             </li>
@@ -148,6 +177,7 @@
                         @if (auth()->user()?->can('setting.view'))
                             <li class="menu-item">
                                 <a class="menu-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+                                    <i class="fi fi-rr-settings"></i>
                                     <span class="menu-label">Cài đặt</span>
                                 </a>
                             </li>
@@ -173,45 +203,51 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const initHoverMenu = () => {
-            const adminMenuItem = document.querySelector('.menu-item.menu-arrow');
-            if (adminMenuItem) {
+        const initClickMenu = () => {
+            const menuItems = document.querySelectorAll('.menu-item.menu-arrow');
+            menuItems.forEach((adminMenuItem) => {
                 const menuLink = adminMenuItem.querySelector('.menu-link');
                 const subMenu = adminMenuItem.querySelector('.menu-inner');
-                const keepOpen = adminMenuItem.getAttribute('data-keep-open') === 'true';
 
-                // On desktop (width >= 1191px), use hover interaction
-                if (window.innerWidth >= 1191) {
-                    if (menuLink) {
-                        // Prevent JQuery/Bootstrap click toggles from executing
-                        menuLink.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            e.stopImmediatePropagation();
-                        }, true);
-                    }
+                if (menuLink && subMenu) {
+                    // Clone link to strip any old event listeners on Livewire re-renders
+                    const newMenuLink = menuLink.cloneNode(true);
+                    menuLink.parentNode.replaceChild(newMenuLink, menuLink);
 
-                    if (subMenu) {
-                        adminMenuItem.addEventListener('mouseenter', () => {
-                            adminMenuItem.classList.add('open');
-                            if (menuLink) menuLink.classList.add('open');
-                            jQuery(subMenu).stop(true, true).slideDown(200);
-                        });
+                    newMenuLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
 
-                        adminMenuItem.addEventListener('mouseleave', () => {
-                            // If keepOpen is true, we still want it to stay open or collapse?
-                            // Let's collapse it to make the entire sidebar hoverable consistently.
+                        const isOpen = adminMenuItem.classList.contains('open');
+
+                        if (isOpen) {
                             adminMenuItem.classList.remove('open');
-                            if (menuLink) menuLink.classList.remove('open');
+                            newMenuLink.classList.remove('open');
                             jQuery(subMenu).stop(true, true).slideUp(200);
-                        });
-                    }
+                        } else {
+                            // Close other open submenus first for accordion effect
+                            menuItems.forEach((otherItem) => {
+                                if (otherItem !== adminMenuItem && otherItem.classList.contains('open')) {
+                                    otherItem.classList.remove('open');
+                                    const otherLink = otherItem.querySelector('.menu-link');
+                                    const otherSub = otherItem.querySelector('.menu-inner');
+                                    if (otherLink) otherLink.classList.remove('open');
+                                    if (otherSub) jQuery(otherSub).stop(true, true).slideUp(200);
+                                }
+                            });
+
+                            adminMenuItem.classList.add('open');
+                            newMenuLink.classList.add('open');
+                            jQuery(subMenu).stop(true, true).slideDown(200);
+                        }
+                    });
                 }
-            }
+            });
         };
 
-        initHoverMenu();
+        initClickMenu();
         
         // Also register for Livewire navigation if used
-        document.addEventListener('livewire:navigated', initHoverMenu);
+        document.addEventListener('livewire:navigated', initClickMenu);
     });
 </script>

@@ -9,7 +9,7 @@ use App\Enums\ContractType;
 use App\Enums\PaymentMethod;
 use App\Enums\QuotationStatus;
 use App\Enums\RoleEnum;
-use App\Livewire\Reports\BusinessReportIndex;
+use App\Livewire\SalesTargets\SalesTargetIndex;
 use App\Models\Contract;
 use App\Models\ContractPayment;
 use App\Models\Customer;
@@ -92,13 +92,10 @@ final class BusinessReportTest extends TestCase
         $other->assignRole(RoleEnum::Sales->value);
         $this->actingAs($sales);
 
-        Livewire::test(BusinessReportIndex::class)
-            ->assertSet('ownerId', (string) $sales->id)
+        Livewire::test(SalesTargetIndex::class)
             ->set('targetUserId', $other->id)
-            ->set('targetMonth', 7)
-            ->set('targetAmount', '800000000')
-            ->set('targetContractCount', '3')
-            ->call('saveTarget')
+            ->set('targetAmounts.7', '800000000')
+            ->call('saveAnnualTargets')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('sales_targets', [
@@ -110,5 +107,56 @@ final class BusinessReportTest extends TestCase
             'user_id' => $other->id,
             'month' => 7,
         ]);
+    }
+
+    public function test_target_registration_form_prefills_existing_month_target(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $sales = User::factory()->create();
+        $sales->assignRole(RoleEnum::Sales->value);
+        SalesTarget::query()->create([
+            'year' => (int) now()->year,
+            'month' => (int) now()->month,
+            'user_id' => $sales->id,
+            'target_amount' => 900_000_000,
+            'target_contract_count' => 4,
+            'notes' => 'Tập trung nhóm khách hàng tái ký.',
+        ]);
+        $this->actingAs($sales);
+
+        Livewire::test(SalesTargetIndex::class)
+            ->assertSee('Lưu cam kết')
+            ->assertSee('Chi tiết cam kết theo tháng')
+            ->assertSet('targetAmounts.7', '900000000');
+    }
+
+    public function test_sales_user_can_save_annual_target_commitments(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $sales = User::factory()->create();
+        $sales->assignRole(RoleEnum::Sales->value);
+        $this->actingAs($sales);
+
+        $amounts = [];
+        foreach (range(1, 12) as $month) {
+            $amounts[$month] = (string) ($month * 100_000_000);
+        }
+
+        Livewire::test(SalesTargetIndex::class)
+            ->set('targetAmounts', $amounts)
+            ->call('saveAnnualTargets')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('sales_targets', [
+            'user_id' => $sales->id,
+            'month' => 1,
+            'target_amount' => 100_000_000,
+        ]);
+        $this->assertDatabaseHas('sales_targets', [
+            'user_id' => $sales->id,
+            'month' => 12,
+            'target_amount' => 1_200_000_000,
+        ]);
+        self::assertSame(12, SalesTarget::query()->where('user_id', $sales->id)->count());
     }
 }

@@ -14339,14 +14339,14 @@ strong {
 }
 .app-navbar .menu-item .menu-link {
   border-radius: 8px;
-  font-size: 14px;
-  padding: 10px 15px;
+  font-size: 12px;
+  padding: 8px 12px;
   color: var(--bs-heading-color);
   transition: 0.2s all linear;
 }
 .app-navbar .menu-item .menu-link > i {
   display: inline-flex;
-  font-size: 18px;
+  font-size: 14px;
   vertical-align: text-top;
   line-height: 1;
   margin-right: 8px;
@@ -14357,10 +14357,10 @@ strong {
 }
 .app-navbar .menubar .menu-heading {
   color: var(--bs-primary);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 500;
   text-transform: uppercase;
-  padding: 20px 15px 12px;
+  padding: 15px 12px 8px;
   margin-bottom: 0;
 }
 .app-navbar .menubar ul {

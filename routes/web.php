@@ -18,7 +18,10 @@ use App\Livewire\Mail\MailCenterIndex;
 use App\Livewire\Profile\ProfileEdit;
 use App\Livewire\Quotations\QuotationIndex;
 use App\Livewire\Reports\BusinessReportIndex;
+use App\Livewire\Reports\SalesSummaryIndex;
+use App\Livewire\Reports\SalesTargetReport;
 use App\Livewire\RolesPermissions\RolesPermissionsIndex;
+use App\Livewire\SalesTargets\SalesTargetIndex;
 use App\Livewire\Settings\SettingIndex;
 use App\Livewire\Users\UserIndex;
 use Illuminate\Support\Facades\Response;
@@ -86,6 +89,18 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/business-reports', BusinessReportIndex::class)
         ->middleware('can:sales-report.view')
         ->name('business-reports.index');
+
+    Route::get('/sales-summaries', SalesSummaryIndex::class)
+        ->middleware('can:sales-report.view')
+        ->name('sales-summaries.index');
+
+    Route::get('/sales-target-reports', SalesTargetReport::class)
+        ->middleware('can:sales-report.view')
+        ->name('sales-targets.report');
+
+    Route::get('/sales-targets', SalesTargetIndex::class)
+        ->middleware('can:sales-target.manage')
+        ->name('sales-targets.index');
 
     Route::get('/commissions', CommissionRequestIndex::class)
         ->middleware('can:commission.view')
