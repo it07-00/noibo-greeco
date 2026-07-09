@@ -192,19 +192,19 @@
                     modalEl.dataset.greecoModalState = 'showing';
                 }
 
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modal[action]();
-
                 if (action === 'hide') {
-                    // Blur focus before Bootstrap sets aria-hidden="true".
-                    // Covers two cases:
-                    //   1. A child element (e.g. btn-close) has focus → querySelector(':focus')
-                    //   2. The modal container itself has focus (Bootstrap focuses the modal div
-                    //      via tabindex="-1" when opening) → check document.activeElement
+                    // Blur BEFORE Bootstrap's hide() sets aria-hidden="true",
+                    // otherwise the warning fires synchronously inside hide().
                     const active = document.activeElement;
                     if (active && modalEl.contains(active)) {
                         active.blur();
                     }
+                }
+
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal[action]();
+
+                if (action === 'hide') {
                     modalEl.dataset.greecoModalState = 'hiding';
                     modalEl.addEventListener('hidden.bs.modal', cleanupModalState, { once: true });
                     window.setTimeout(cleanupModalState, 250);
