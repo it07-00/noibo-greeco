@@ -196,6 +196,12 @@
                 modal[action]();
 
                 if (action === 'hide') {
+                    // Blur focused element before Bootstrap sets aria-hidden="true" to avoid
+                    // "Blocked aria-hidden on focused element" accessibility warning.
+                    const focused = modalEl.querySelector(':focus');
+                    if (focused) {
+                        focused.blur();
+                    }
                     modalEl.dataset.greecoModalState = 'hiding';
                     modalEl.addEventListener('hidden.bs.modal', cleanupModalState, { once: true });
                     window.setTimeout(cleanupModalState, 250);
