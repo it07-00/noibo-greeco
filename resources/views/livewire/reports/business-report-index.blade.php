@@ -267,10 +267,6 @@
             if (window.greecoReportsAlpineInitialized) return;
             window.greecoReportsAlpineInitialized = true;
 
-            const getCssVar = (name) => {
-                return window.getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#000';
-            };
-
             Alpine.data('donutChart', (initialData, isCurrency = true) => ({
                 chart: null,
                 raw: initialData,
@@ -284,11 +280,11 @@
                             fontFamily: 'Plus Jakarta Sans, sans-serif'
                         },
                         colors: [
-                            getCssVar('--bs-primary'),
-                            getCssVar('--bs-success'),
-                            getCssVar('--bs-info'),
-                            getCssVar('--bs-warning'),
-                            getCssVar('--bs-danger'),
+                            '#0d6efd',
+                            '#198754',
+                            '#0dcaf0',
+                            '#ffc107',
+                            '#dc3545',
                             '#6f42c1',
                             '#fd7e14',
                             '#20c997'
@@ -297,7 +293,7 @@
                         legend: {
                             position: 'bottom',
                             horizontalAlign: 'center',
-                            labels: { colors: getCssVar('--bs-heading-color') }
+                            labels: { colors: '#212529' }
                         },
                         tooltip: {
                             y: {
@@ -345,7 +341,7 @@
                             fontFamily: 'Plus Jakarta Sans, sans-serif',
                             toolbar: { show: false }
                         },
-                        colors: [getCssVar('--bs-secondary'), getCssVar('--bs-success')],
+                        colors: ['#6c757d', '#198754'],
                         plotOptions: {
                             bar: {
                                 horizontal: true,
@@ -364,15 +360,15 @@
                             categories: this.getCategories(),
                             labels: {
                                 formatter: (val) => Number.isInteger(val) ? val : '',
-                                style: { colors: getCssVar('--bs-body-color') }
+                                style: { colors: '#4b5563' }
                             }
                         },
                         yaxis: {
-                            labels: { style: { colors: getCssVar('--bs-body-color') } }
+                            labels: { style: { colors: '#4b5563' } }
                         },
                         legend: {
                             position: 'top',
-                            labels: { colors: getCssVar('--bs-heading-color') }
+                            labels: { colors: '#212529' }
                         },
                         tooltip: {
                             shared: true,
@@ -426,7 +422,7 @@
                         stroke: {
                             width: [0, 0, 0]
                         },
-                        colors: [getCssVar('--bs-warning'), getCssVar('--bs-primary'), getCssVar('--bs-success')],
+                        colors: ['#ffc107', '#0d6efd', '#198754'],
                         plotOptions: {
                             bar: {
                                 columnWidth: '60%',
@@ -435,14 +431,14 @@
                         },
                         xaxis: {
                             categories: this.getCategories(),
-                            labels: { style: { colors: getCssVar('--bs-body-color') } }
+                            labels: { style: { colors: '#4b5563' } }
                         },
                         yaxis: [
                             {
                                 title: { text: 'Số lượng hồ sơ' },
                                 labels: {
                                     formatter: (val) => Number.isInteger(val) ? val : '',
-                                    style: { colors: getCssVar('--bs-body-color') }
+                                    style: { colors: '#4b5563' }
                                 }
                             },
                             {
@@ -450,7 +446,7 @@
                                 title: { text: 'Số lượng hồ sơ' },
                                 labels: {
                                     formatter: (val) => Number.isInteger(val) ? val : '',
-                                    style: { colors: getCssVar('--bs-body-color') }
+                                    style: { colors: '#4b5563' }
                                 }
                             },
                             {
@@ -458,13 +454,13 @@
                                 title: { text: 'Doanh số (VND)' },
                                 labels: {
                                     formatter: (val) => new Intl.NumberFormat('vi-VN').format(val) + 'đ',
-                                    style: { colors: getCssVar('--bs-body-color') }
+                                    style: { colors: '#4b5563' }
                                 }
                             }
                         ],
                         legend: {
                             position: 'top',
-                            labels: { colors: getCssVar('--bs-heading-color') }
+                            labels: { colors: '#212529' }
                         },
                         tooltip: {
                             shared: true,
