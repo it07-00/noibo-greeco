@@ -116,7 +116,9 @@ final class DutyScheduleIndex extends Component
 
         $events = $this->scheduleService->getEventsInRange($start, $end, $this->filterUserId ?: null);
 
-        $result = $events->map(function (DutySchedule $event) {
+        $result = [];
+
+        foreach ($events as $event) {
             $isCreator = auth()->id() === $event->created_by;
             $isParticipant = $event->users->contains(auth()->id());
             $hasPrivatePermission = auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value) ?? false;
@@ -142,34 +144,142 @@ final class DutyScheduleIndex extends Component
             $description = $isPrivate && ! $canSeeDetails ? null : $event->description;
             $location = $isPrivate && ! $canSeeDetails ? null : $event->location;
 
-            return [
-                'id' => $event->id,
-                'title' => $title,
-                'raw_title' => $titlePrefix.$rawTitle,
-                'start' => $event->start_at->toIso8601String(),
-                'end' => $event->end_at?->toIso8601String(),
-                'description' => $description,
-                'location' => $location,
-                'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
-                'label_color' => $event->label_color,
-                'creator_name' => $event->creator?->name ?? 'N/A',
-                'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
-                'can_edit' => auth()->user()?->can('update', $event) ?? false,
-                'can_delete' => auth()->user()?->can('delete', $event) ?? false,
-                'source' => 'greeco',
-            ];
-        })->toArray();
+            $startCal = $event->start_at;
+            $endCal = $event->end_at;
+
+            if ($endCal && $endCal->clone()->startOfDay()->gt($startCal->clone()->startOfDay())) {
+                $currentDay = $startCal->clone()->startOfDay();
+                $lastDay = $endCal->clone()->startOfDay();
+                
+                $startTimeStr = $startCal->format('H:i:s');
+                $endTimeStr = $endCal->format('H:i:s');
+                
+                while ($currentDay->lte($lastDay)) {
+                    $occStart = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $startTimeStr);
+                    $occEnd = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $endTimeStr);
+                    $dayStr = $currentDay->format('Y-m-d');
+
+                    $result[] = [
+                        'id' => $event->id . '_' . $dayStr,
+                        'db_id' => $event->id,
+                        'title' => $title,
+                        'raw_title' => $titlePrefix.$rawTitle,
+                        'start' => $occStart->toIso8601String(),
+                        'end' => $occEnd->toIso8601String(),
+                        'description' => $description,
+                        'location' => $location,
+                        'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
+                        'label_color' => $event->label_color,
+                        'creator_name' => $event->creator?->name ?? 'N/A',
+                        'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
+                        'can_edit' => auth()->user()?->can('update', $event) ?? false,
+                        'can_delete' => auth()->user()?->can('delete', $event) ?? false,
+                        'source' => 'greeco',
+                    ];
+                    
+                    $currentDay->addDay();
+                }
+            } else {
+                $result[] = [
+                    'id' => $event->id,
+                    'db_id' => $event->id,
+                    'title' => $title,
+                    'raw_title' => $titlePrefix.$rawTitle,
+                    'start' => $startCal->toIso8601String(),
+                    'end' => $endCal?->toIso8601String(),
+                    'description' => $description,
+                    'location' => $location,
+                    'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
+                    'label_color' => $event->label_color,
+                    'creator_name' => $event->creator?->name ?? 'N/A',
+                    'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
+                    'can_edit' => auth()->user()?->can('update', $event) ?? false,
+                    'can_delete' => auth()->user()?->can('delete', $event) ?? false,
+                    'source' => 'greeco',
+                ];
+            }
+        }
 
         // Merge noibo events if enabled and user is Director or SuperAdmin
         if ($this->showNoiboSchedules && $this->canViewNoiboSchedules()) {
             $noiboItems = $this->noiboRepo->getEventsInRange($start, $end);
             foreach ($noiboItems as $item) {
-                $result[] = $this->noiboRepo->toCalendarEvent($item);
+                $startCal = Carbon::parse($item['start_date'] . ($item['start_time'] ? ' ' . $item['start_time'] : ''));
+                
+                $endDate = $item['end_date'] ?? $item['start_date'];
+                $endTime = $item['end_time'] ?? null;
+                if ($endTime !== null && $endTime !== '') {
+                    $endCal = Carbon::parse("{$endDate} {$endTime}");
+                } else {
+                    $endCal = Carbon::parse($endDate)->endOfDay();
+                }
+
+                $creatorName = $item['creator_name'] ?? 'N/A';
+                $participants = $item['participants'] ?? [];
+                $participantsStr = '';
+                if (! empty($participants)) {
+                    $names = array_column($participants, 'name');
+                    $participantsStr = ' (với '.implode(', ', $names).')';
+                }
+                $title = "{$creatorName}: {$item['title']}{$participantsStr}";
+
+                if ($endCal->clone()->startOfDay()->gt($startCal->clone()->startOfDay())) {
+                    $currentDay = $startCal->clone()->startOfDay();
+                    $lastDay = $endCal->clone()->startOfDay();
+                    
+                    $startTimeStr = $startCal->format('H:i:s');
+                    $endTimeStr = $endCal->format('H:i:s');
+                    
+                    while ($currentDay->lte($lastDay)) {
+                        $occStart = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $startTimeStr);
+                        $occEnd = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $endTimeStr);
+                        $dayStr = $currentDay->format('Y-m-d');
+
+                        $result[] = [
+                            'id' => 'noibo_' . $item['id'] . '_' . $dayStr,
+                            'db_id' => 'noibo_' . $item['id'],
+                            'title' => $title,
+                            'raw_title' => $item['title'],
+                            'start' => $occStart->toIso8601String(),
+                            'end' => $occEnd->toIso8601String(),
+                            'description' => $item['description'] ?? null,
+                            'location' => null,
+                            'classNames' => ['bg-warning-subtle', 'text-warning', 'border-warning', 'p-1', 'fw-semibold'],
+                            'label_color' => 'noibo',
+                            'creator_name' => $creatorName,
+                            'participants' => $participants,
+                            'can_edit' => false,
+                            'can_delete' => false,
+                            'source' => 'noibo',
+                        ];
+                        
+                        $currentDay->addDay();
+                    }
+                } else {
+                    $result[] = [
+                        'id' => 'noibo_' . $item['id'],
+                        'db_id' => 'noibo_' . $item['id'],
+                        'title' => $title,
+                        'raw_title' => $item['title'],
+                        'start' => $startCal->toIso8601String(),
+                        'end' => $endCal->toIso8601String(),
+                        'description' => $item['description'] ?? null,
+                        'location' => null,
+                        'classNames' => ['bg-warning-subtle', 'text-warning', 'border-warning', 'p-1', 'fw-semibold'],
+                        'label_color' => 'noibo',
+                        'creator_name' => $creatorName,
+                        'participants' => $participants,
+                        'can_edit' => false,
+                        'can_delete' => false,
+                        'source' => 'noibo',
+                    ];
+                }
             }
         }
 
         return $result;
     }
+
 
     private function getEventClasses(string $labelColor): array
     {
