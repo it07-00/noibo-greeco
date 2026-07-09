@@ -196,11 +196,14 @@
                 modal[action]();
 
                 if (action === 'hide') {
-                    // Blur focused element before Bootstrap sets aria-hidden="true" to avoid
-                    // "Blocked aria-hidden on focused element" accessibility warning.
-                    const focused = modalEl.querySelector(':focus');
-                    if (focused) {
-                        focused.blur();
+                    // Blur focus before Bootstrap sets aria-hidden="true".
+                    // Covers two cases:
+                    //   1. A child element (e.g. btn-close) has focus → querySelector(':focus')
+                    //   2. The modal container itself has focus (Bootstrap focuses the modal div
+                    //      via tabindex="-1" when opening) → check document.activeElement
+                    const active = document.activeElement;
+                    if (active && modalEl.contains(active)) {
+                        active.blur();
                     }
                     modalEl.dataset.greecoModalState = 'hiding';
                     modalEl.addEventListener('hidden.bs.modal', cleanupModalState, { once: true });
