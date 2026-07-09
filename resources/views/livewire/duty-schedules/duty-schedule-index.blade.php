@@ -619,7 +619,7 @@
 
                     const ownerEl = document.createElement('span');
                     ownerEl.className = 'greeco-event-owner';
-                    ownerEl.innerText = isNoibo ? 'Bảo Châu' : (props.creator_name || namesStr || 'Lịch công tác');
+                    ownerEl.innerText = isNoibo ? (props.creator_name && props.creator_name !== 'N/A' ? `${props.creator_name} (Bảo Châu)` : 'Bảo Châu') : (props.creator_name || namesStr || 'Lịch công tác');
                     contextEl.appendChild(ownerEl);
 
                     if (timeStr) {
