@@ -468,6 +468,10 @@
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const getCssVar = (name) => {
+                return window.getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#000';
+            };
+
             const serviceStructureEl = document.querySelector("#dashboardServiceStructureChart");
             if (serviceStructureEl) {
                 const data = @json($contractServicesStructure ?? []);
@@ -479,12 +483,21 @@
                         height: 320,
                         fontFamily: 'Plus Jakarta Sans, sans-serif'
                     },
-                    colors: ['var(--bs-primary)', 'var(--bs-success)', 'var(--bs-info)', 'var(--bs-warning)', 'var(--bs-danger)', '#6f42c1', '#fd7e14', '#20c997'],
+                    colors: [
+                        getCssVar('--bs-primary'),
+                        getCssVar('--bs-success'),
+                        getCssVar('--bs-info'),
+                        getCssVar('--bs-warning'),
+                        getCssVar('--bs-danger'),
+                        '#6f42c1',
+                        '#fd7e14',
+                        '#20c997'
+                    ],
                     dataLabels: { enabled: false },
                     legend: {
                         position: 'bottom',
                         horizontalAlign: 'center',
-                        labels: { colors: 'var(--bs-heading-color)' }
+                        labels: { colors: getCssVar('--bs-heading-color') }
                     },
                     tooltip: {
                         y: {
@@ -506,12 +519,21 @@
                         height: 320,
                         fontFamily: 'Plus Jakarta Sans, sans-serif'
                     },
-                    colors: ['var(--bs-primary)', 'var(--bs-success)', 'var(--bs-info)', 'var(--bs-warning)', 'var(--bs-danger)', '#6f42c1', '#fd7e14', '#20c997'],
+                    colors: [
+                        getCssVar('--bs-primary'),
+                        getCssVar('--bs-success'),
+                        getCssVar('--bs-info'),
+                        getCssVar('--bs-warning'),
+                        getCssVar('--bs-danger'),
+                        '#6f42c1',
+                        '#fd7e14',
+                        '#20c997'
+                    ],
                     dataLabels: { enabled: false },
                     legend: {
                         position: 'bottom',
                         horizontalAlign: 'center',
-                        labels: { colors: 'var(--bs-heading-color)' }
+                        labels: { colors: getCssVar('--bs-heading-color') }
                     },
                     tooltip: {
                         y: {
@@ -536,7 +558,7 @@
                         fontFamily: 'Plus Jakarta Sans, sans-serif',
                         toolbar: { show: false }
                     },
-                    colors: ['var(--bs-secondary)', 'var(--bs-success)'],
+                    colors: [getCssVar('--bs-secondary'), getCssVar('--bs-success')],
                     plotOptions: {
                         bar: {
                             horizontal: true,
@@ -555,15 +577,15 @@
                         categories: data.map(item => item.label || ''),
                         labels: {
                             formatter: (val) => Number.isInteger(val) ? val : '',
-                            style: { colors: 'var(--bs-body-color)' }
+                            style: { colors: getCssVar('--bs-body-color') }
                         }
                     },
                     yaxis: {
-                        labels: { style: { colors: 'var(--bs-body-color)' } }
+                        labels: { style: { colors: getCssVar('--bs-body-color') } }
                     },
                     legend: {
                         position: 'top',
-                        labels: { colors: 'var(--bs-heading-color)' }
+                        labels: { colors: getCssVar('--bs-heading-color') }
                     },
                     tooltip: {
                         shared: true,
@@ -591,7 +613,7 @@
                     stroke: {
                         width: [0, 0, 0]
                     },
-                    colors: ['var(--bs-warning)', 'var(--bs-primary)', 'var(--bs-success)'],
+                    colors: [getCssVar('--bs-warning'), getCssVar('--bs-primary'), getCssVar('--bs-success')],
                     plotOptions: {
                         bar: {
                             columnWidth: '60%',
@@ -600,14 +622,14 @@
                     },
                     xaxis: {
                         categories: data.map(item => item.province || 'Chưa xác định'),
-                        labels: { style: { colors: 'var(--bs-body-color)' } }
+                        labels: { style: { colors: getCssVar('--bs-body-color') } }
                     },
                     yaxis: [
                         {
                             title: { text: 'Số lượng hồ sơ' },
                             labels: {
                                 formatter: (val) => Number.isInteger(val) ? val : '',
-                                style: { colors: 'var(--bs-body-color)' }
+                                style: { colors: getCssVar('--bs-body-color') }
                             }
                         },
                         {
@@ -615,7 +637,7 @@
                             title: { text: 'Số lượng hồ sơ' },
                             labels: {
                                 formatter: (val) => Number.isInteger(val) ? val : '',
-                                style: { colors: 'var(--bs-body-color)' }
+                                style: { colors: getCssVar('--bs-body-color') }
                             }
                         },
                         {
@@ -623,13 +645,13 @@
                             title: { text: 'Doanh số (VND)' },
                             labels: {
                                 formatter: (val) => new Intl.NumberFormat('vi-VN').format(val) + 'đ',
-                                style: { colors: 'var(--bs-body-color)' }
+                                style: { colors: getCssVar('--bs-body-color') }
                             }
                         }
                     ],
                     legend: {
                         position: 'top',
-                        labels: { colors: 'var(--bs-heading-color)' }
+                        labels: { colors: getCssVar('--bs-heading-color') }
                     },
                     tooltip: {
                         shared: true,
@@ -640,7 +662,7 @@
                                     return new Intl.NumberFormat('vi-VN').format(val) + 'đ';
                                 }
                                 return val;
-                            }
+                              }
                         }
                     }
                 };
