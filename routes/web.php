@@ -39,21 +39,6 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    Route::get('/debug-auth', function () {
-        $user = auth()->user();
-        if (!$user) {
-            return "Not logged in";
-        }
-        return response()->json([
-            'user' => $user->name,
-            'roles' => $user->getRoleNames(),
-            'permissions' => $user->getAllPermissions()->pluck('name'),
-            'can_report_view' => $user->can('report.view'),
-            'can_report_create' => $user->can('report.create'),
-            'gate_viewAny' => Gate::allows('viewAny', \App\Models\DailyReport::class),
-        ]);
-    });
-
     Route::get('/dashboard', DashboardController::class)
         ->middleware('can:dashboard.view')
         ->name('dashboard');
