@@ -387,9 +387,7 @@
                                                 </span>
                                             </div>
                                             @if ($schedule['description'])
-                                                <div class="report-section-issues mt-1">
-                                                    {{ $schedule['description'] }}
-                                                </div>
+                                                <div class="report-section-issues mt-1">{{ $schedule['description'] }}</div>
                                             @endif
                                         </div>
                                     </div>
