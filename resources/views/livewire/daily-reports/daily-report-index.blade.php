@@ -607,6 +607,7 @@
 
         calendarReportsInstance = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
+            fixedWeekCount: false,
             locale: 'vi',
             firstDay: 1, // Start week on Monday
             headerToolbar: {

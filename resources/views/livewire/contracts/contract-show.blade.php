@@ -146,14 +146,16 @@
                             @if ($contract->quotation_id)
                                 <a href="{{ route('quotations.index') }}">#{{ $contract->quotation?->quotation_number }}</a>
                                 @if ($contract->quotation?->file_path)
-                                    <button
-                                        type="button"
+                                    <a
+                                        href="{{ route('quotations.file.view', $contract->quotation_id) }}"
+                                        target="_blank"
+                                        rel="noopener"
                                         class="btn btn-link p-0 text-success text-decoration-none small ms-2"
                                         style="font-size: 0.85rem;"
-                                        wire:click="downloadQuotation({{ $contract->quotation_id }})"
+                                        title="Xem file báo giá"
                                     >
-                                        <i class="fi fi-rr-download me-1" style="font-size: 0.8rem;"></i>Tải file báo giá
-                                    </button>
+                                        <i class="fi fi-rr-eye me-1" style="font-size: 0.8rem;"></i>Xem file báo giá
+                                    </a>
                                 @endif
                             @else
                                 Tạo trực tiếp

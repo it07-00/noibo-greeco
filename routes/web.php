@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ContractDocumentDownloadController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\QuotationFileViewController;
 use App\Livewire\Commissions\CommissionRequestForm;
 use App\Livewire\Commissions\CommissionRequestIndex;
 use App\Livewire\Contracts\ContractIndex;
@@ -73,6 +74,9 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/quotations', QuotationIndex::class)
         ->middleware('can:quotation.view')
         ->name('quotations.index');
+
+    Route::get('/quotations/{quotation}/file', QuotationFileViewController::class)
+        ->name('quotations.file.view');
 
     Route::get('/contracts', ContractIndex::class)
         ->middleware('can:contract.view')

@@ -404,6 +404,10 @@ final class SalesUiTest extends TestCase
         $this->assertNotNull($quotation->file_path);
         Storage::disk('local')->assertExists($quotation->file_path);
 
+        $viewResponse = $this->get(route('quotations.file.view', $quotation));
+        $viewResponse->assertOk();
+        $this->assertStringStartsWith('inline;', (string) $viewResponse->headers->get('content-disposition'));
+
         // Download file should work
         Livewire::test(QuotationIndex::class)
             ->call('downloadFile', $quotation->id)

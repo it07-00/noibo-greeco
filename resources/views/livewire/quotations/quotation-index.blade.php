@@ -130,15 +130,16 @@
                                 </div>
                                 @if ($quotation->file_path)
                                     <div class="mt-1">
-                                        <button
-                                            type="button"
+                                        <a
+                                            href="{{ route('quotations.file.view', $quotation) }}"
+                                            target="_blank"
+                                            rel="noopener"
                                             class="btn btn-link p-0 text-success text-decoration-none small text-start"
                                             style="font-size: 0.76rem;"
-                                            wire:click="downloadFile({{ $quotation->id }})"
-                                            title="Tải file báo giá"
+                                            title="Xem file báo giá"
                                         >
-                                            <i class="fi fi-rr-download me-1" style="font-size: 0.72rem;"></i>File báo giá
-                                        </button>
+                                            <i class="fi fi-rr-eye me-1" style="font-size: 0.72rem;"></i>File báo giá
+                                        </a>
                                     </div>
                                 @endif
                             </td>
@@ -200,14 +201,15 @@
                                     @endcan
 
                                     @if ($quotation->file_path)
-                                        <button
-                                            type="button"
+                                        <a
+                                            href="{{ route('quotations.file.view', $quotation) }}"
+                                            target="_blank"
+                                            rel="noopener"
                                             class="btn btn-sm btn-outline-success sales-icon-button"
-                                            wire:click="downloadFile({{ $quotation->id }})"
-                                            title="Tải file báo giá"
+                                            title="Xem file báo giá"
                                         >
-                                            <i class="fi fi-rr-download" aria-hidden="true"></i>
-                                        </button>
+                                            <i class="fi fi-rr-eye" aria-hidden="true"></i>
+                                        </a>
                                     @endif
 
                                     @if ($quotation->status === \App\Enums\QuotationStatus::Draft)
@@ -463,9 +465,9 @@
                                     <span class="small text-truncate" style="max-width: 300px;">{{ basename($existingFilePath) }}</span>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="downloadFile({{ $editingId }})">
-                                        <i class="fi fi-rr-download" aria-hidden="true"></i> Tải về
-                                    </button>
+                                    <a href="{{ route('quotations.file.view', $editingId) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
+                                        <i class="fi fi-rr-eye" aria-hidden="true"></i> Xem file
+                                    </a>
                                     <button type="button" class="btn btn-sm btn-outline-danger" wire:click="deleteFile" wire:confirm="Bạn có chắc chắn muốn xóa file đính kèm này?">
                                         <i class="fi fi-rr-trash" aria-hidden="true"></i> Xóa
                                     </button>
