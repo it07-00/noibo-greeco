@@ -50,6 +50,7 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
             'permissions' => $user->getAllPermissions()->pluck('name'),
             'can_report_view' => $user->can('report.view'),
             'can_report_create' => $user->can('report.create'),
+            'gate_viewAny' => Gate::allows('viewAny', \App\Models\DailyReport::class),
         ]);
     });
 
