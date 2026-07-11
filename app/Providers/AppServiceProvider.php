@@ -52,6 +52,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        \Carbon\Carbon::setLocale(config('app.locale'));
+
+        Event::listen(
+            \Illuminate\Foundation\Events\LocaleUpdated::class,
+            static function (\Illuminate\Foundation\Events\LocaleUpdated $event): void {
+                \Carbon\Carbon::setLocale($event->locale);
+            }
+        );
+
         if (config('app.env') === 'production' || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
             URL::forceScheme('https');
         }
