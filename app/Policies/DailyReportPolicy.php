@@ -23,7 +23,7 @@ final class DailyReportPolicy
     public function view(User $user, DailyReport $report): bool
     {
         // Owner can always view their own
-        if ($report->user_id === $user->id) {
+        if ((int) $report->user_id === (int) $user->id) {
             return true;
         }
 
@@ -38,11 +38,11 @@ final class DailyReportPolicy
 
     public function update(User $user, DailyReport $report): bool
     {
-        return $report->user_id === $user->id;
+        return (int) $report->user_id === (int) $user->id;
     }
 
     public function delete(User $user, DailyReport $report): bool
     {
-        return $report->user_id === $user->id || $user->can(PermissionEnum::ReportDelete->value);
+        return (int) $report->user_id === (int) $user->id || $user->can(PermissionEnum::ReportDelete->value);
     }
 }

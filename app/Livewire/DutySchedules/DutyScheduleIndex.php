@@ -119,7 +119,7 @@ final class DutyScheduleIndex extends Component
         $result = [];
 
         foreach ($events as $event) {
-            $isCreator = auth()->id() === $event->created_by;
+            $isCreator = (int) auth()->id() === (int) $event->created_by;
             $isParticipant = $event->users->contains(auth()->id());
             $hasPrivatePermission = auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value) ?? false;
             $canSeeDetails = $isCreator || $isParticipant || $hasPrivatePermission;
