@@ -132,7 +132,7 @@
 
     {{-- Bảng chi tiết --}}
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="card-header py-3 border-bottom d-flex align-items-center justify-content-between">
             <h6 class="mb-0 fw-bold">Chi tiết dòng tiền — {{ $periodLabel }}</h6>
             <span class="badge bg-secondary">{{ $totals['count'] }} hợp đồng</span>
         </div>
@@ -411,7 +411,7 @@
             </div>
 
             @if ($rows instanceof \Illuminate\Pagination\LengthAwarePaginator && $rows->hasPages())
-                <div class="card-footer px-3 border-0 d-flex justify-content-center bg-white">
+                <div class="card-footer px-3 border-0 d-flex justify-content-center bg-transparent">
                     {{ $rows->links() }}
                 </div>
             @endif
