@@ -7,9 +7,12 @@ namespace App\Services;
 use App\DTOs\DailyReportDTO;
 use App\Enums\RoleEnum;
 use App\Models\DailyReport;
+use App\Models\DailyReportSupportAssignment;
 use App\Models\User;
 use App\Notifications\DailyReportSubmitted;
+use App\Notifications\DailyReportSupportRequested;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -18,9 +21,9 @@ final class DailyReportService
     /**
      * Get paginated reports, optionally filtered.
      *
-     * @param int|null $userId      Filter by specific user (null = all)
-     * @param string|null $date     Filter by specific date (Y-m-d)
-     * @param string|null $search   Search in work_done
+     * @param  int|null  $userId  Filter by specific user (null = all)
+     * @param  string|null  $date  Filter by specific date (Y-m-d)
+     * @param  string|null  $search  Search in work_done
      * @return LengthAwarePaginator<DailyReport>
      */
     public function getReports(
@@ -42,12 +45,9 @@ final class DailyReportService
     /**
      * Get reports in a date range for calendar view.
      *
-     * @param string $start
-     * @param string $end
-     * @param int|null $userId
-     * @return \Illuminate\Database\Eloquent\Collection<int, DailyReport>
+     * @return Collection<int, DailyReport>
      */
-    public function getReportsInRange(string $start, string $end, ?int $userId = null): \Illuminate\Database\Eloquent\Collection
+    public function getReportsInRange(string $start, string $end, ?int $userId = null): Collection
     {
         return DailyReport::query()
             ->with('user')
@@ -57,34 +57,40 @@ final class DailyReportService
             ->get();
     }
 
-    public function createReport(DailyReportDTO $dto): DailyReport
+    public function createReport(DailyReportDTO $dto, array $supportUserIds = []): DailyReport
     {
         $report = DB::transaction(function () use ($dto): DailyReport {
             return DailyReport::create([
-                'user_id'       => $dto->userId,
-                'report_date'   => $dto->reportDate,
-                'work_done'     => $dto->workDone,
+                'user_id' => $dto->userId,
+                'report_date' => $dto->reportDate,
+                'work_done' => $dto->workDone,
                 'plan_tomorrow' => $dto->planTomorrow,
-                'issues'        => $dto->issues,
+                'issues' => $dto->issues,
             ]);
         });
 
         $this->notifyDirectors($report);
+        $this->syncSupportAssignments($report, $supportUserIds);
 
         return $report;
     }
 
-    public function updateReport(DailyReport $report, DailyReportDTO $dto): DailyReport
+    public function updateReport(DailyReport $report, DailyReportDTO $dto, array $supportUserIds = []): DailyReport
     {
-        return DB::transaction(function () use ($report, $dto): DailyReport {
+        $updated = DB::transaction(function () use ($report, $dto): DailyReport {
             $report->update([
-                'report_date'   => $dto->reportDate,
-                'work_done'     => $dto->workDone,
+                'report_date' => $dto->reportDate,
+                'work_done' => $dto->workDone,
                 'plan_tomorrow' => $dto->planTomorrow,
-                'issues'        => $dto->issues,
+                'issues' => $dto->issues,
             ]);
+
             return $report->refresh();
         });
+
+        $this->syncSupportAssignments($updated, $supportUserIds);
+
+        return $updated;
     }
 
     public function deleteReport(DailyReport $report): void
@@ -116,6 +122,35 @@ final class DailyReportService
 
         if ($directors->isNotEmpty()) {
             Notification::send($directors, new DailyReportSubmitted($report, $reporterName));
+        }
+    }
+
+    private function syncSupportAssignments(DailyReport $report, array $supportUserIds): void
+    {
+        $userIds = collect($supportUserIds)
+            ->map(fn ($id): int => (int) $id)
+            ->filter(fn (int $id): bool => $id > 0 && $id !== $report->user_id)
+            ->unique()
+            ->values();
+
+        $existingIds = $report->supportAssignments()->pluck('assignee_id');
+        $newIds = $userIds->diff($existingIds);
+
+        $report->supportAssignments()->whereNotIn('assignee_id', $userIds)->delete();
+
+        foreach ($newIds as $userId) {
+            DailyReportSupportAssignment::query()->create([
+                'daily_report_id' => $report->id,
+                'assignee_id' => $userId,
+            ]);
+        }
+
+        if ($newIds->isNotEmpty()) {
+            $assignees = User::query()->whereKey($newIds)->get();
+            Notification::send(
+                $assignees,
+                new DailyReportSupportRequested($report, $report->user?->name ?? 'Một đồng nghiệp'),
+            );
         }
     }
 }

@@ -7,8 +7,10 @@ namespace Tests\Feature;
 use App\DTOs\DailyReportDTO;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Enums\SupportRequestStatus;
 use App\Livewire\DailyReports\DailyReportIndex;
 use App\Models\DailyReport;
+use App\Models\DailyReportSupportAssignment;
 use App\Models\User;
 use App\Services\DailyReportService;
 use Database\Seeders\PermissionSeeder;
@@ -417,5 +419,39 @@ final class DailyReportModuleTest extends TestCase
             ->assertDontSeeHtml('id="filterDate"')
             ->set('viewType', 'table')
             ->assertSeeHtml('id="filterDate"');
+    }
+
+    public function test_reporter_can_assign_support_user_and_assignee_receives_notification(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $reporter = User::factory()->create();
+        $reporter->assignRole(RoleEnum::IT->value);
+        $helper = User::factory()->create();
+        $helper->assignRole(RoleEnum::Consultant->value);
+        $this->actingAs($reporter);
+
+        Livewire::test(DailyReportIndex::class)
+            ->set('formDate', '2026-07-11')
+            ->set('formWorkDone', 'Đã hoàn thành rà soát báo cáo phát thải.')
+            ->set('formIssues', 'Cần hỗ trợ kiểm tra số liệu đầu vào.')
+            ->set('formNeedsSupport', true)
+            ->set('formSupportUserIds', [$helper->id])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $report = DailyReport::query()->where('user_id', $reporter->id)->firstOrFail();
+        $assignment = DailyReportSupportAssignment::query()->firstOrFail();
+        $this->assertSame($report->id, $assignment->daily_report_id);
+        $this->assertSame($helper->id, $assignment->assignee_id);
+        $this->assertSame(SupportRequestStatus::Pending, $assignment->status);
+        $this->assertDatabaseHas('notifications', ['notifiable_id' => $helper->id]);
+
+        $this->actingAs($helper);
+        Livewire::test(DailyReportIndex::class)
+            ->set('viewType', 'support')
+            ->assertSee('Cần hỗ trợ kiểm tra số liệu đầu vào.')
+            ->call('updateSupportStatus', $assignment->id, SupportRequestStatus::InProgress->value);
+
+        $this->assertSame(SupportRequestStatus::InProgress, $assignment->refresh()->status);
     }
 }

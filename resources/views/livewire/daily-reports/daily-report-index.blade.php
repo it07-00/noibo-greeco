@@ -37,6 +37,14 @@
                 >
                     <i class="fi fi-rr-calendar me-1"></i> Lịch
                 </button>
+                <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    :class="viewType === 'support' ? 'active' : ''"
+                    @click="$wire.set('viewType', 'support')"
+                >
+                    <i class="fi fi-rr-life-ring me-1"></i> Hỗ trợ
+                </button>
             </div>
             @can('create', \App\Models\DailyReport::class)
                 <button
@@ -275,8 +283,55 @@
     </div>
 
     {{-- ── Create / Edit Modal ─────────────────────────────────────────────── --}}
+    @if ($viewType === 'support')
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="fi fi-rr-life-ring fs-5" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <h2 class="h6 mb-1">Quản lý yêu cầu hỗ trợ</h2>
+                        <p class="small text-muted mb-0">Theo dõi các vấn đề được giao cho bạn hoặc do bạn yêu cầu.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Người yêu cầu</th><th>Vấn đề cần hỗ trợ</th><th>Người hỗ trợ</th><th>Ngày báo cáo</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr></thead>
+                    <tbody>
+                        @forelse ($supportAssignments as $assignment)
+                            <tr wire:key="support-assignment-{{ $assignment->id }}">
+                                <td class="fw-medium">{{ $assignment->report->user?->name ?: '—' }}</td>
+                                <td style="min-width: 280px; max-width: 420px;"><div class="text-wrap">{{ $assignment->report->issues }}</div></td>
+                                <td>{{ $assignment->assignee?->name ?: '—' }}</td>
+                                <td>{{ $assignment->report->report_date->format('d/m/Y') }}</td>
+                                <td><span class="badge rounded-pill {{ $assignment->status->badgeClass() }}">{{ $assignment->status->label() }}</span></td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        @if ($assignment->status === \App\Enums\SupportRequestStatus::Pending)
+                                            <button type="button" class="btn btn-sm btn-outline-primary" wire:click="updateSupportStatus({{ $assignment->id }}, 'in_progress')">Nhận hỗ trợ</button>
+                                        @endif
+                                        @if ($assignment->status !== \App\Enums\SupportRequestStatus::Resolved)
+                                            <button type="button" class="btn btn-sm btn-outline-success" wire:click="updateSupportStatus({{ $assignment->id }}, 'resolved')">Hoàn tất</button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="text-center py-5 text-muted">Chưa có yêu cầu hỗ trợ nào.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if ($supportAssignments->hasPages())
+                <div class="card-footer bg-white">{{ $supportAssignments->links() }}</div>
+            @endif
+        </div>
+    @endif
+
     <div wire:ignore.self class="modal fade" id="reportCreateModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
             <form wire:submit.prevent="save" class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
@@ -285,8 +340,12 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
+                <div class="modal-body bg-light">
+                    <div class="bg-white border rounded-3 p-3 mb-3">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <i class="fi fi-rr-calendar text-primary" aria-hidden="true"></i>
+                            <h6 class="mb-0">Thông tin báo cáo</h6>
+                        </div>
                         <label class="form-label" for="formDate">
                             Ngày báo cáo <span class="text-danger">*</span>
                         </label>
@@ -301,7 +360,9 @@
                         @enderror
                     </div>
 
-                    <div class="mb-3">
+                    <div class="row g-3 mb-3">
+                    <div class="col-lg-7">
+                        <div class="bg-white border rounded-3 p-3 h-100">
                         <label class="form-label" for="formWorkDone">
                             Công việc đã thực hiện <span class="text-danger">*</span>
                         </label>
@@ -309,15 +370,17 @@
                             id="formWorkDone"
                             wire:model.defer="formWorkDone"
                             class="form-control @error('formWorkDone') is-invalid @enderror"
-                            rows="5"
+                            rows="8"
                             placeholder="Mô tả chi tiết những công việc bạn đã thực hiện trong ngày hôm nay..."
                         ></textarea>
                         @error('formWorkDone')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        </div>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="col-lg-5">
+                        <div class="bg-white border rounded-3 p-3 h-100">
                         <label class="form-label" for="formPlanTomorrow">
                             Kế hoạch ngày mai
                         </label>
@@ -325,28 +388,60 @@
                             id="formPlanTomorrow"
                             wire:model.defer="formPlanTomorrow"
                             class="form-control @error('formPlanTomorrow') is-invalid @enderror"
-                            rows="3"
+                            rows="8"
                             placeholder="Những việc bạn sẽ làm vào ngày mai..."
                         ></textarea>
                         @error('formPlanTomorrow')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        </div>
+                    </div>
                     </div>
 
-                    <div class="mb-1">
-                        <label class="form-label" for="formIssues">
-                            Vấn đề phát sinh <span class="text-muted text-sm">(nếu có)</span>
-                        </label>
-                        <textarea
-                            id="formIssues"
-                            wire:model.defer="formIssues"
-                            class="form-control @error('formIssues') is-invalid @enderror"
-                            rows="2"
-                            placeholder="Khó khăn, vướng mắc cần hỗ trợ..."
-                        ></textarea>
-                        @error('formIssues')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="bg-white border rounded-3 p-3">
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 bg-warning-subtle text-warning-emphasis d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                                    <i class="fi fi-rr-life-ring fs-5" aria-hidden="true"></i>
+                                </div>
+                                <div>
+                                    <label class="form-label fw-semibold mb-1" for="formNeedsSupport">Cần đồng nghiệp hỗ trợ?</label>
+                                    <div class="small text-muted">Người được chọn sẽ nhận thông báo và theo dõi yêu cầu.</div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch m-0">
+                                <input id="formNeedsSupport" class="form-check-input" type="checkbox" role="switch" wire:model.live="formNeedsSupport">
+                            </div>
+                        </div>
+
+                        @if ($formNeedsSupport)
+                            <div class="row g-3">
+                                <div class="col-lg-7">
+                                    <label class="form-label" for="formIssues">Vấn đề cần hỗ trợ <span class="text-danger">*</span></label>
+                                    <textarea id="formIssues" wire:model.defer="formIssues" class="form-control @error('formIssues') is-invalid @enderror" rows="4" placeholder="Mô tả vấn đề, kết quả mong muốn và thời hạn nếu có..."></textarea>
+                                    @error('formIssues') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="col-lg-5">
+                                    <label class="form-label">Người hỗ trợ</label>
+                                    <div class="border rounded-3 p-2 overflow-auto" style="max-height: 150px;">
+                                        @foreach ($supportUsers as $supportUser)
+                                            <label class="d-flex align-items-center gap-2 p-2 rounded" wire:key="support-user-{{ $supportUser->id }}">
+                                                <input class="form-check-input mt-0" type="checkbox" value="{{ $supportUser->id }}" wire:model.defer="formSupportUserIds">
+                                                <span>{{ $supportUser->name }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    @error('formSupportUserIds') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                    @error('formSupportUserIds.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                </div>
+                            </div>
+                        @else
+                            <div>
+                                <label class="form-label" for="formIssues">Ghi chú vấn đề phát sinh <span class="text-muted">(nếu có)</span></label>
+                                <textarea id="formIssues" wire:model.defer="formIssues" class="form-control @error('formIssues') is-invalid @enderror" rows="2" placeholder="Ghi lại khó khăn nhưng chưa cần phân công hỗ trợ..."></textarea>
+                                @error('formIssues') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="modal-footer">

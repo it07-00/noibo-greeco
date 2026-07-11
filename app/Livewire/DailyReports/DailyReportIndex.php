@@ -7,7 +7,9 @@ namespace App\Livewire\DailyReports;
 use App\DTOs\DailyReportDTO;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Enums\SupportRequestStatus;
 use App\Models\DailyReport;
+use App\Models\DailyReportSupportAssignment;
 use App\Models\User;
 use App\Services\DailyReportService;
 use Carbon\Carbon;
@@ -48,6 +50,10 @@ final class DailyReportIndex extends Component
 
     public string $formIssues = '';
 
+    public bool $formNeedsSupport = false;
+
+    public array $formSupportUserIds = [];
+
     // ── Edit ──────────────────────────────────────────────────────────────────
     public int $editingId = 0;
 
@@ -66,6 +72,8 @@ final class DailyReportIndex extends Component
             'formWorkDone' => ['required', 'string', 'min:10', 'max:3000'],
             'formPlanTomorrow' => ['nullable', 'string', 'max:2000'],
             'formIssues' => ['nullable', 'string', 'max:2000'],
+            'formSupportUserIds' => ['array'],
+            'formSupportUserIds.*' => ['integer', 'exists:users,id'],
         ];
     }
 
@@ -88,6 +96,9 @@ final class DailyReportIndex extends Component
         // Staff: has report.create → see own only by default
         $canViewAll = $this->resolveCanViewAll();
         $this->viewMode = $canViewAll ? 'all' : 'mine';
+        if (request()->query('view') === 'support') {
+            $this->viewType = 'support';
+        }
     }
 
     /**
@@ -153,7 +164,7 @@ final class DailyReportIndex extends Component
     // ── Open Edit Modal ──────────────────────────────────────────────────────
     public function openEditModal(int $id): void
     {
-        $report = DailyReport::findOrFail($id);
+        $report = DailyReport::with('supportAssignments')->findOrFail($id);
         Gate::authorize('update', $report);
 
         $this->editingId = $id;
@@ -161,6 +172,8 @@ final class DailyReportIndex extends Component
         $this->formWorkDone = $report->work_done;
         $this->formPlanTomorrow = $report->plan_tomorrow ?? '';
         $this->formIssues = $report->issues ?? '';
+        $this->formSupportUserIds = $report->supportAssignments->pluck('assignee_id')->all();
+        $this->formNeedsSupport = $this->formSupportUserIds !== [];
         $this->resetValidation();
         $this->dispatch('report-create:show');
     }
@@ -185,6 +198,18 @@ final class DailyReportIndex extends Component
 
         $this->validate();
 
+        if ($this->formNeedsSupport && trim($this->formIssues) === '') {
+            $this->addError('formIssues', 'Vui lòng mô tả vấn đề cần hỗ trợ.');
+
+            return;
+        }
+
+        if ($this->formNeedsSupport && $this->formSupportUserIds === []) {
+            $this->addError('formSupportUserIds', 'Vui lòng chọn ít nhất một người hỗ trợ.');
+
+            return;
+        }
+
         $dto = DailyReportDTO::fromArray([
             'user_id' => Auth::id(),
             'report_date' => $this->formDate,
@@ -196,11 +221,11 @@ final class DailyReportIndex extends Component
         if ($this->editingId > 0) {
             $report = DailyReport::findOrFail($this->editingId);
             Gate::authorize('update', $report);
-            $service->updateReport($report, $dto);
+            $service->updateReport($report, $dto, $this->formNeedsSupport ? $this->formSupportUserIds : []);
             $message = 'Đã cập nhật báo cáo ngày '.$this->formDate.' thành công.';
         } else {
             Gate::authorize('create', DailyReport::class);
-            $service->createReport($dto);
+            $service->createReport($dto, $this->formNeedsSupport ? $this->formSupportUserIds : []);
             $message = 'Đã tạo báo cáo ngày '.$this->formDate.' thành công.';
         }
 
@@ -245,7 +270,35 @@ final class DailyReportIndex extends Component
         $this->formWorkDone = '';
         $this->formPlanTomorrow = '';
         $this->formIssues = '';
+        $this->formNeedsSupport = false;
+        $this->formSupportUserIds = [];
         $this->editingId = 0;
+    }
+
+    public function updateSupportStatus(int $assignmentId, string $status): void
+    {
+        $assignment = DailyReportSupportAssignment::query()->with('report')->findOrFail($assignmentId);
+        $actor = Auth::user();
+        $canManage = $actor && (
+            $assignment->assignee_id === $actor->id
+            || $assignment->report->user_id === $actor->id
+            || $this->resolveCanViewAll()
+        );
+        abort_unless($canManage, 403);
+
+        $target = SupportRequestStatus::from($status);
+        $assignment->update([
+            'status' => $target,
+            'resolved_at' => $target === SupportRequestStatus::Resolved ? now() : null,
+        ]);
+
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Đã cập nhật yêu cầu hỗ trợ',
+            'toast' => true,
+            'position' => 'top-end',
+            'timer' => 2200,
+        ]);
     }
 
     public function showDayReports(string $dateStr, DailyReportService $service): void
@@ -408,11 +461,28 @@ final class DailyReportIndex extends Component
                 ->get(['id', 'name'])
             : collect();
 
+        $supportUsers = User::query()
+            ->whereKeyNot(Auth::id())
+            ->whereNull('locked_at')
+            ->orderBy('name')
+            ->get(['id', 'name', 'department_id']);
+
+        $supportAssignments = DailyReportSupportAssignment::query()
+            ->with(['report.user', 'assignee'])
+            ->when(! $canViewAll, fn ($query) => $query->where(function ($inner): void {
+                $inner->where('assignee_id', Auth::id())
+                    ->orWhereHas('report', fn ($reportQuery) => $reportQuery->where('user_id', Auth::id()));
+            }))
+            ->latest()
+            ->paginate(15, ['*'], 'supportPage');
+
         return view('livewire.daily-reports.daily-report-index', [
             'reports' => $reports,
             'canViewAll' => $canViewAll,
             'viewingReport' => $viewingReport,
             'users' => $users,
+            'supportUsers' => $supportUsers,
+            'supportAssignments' => $supportAssignments,
         ]);
     }
 }
