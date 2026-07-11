@@ -138,8 +138,9 @@
                                 <a
                                     href="{{ route('contracts.show', $contract) }}"
                                     class="btn btn-sm btn-outline-primary sales-action-button"
+                                    title="Xem chi tiết hợp đồng"
                                 >
-                                    Mở hồ sơ
+                                    <i class="fi fi-rr-eye me-1" aria-hidden="true"></i>Xem chi tiết hợp đồng
                                 </a>
                             </td>
                         </tr>

@@ -249,8 +249,9 @@
                                             <a
                                                 href="{{ route('contracts.show', $quotation->contract) }}"
                                                 class="btn btn-sm btn-outline-primary sales-action-button"
+                                                title="Xem chi tiết hợp đồng"
                                             >
-                                                Mở hợp đồng
+                                                <i class="fi fi-rr-eye me-1" aria-hidden="true"></i>Xem chi tiết hợp đồng
                                             </a>
                                         @else
                                             @can('convert', $quotation)
