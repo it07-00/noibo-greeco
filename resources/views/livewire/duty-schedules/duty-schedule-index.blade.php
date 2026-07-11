@@ -94,19 +94,54 @@
                                 @enderror
                             </div>
                             <div class="col-12 mb-3">
-                                <label class="form-label fw-semibold">Nhãn màu sắc <span
+                                <label class="form-label fw-semibold">Màu sắc <span
                                         class="text-danger">*</span></label>
-                                <select wire:model="label_color"
-                                    class="form-select @error('label_color') is-invalid @enderror">
-                                    <option value="primary">Primary (Mặc định)</option>
-                                    <option value="success">Success (Hoàn thành)</option>
-                                    <option value="info">Info (Cuộc họp)</option>
-                                    <option value="purple">Purple (Họp công tác)</option>
-                                    <option value="warning">Warning (Cá nhân/Nháp)</option>
-                                    <option value="danger">Danger (Khẩn cấp)</option>
-                                </select>
+                                <div class="d-flex flex-wrap gap-2 align-items-center mt-1">
+                                    <label class="color-selector-label">
+                                        <input type="radio" wire:model="label_color" value="primary" class="btn-check" />
+                                        <span class="badge border border-2 d-inline-flex align-items-center gap-1 px-3 py-2 bg-primary-subtle text-primary fw-semibold rounded-pill color-badge-select">
+                                            <span class="d-inline-block rounded-circle bg-primary" style="width: 10px; height: 10px;"></span>
+                                            Mặc định
+                                        </span>
+                                    </label>
+                                    <label class="color-selector-label">
+                                        <input type="radio" wire:model="label_color" value="success" class="btn-check" />
+                                        <span class="badge border border-2 d-inline-flex align-items-center gap-1 px-3 py-2 bg-success-subtle text-success fw-semibold rounded-pill color-badge-select">
+                                            <span class="d-inline-block rounded-circle bg-success" style="width: 10px; height: 10px;"></span>
+                                            Hoàn thành
+                                        </span>
+                                    </label>
+                                    <label class="color-selector-label">
+                                        <input type="radio" wire:model="label_color" value="info" class="btn-check" />
+                                        <span class="badge border border-2 d-inline-flex align-items-center gap-1 px-3 py-2 bg-info-subtle text-info fw-semibold rounded-pill color-badge-select">
+                                            <span class="d-inline-block rounded-circle bg-info" style="width: 10px; height: 10px;"></span>
+                                            Cuộc họp
+                                        </span>
+                                    </label>
+                                    <label class="color-selector-label">
+                                        <input type="radio" wire:model="label_color" value="purple" class="btn-check" />
+                                        <span class="badge border border-2 d-inline-flex align-items-center gap-1 px-3 py-2 bg-purple-subtle text-purple fw-semibold rounded-pill color-badge-select">
+                                            <span class="d-inline-block rounded-circle bg-purple" style="width: 10px; height: 10px;"></span>
+                                            Họp công tác
+                                        </span>
+                                    </label>
+                                    <label class="color-selector-label">
+                                        <input type="radio" wire:model="label_color" value="warning" class="btn-check" />
+                                        <span class="badge border border-2 d-inline-flex align-items-center gap-1 px-3 py-2 bg-warning-subtle text-warning fw-semibold rounded-pill color-badge-select">
+                                            <span class="d-inline-block rounded-circle bg-warning" style="width: 10px; height: 10px;"></span>
+                                            Cá nhân / Nháp
+                                        </span>
+                                    </label>
+                                    <label class="color-selector-label">
+                                        <input type="radio" wire:model="label_color" value="danger" class="btn-check" />
+                                        <span class="badge border border-2 d-inline-flex align-items-center gap-1 px-3 py-2 bg-danger-subtle text-danger fw-semibold rounded-pill color-badge-select">
+                                            <span class="d-inline-block rounded-circle bg-danger" style="width: 10px; height: 10px;"></span>
+                                            Khẩn cấp
+                                        </span>
+                                    </label>
+                                </div>
                                 @error('label_color')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-12 mb-3">

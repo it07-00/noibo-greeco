@@ -818,3 +818,33 @@
     color: #334155;
     white-space: pre-wrap;
 }
+
+/* Color Selector styling for create/edit form */
+.color-selector-label input[type="radio"] {
+    display: none;
+}
+.color-selector-label {
+    margin-bottom: 0;
+}
+.color-badge-select {
+    cursor: pointer;
+    border-color: transparent !important;
+    opacity: 0.8;
+    transition: all 0.2s ease-in-out;
+}
+.color-selector-label:hover .color-badge-select {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+.color-selector-label input[type="radio"]:checked + .color-badge-select {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+.color-selector-label input[type="radio"]:checked + .bg-primary-subtle { border-color: #3b82f6 !important; }
+.color-selector-label input[type="radio"]:checked + .bg-success-subtle { border-color: #10b981 !important; }
+.color-selector-label input[type="radio"]:checked + .bg-info-subtle { border-color: #06b6d4 !important; }
+.color-selector-label input[type="radio"]:checked + .bg-purple-subtle { border-color: #8b5cf6 !important; }
+.color-selector-label input[type="radio"]:checked + .bg-warning-subtle { border-color: #f59e0b !important; }
+.color-selector-label input[type="radio"]:checked + .bg-danger-subtle { border-color: #ef4444 !important; }
+

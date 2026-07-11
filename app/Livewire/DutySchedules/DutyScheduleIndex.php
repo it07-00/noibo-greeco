@@ -101,7 +101,7 @@ final class DutyScheduleIndex extends Component
         'title' => 'tiêu đề',
         'start_at' => 'thời gian bắt đầu',
         'end_at' => 'thời gian kết thúc',
-        'label_color' => 'nhãn màu',
+        'label_color' => 'màu sắc',
         'user_ids' => 'thành viên tham gia',
     ];
 
