@@ -587,207 +587,300 @@ html, body {
 /* ==========================================================================
    Comprehensive Dark Mode Fixes (Applied Globally)
    ========================================================================== */
-[data-bs-theme="dark"] {
-    /* Override Bootstrap bg-white globally */
-    .bg-white {
-        background-color: var(--bs-card-bg) !important;
-    }
-    .card-header.bg-white,
-    .card-footer.bg-white {
-        background-color: var(--bs-card-bg) !important;
-    }
-    
-    /* Override static dark text colors */
-    .text-dark,
-    .text-black,
-    .text-slate-900 {
-        color: var(--bs-body-color) !important;
-    }
-    
-    /* Daily Reports CSS Dark Mode Overrides */
-    .daily-report-card {
-        background-color: var(--bs-card-bg) !important;
-        border-color: var(--bs-border-color) !important;
-        box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.5) !important;
-    }
-    .daily-report-card:hover {
-        border-color: rgba(255, 255, 255, 0.15) !important;
-    }
-    .report-header {
-        background-color: var(--bs-secondary-bg) !important;
-        border-bottom-color: var(--bs-border-color) !important;
-    }
-    .report-user-name {
-        color: var(--bs-heading-color) !important;
-    }
-    .report-section-content {
-        color: var(--bs-body-color) !important;
-    }
-    .report-action-btn:hover {
-        background-color: var(--bs-tertiary-bg) !important;
-    }
-    .report-section-issues {
-        background-color: rgba(217, 119, 6, 0.1) !important;
-        color: #f59e0b !important;
-    }
-    #calendar-reports .greeco-event-card {
-        background: linear-gradient(135deg, var(--bs-card-bg) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    #calendar-reports .greeco-event-title {
-        color: var(--bs-heading-color) !important;
-    }
 
-    /* FullCalendar & Duty Schedule CSS Dark Mode Overrides */
-    .fc {
-        --fc-border-color: rgba(255, 255, 255, 0.1);
-    }
-    .fc .fc-view-harness {
-        background-color: var(--bs-card-bg);
-    }
-    .fc-theme-standard .fc-scrollgrid {
-        border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    .fc .fc-col-header-cell-cushion {
-        color: var(--bs-heading-color) !important;
-    }
-    .fc .fc-col-header-cell {
-        background-color: var(--bs-secondary-bg) !important;
-        border-bottom-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    .fc .fc-daygrid-day-frame:hover {
-        background-color: rgba(255, 255, 255, 0.03);
-    }
-    .fc .fc-day-today {
-        background-color: rgba(30, 41, 59, 0.5) !important;
-    }
-    .fc .fc-day-today .fc-daygrid-day-frame:hover {
-        background-color: rgba(30, 41, 59, 0.7);
-    }
-    .day-cell-number {
-        color: var(--bs-secondary-color);
-    }
-    .fc-daygrid-day-frame:hover .day-cell-number {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: var(--bs-body-color);
-    }
-    .btn-plus-day {
-        background-color: var(--bs-secondary-bg) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-        color: var(--bs-secondary-color) !important;
-    }
-    .fc .fc-toolbar-title {
-        color: var(--bs-heading-color) !important;
-    }
-    .fc .fc-button-primary {
-        background-color: var(--bs-card-bg) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-        color: var(--bs-body-color) !important;
-    }
-    .fc .fc-button-primary:hover {
-        background-color: var(--bs-secondary-bg) !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-    }
-    .fc .fc-button-primary:disabled {
-        background-color: var(--bs-card-bg) !important;
-        border-color: rgba(255, 255, 255, 0.05) !important;
-        color: var(--bs-secondary-color) !important;
-        opacity: 0.5;
-    }
-    .fc .fc-button-primary:not(:disabled).fc-button-active {
-        background-color: var(--bs-primary) !important;
-        border-color: var(--bs-primary) !important;
-        color: #ffffff !important;
-    }
-    .fc .fc-button-group {
-        border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    .fc .fc-button-group .fc-button {
-        border-right-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    .fc .fc-today-button {
-        border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    .user-select-list {
-        background-color: var(--bs-secondary-bg, #1e293b);
-    }
-    .user-select-list::-webkit-scrollbar-track {
-        background: var(--bs-card-bg);
-    }
-    .user-select-list::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
-    }
-    .user-select-list::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-    #eventDetailsModal .duty-schedule-detail-modal {
-        border-color: rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
-    }
-    #eventDetailsModal .modal-title {
-        color: var(--bs-heading-color) !important;
-    }
-    #eventDetailsModal .modal-footer {
-        background-color: var(--bs-secondary-bg) !important;
-    }
-    .schedule-detail-label {
-        color: var(--bs-heading-color) !important;
-    }
-    .schedule-detail-value {
-        color: var(--bs-body-color) !important;
-    }
-    .schedule-detail-description {
-        color: var(--bs-body-color) !important;
-        background-color: var(--bs-secondary-bg) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    .schedule-detail-chip-info,
-    .schedule-detail-chip-primary {
-        color: var(--bs-body-color) !important;
-        background-color: var(--bs-secondary-bg) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
-    }
-    .greeco-event-card.event-theme-primary {
-        --border-color: #3b82f6;
-        --bg-color: rgba(59, 130, 246, 0.15);
-        --text-color: #93c5fd;
-        --meta-color: #cbd5e1;
-    }
-    .greeco-event-card.event-theme-success {
-        --border-color: #10b981;
-        --bg-color: rgba(16, 185, 129, 0.15);
-        --text-color: #6ee7b7;
-        --meta-color: #cbd5e1;
-    }
-    .greeco-event-card.event-theme-info {
-        --border-color: #06b6d4;
-        --bg-color: rgba(6, 182, 212, 0.15);
-        --text-color: #67e8f9;
-        --meta-color: #cbd5e1;
-    }
-    .greeco-event-card.event-theme-warning {
-        --border-color: #f59e0b;
-        --bg-color: rgba(245, 158, 11, 0.15);
-        --text-color: #fde047;
-        --meta-color: #cbd5e1;
-    }
-    .greeco-event-card.event-theme-danger {
-        --border-color: #ef4444;
-        --bg-color: rgba(239, 68, 68, 0.15);
-        --text-color: #fca5a5;
-        --meta-color: #cbd5e1;
-    }
-    .greeco-event-card.event-theme-purple {
-        --border-color: #8b5cf6;
-        --bg-color: rgba(139, 92, 246, 0.15);
-        --text-color: #c084fc;
-        --meta-color: #cbd5e1;
-    }
-    .greeco-event-card.event-theme-private {
-        --border-color: #64748b;
-        --bg-color: rgba(100, 116, 139, 0.15);
-        --text-color: #cbd5e1;
-        --meta-color: #94a3b8;
-    }
+/* Override Bootstrap bg-white globally */
+[data-bs-theme="dark"] .bg-white {
+    background-color: var(--bs-card-bg) !important;
 }
+[data-bs-theme="dark"] .card-header.bg-white,
+[data-bs-theme="dark"] .card-footer.bg-white {
+    background-color: var(--bs-card-bg) !important;
+}
+
+/* Override static dark text colors */
+[data-bs-theme="dark"] .text-dark,
+[data-bs-theme="dark"] .text-black,
+[data-bs-theme="dark"] .text-slate-900 {
+    color: var(--bs-body-color) !important;
+}
+
+/* Daily Reports CSS Dark Mode Overrides */
+[data-bs-theme="dark"] .daily-report-card {
+    background-color: var(--bs-card-bg) !important;
+    border-color: var(--bs-border-color) !important;
+    box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.5) !important;
+}
+[data-bs-theme="dark"] .daily-report-card:hover {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+[data-bs-theme="dark"] .report-header {
+    background-color: var(--bs-secondary-bg) !important;
+    border-bottom-color: var(--bs-border-color) !important;
+}
+[data-bs-theme="dark"] .report-user-name {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] .report-section-content {
+    color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .report-action-btn:hover {
+    background-color: var(--bs-tertiary-bg) !important;
+}
+[data-bs-theme="dark"] .report-section-issues {
+    background-color: rgba(217, 119, 6, 0.1) !important;
+    color: #f59e0b !important;
+}
+[data-bs-theme="dark"] #calendar-reports .greeco-event-card {
+    background: linear-gradient(135deg, var(--bs-card-bg) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] #calendar-reports .greeco-event-title {
+    color: var(--bs-heading-color) !important;
+}
+
+/* FullCalendar & Duty Schedule CSS Dark Mode Overrides */
+[data-bs-theme="dark"] .fc {
+    --fc-border-color: rgba(255, 255, 255, 0.1);
+}
+[data-bs-theme="dark"] .fc .fc-view-harness {
+    background-color: transparent !important;
+}
+[data-bs-theme="dark"] .fc-theme-standard .fc-scrollgrid {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .fc .fc-col-header-cell-cushion {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] .fc .fc-col-header-cell {
+    background-color: var(--bs-secondary-bg) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .fc .fc-daygrid-day-frame:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+[data-bs-theme="dark"] .fc .fc-day-today {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+[data-bs-theme="dark"] .fc .fc-day-today .fc-daygrid-day-frame:hover {
+    background-color: rgba(30, 41, 59, 0.7);
+}
+[data-bs-theme="dark"] .day-cell-number {
+    color: var(--bs-secondary-color);
+}
+[data-bs-theme="dark"] .fc-daygrid-day-frame:hover .day-cell-number {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .btn-plus-day {
+    background-color: var(--bs-secondary-bg) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--bs-secondary-color) !important;
+}
+[data-bs-theme="dark"] .fc .fc-toolbar-title {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] .fc .fc-button-primary {
+    background-color: var(--bs-card-bg) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .fc .fc-button-primary:hover {
+    background-color: var(--bs-secondary-bg) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+[data-bs-theme="dark"] .fc .fc-button-primary:disabled {
+    background-color: var(--bs-card-bg) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--bs-secondary-color) !important;
+    opacity: 0.5;
+}
+[data-bs-theme="dark"] .fc .fc-button-primary:not(:disabled).fc-button-active {
+    background-color: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+    color: #ffffff !important;
+}
+[data-bs-theme="dark"] .fc .fc-button-group {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .fc .fc-button-group .fc-button {
+    border-right-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .fc .fc-today-button {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .user-select-list {
+    background-color: var(--bs-secondary-bg, #1e293b);
+}
+[data-bs-theme="dark"] .user-select-list::-webkit-scrollbar-track {
+    background: var(--bs-card-bg);
+}
+[data-bs-theme="dark"] .user-select-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+}
+[data-bs-theme="dark"] .user-select-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+[data-bs-theme="dark"] #eventDetailsModal .duty-schedule-detail-modal {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+}
+[data-bs-theme="dark"] #eventDetailsModal .modal-title {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] #eventDetailsModal .modal-footer {
+    background-color: var(--bs-secondary-bg) !important;
+}
+[data-bs-theme="dark"] .schedule-detail-label {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] .schedule-detail-value {
+    color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .schedule-detail-description {
+    color: var(--bs-body-color) !important;
+    background-color: var(--bs-secondary-bg) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .schedule-detail-chip-info,
+[data-bs-theme="dark"] .schedule-detail-chip-primary {
+    color: var(--bs-body-color) !important;
+    background-color: var(--bs-secondary-bg) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .greeco-event-card.event-theme-primary {
+    --border-color: #3b82f6;
+    --bg-color: rgba(59, 130, 246, 0.15);
+    --text-color: #93c5fd;
+    --meta-color: #cbd5e1;
+}
+[data-bs-theme="dark"] .greeco-event-card.event-theme-success {
+    --border-color: #10b981;
+    --bg-color: rgba(16, 185, 129, 0.15);
+    --text-color: #6ee7b7;
+    --meta-color: #cbd5e1;
+}
+[data-bs-theme="dark"] .greeco-event-card.event-theme-info {
+    --border-color: #06b6d4;
+    --bg-color: rgba(6, 182, 212, 0.15);
+    --text-color: #67e8f9;
+    --meta-color: #cbd5e1;
+}
+[data-bs-theme="dark"] .greeco-event-card.event-theme-warning {
+    --border-color: #f59e0b;
+    --bg-color: rgba(245, 158, 11, 0.15);
+    --text-color: #fde047;
+    --meta-color: #cbd5e1;
+}
+[data-bs-theme="dark"] .greeco-event-card.event-theme-danger {
+    --border-color: #ef4444;
+    --bg-color: rgba(239, 68, 68, 0.15);
+    --text-color: #fca5a5;
+    --meta-color: #cbd5e1;
+}
+[data-bs-theme="dark"] .greeco-event-card.event-theme-purple {
+    --border-color: #8b5cf6;
+    --bg-color: rgba(139, 92, 246, 0.15);
+    --text-color: #c084fc;
+    --meta-color: #cbd5e1;
+}
+[data-bs-theme="dark"] .greeco-event-card.event-theme-private {
+    --border-color: #64748b;
+    --bg-color: rgba(100, 116, 139, 0.15);
+    --text-color: #cbd5e1;
+    --meta-color: #94a3b8;
+}
+
+/* sales.css variables & styles for dark mode */
+[data-bs-theme="dark"] {
+    --sales-supporting: var(--bs-secondary-color) !important;
+}
+[data-bs-theme="dark"] .sales-kpi-value {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] .sales-supporting-text {
+    color: var(--bs-secondary-color) !important;
+}
+[data-bs-theme="dark"] .sales-kpi-label {
+    color: var(--bs-secondary-color) !important;
+}
+[data-bs-theme="dark"] .sales-eyebrow {
+    color: var(--bs-secondary-color) !important;
+}
+[data-bs-theme="dark"] .sales-page h2 {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] .sales-table thead th {
+    background: var(--bs-secondary-bg) !important;
+    color: var(--bs-heading-color) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .sales-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+[data-bs-theme="dark"] .sales-total-panel {
+    background: rgba(47, 143, 47, 0.15) !important;
+    color: #22c55e !important;
+}
+[data-bs-theme="dark"] .sales-count-pill {
+    background: rgba(38, 115, 38, 0.15) !important;
+    color: #22c55e !important;
+}
+[data-bs-theme="dark"] .sales-form-section {
+    background: var(--bs-secondary-bg) !important;
+}
+[data-bs-theme="dark"] .sales-form-section-title {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] .sales-readonly-panel {
+    background: var(--bs-card-bg) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] .report-type-row {
+    background: var(--bs-secondary-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Specific #calendar polish overrides for dark mode */
+[data-bs-theme="dark"] #calendar .fc-col-header-cell {
+    background: var(--bs-secondary-bg) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] #calendar .fc-col-header-cell-cushion {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] #calendar .fc-daygrid-day-frame:hover {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+}
+[data-bs-theme="dark"] #calendar .fc-day-today {
+    background: rgba(30, 41, 59, 0.5) !important;
+    box-shadow: inset 0 3px 0 var(--bs-primary) !important;
+}
+[data-bs-theme="dark"] #calendar .fc-day-today .fc-daygrid-day-frame:hover {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+}
+[data-bs-theme="dark"] #calendar .greeco-event-card {
+    background: linear-gradient(135deg, var(--bs-card-bg) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] #calendar .greeco-event-title {
+    color: var(--bs-heading-color) !important;
+}
+[data-bs-theme="dark"] #calendar .greeco-event-owner {
+    color: var(--bs-secondary-color) !important;
+}
+[data-bs-theme="dark"] #calendar .greeco-event-time {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-color) !important;
+}
+[data-bs-theme="dark"] #calendar.fc {
+    --fc-border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] #calendar.fc-theme-standard .fc-scrollgrid {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+[data-bs-theme="dark"] #calendar .day-cell-number {
+    color: var(--bs-secondary-color) !important;
+}
+
 

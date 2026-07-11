@@ -24,8 +24,8 @@
     <link rel="stylesheet" href="{{ asset('css/flatpickr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/datatables.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sweetalert2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/styles.css') }}?v=1.0.2">
-    <link rel="stylesheet" href="{{ asset('css/greeco.css') }}?v=1.0.2">
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}?v=1.0.3">
+    <link rel="stylesheet" href="{{ asset('css/greeco.css') }}?v=1.0.3">
 
     @livewireStyles
     @stack('styles')
