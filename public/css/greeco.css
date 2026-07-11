@@ -909,5 +909,13 @@ html, body {
     color: var(--bs-heading-color) !important;
 }
 
+/* Override #64748b with a lighter slate grey for high contrast readability in dark mode */
+[data-bs-theme="dark"] .report-time,
+[data-bs-theme="dark"] .report-action-btn,
+[data-bs-theme="dark"] .schedule-detail-empty {
+    color: #94a3b8 !important;
+}
+
+
 
 
