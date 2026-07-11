@@ -633,6 +633,7 @@ final class ContractShow extends Component
             'canReviewDocument' => $this->actor()->can(PermissionEnum::ContractDocumentReview->value),
             'assignable_users' => User::where('is_active', true)->orderBy('name')->get(),
             'canAssign' => $this->canAssign(),
+            'showFinancials' => !auth()->user()->hasRole(\App\Enums\RoleEnum::Consultant->value),
         ]);
     }
 

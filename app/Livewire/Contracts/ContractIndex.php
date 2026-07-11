@@ -74,6 +74,7 @@ final class ContractIndex extends Component
             'detailContract' => $this->viewingId > 0
                 ? Contract::query()->with(['customer', 'owner', 'quotation', 'services', 'paymentSchedules'])->find($this->viewingId)
                 : null,
+            'showFinancials' => !auth()->user()->hasRole(\App\Enums\RoleEnum::Consultant->value),
         ]);
     }
 }

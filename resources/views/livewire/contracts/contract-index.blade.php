@@ -34,24 +34,26 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-xl-3">
-            <div class="card border-0 shadow-sm sales-kpi-card h-100">
-                <div class="card-body">
-                    <div class="sales-kpi-label">Tổng giá trị</div>
-                    <div class="sales-kpi-value sales-money">{{ number_format($summary['total_value'], 0, ',', '.') }}₫</div>
-                    <div class="small sales-supporting-text">Giá trị đã ký và dự kiến</div>
+        @if ($showFinancials)
+            <div class="col-6 col-xl-3">
+                <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                    <div class="card-body">
+                        <div class="sales-kpi-label">Tổng giá trị</div>
+                        <div class="sales-kpi-value sales-money">{{ number_format($summary['total_value'], 0, ',', '.') }}₫</div>
+                        <div class="small sales-supporting-text">Giá trị đã ký và dự kiến</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card border-0 shadow-sm sales-kpi-card h-100">
-                <div class="card-body">
-                    <div class="sales-kpi-label">Tiền đã nhận</div>
-                    <div class="sales-kpi-value sales-money text-success">{{ number_format($summary['received'], 0, ',', '.') }}₫</div>
-                    <div class="small sales-supporting-text">Giao dịch chưa hủy</div>
+            <div class="col-6 col-xl-3">
+                <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                    <div class="card-body">
+                        <div class="sales-kpi-label">Tiền đã nhận</div>
+                        <div class="sales-kpi-value sales-money text-success">{{ number_format($summary['received'], 0, ',', '.') }}₫</div>
+                        <div class="small sales-supporting-text">Giao dịch chưa hủy</div>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
     </div>
 
     <div class="card border-0 shadow-sm mb-3">
@@ -102,8 +104,10 @@
                         <th>Hợp đồng</th>
                         <th>Khách hàng</th>
                         <th class="d-none d-xl-table-cell">Loại</th>
-                        <th class="text-end">Giá trị</th>
-                        <th class="text-end d-none d-lg-table-cell">Đã nhận</th>
+                        @if ($showFinancials)
+                            <th class="text-end">Giá trị</th>
+                            <th class="text-end d-none d-lg-table-cell">Đã nhận</th>
+                        @endif
                         <th>Trạng thái</th>
                         <th class="text-end">Chi tiết</th>
                     </tr>
@@ -123,12 +127,14 @@
                                 <div class="small sales-supporting-text">{{ $contract->owner?->name ?: 'Chưa phân công' }}</div>
                             </td>
                             <td class="d-none d-xl-table-cell">{{ $contract->type->label() }}</td>
-                            <td class="text-end sales-number">{{ number_format($contract->value, 0, ',', '.') }}₫</td>
-                            <td class="text-end d-none d-lg-table-cell sales-number">
-                                <span class="{{ $received > 0 ? 'text-success' : 'sales-supporting-text' }}">
-                                    {{ number_format($received, 0, ',', '.') }}₫
-                                </span>
-                            </td>
+                            @if ($showFinancials)
+                                <td class="text-end sales-number">{{ number_format($contract->value, 0, ',', '.') }}₫</td>
+                                <td class="text-end d-none d-lg-table-cell sales-number">
+                                    <span class="{{ $received > 0 ? 'text-success' : 'sales-supporting-text' }}">
+                                        {{ number_format($received, 0, ',', '.') }}₫
+                                    </span>
+                                </td>
+                            @endif
                             <td>
                                 <span class="badge rounded-pill {{ $contract->status->badgeClass() }}">
                                     {{ $contract->status->label() }}
@@ -204,10 +210,12 @@
                                 <div class="small sales-supporting-text">Thời gian thực hiện</div>
                                 <div>{{ $detailContract->starts_at?->format('d/m/Y') ?: '—' }} – {{ $detailContract->ends_at?->format('d/m/Y') ?: '—' }}</div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="small sales-supporting-text">Giá trị hợp đồng</div>
-                                <div class="fw-semibold sales-number">{{ number_format($detailContract->value, 0, ',', '.') }}₫</div>
-                            </div>
+                            @if ($showFinancials)
+                                <div class="col-md-3">
+                                    <div class="small sales-supporting-text">Giá trị hợp đồng</div>
+                                    <div class="fw-semibold sales-number">{{ number_format($detailContract->value, 0, ',', '.') }}₫</div>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="row g-4">
@@ -215,16 +223,18 @@
                                 <h3 class="h6 mb-3">Dịch vụ hợp đồng</h3>
                                 <div class="table-responsive">
                                     <table class="table table-sm align-middle mb-0">
-                                        <thead><tr><th>Dịch vụ</th><th>Mô tả</th><th class="text-end">Giá trị</th></tr></thead>
+                                        <thead><tr><th>Dịch vụ</th><th>Mô tả</th>@if ($showFinancials)<th class="text-end">Giá trị</th>@endif</tr></thead>
                                         <tbody>
                                             @forelse ($detailContract->services as $service)
                                                 <tr>
                                                     <td>{{ $service->service_type->label() }}</td>
                                                     <td>{{ $service->description ?: '—' }}</td>
-                                                    <td class="text-end sales-number">{{ number_format($service->amount, 0, ',', '.') }}₫</td>
+                                                    @if ($showFinancials)
+                                                        <td class="text-end sales-number">{{ number_format($service->amount, 0, ',', '.') }}₫</td>
+                                                    @endif
                                                 </tr>
                                             @empty
-                                                <tr><td colspan="3" class="text-center sales-supporting-text py-3">Chưa có dịch vụ.</td></tr>
+                                                <tr><td colspan="{{ $showFinancials ? 3 : 2 }}" class="text-center sales-supporting-text py-3">Chưa có dịch vụ.</td></tr>
                                             @endforelse
                                         </tbody>
                                     </table>
@@ -235,13 +245,15 @@
                                 <h3 class="h6 mb-3">Lịch thanh toán</h3>
                                 <div class="table-responsive">
                                     <table class="table table-sm align-middle mb-0">
-                                        <thead><tr><th>Đợt</th><th>Trạng thái</th><th class="text-end">Số tiền</th></tr></thead>
+                                        <thead><tr><th>Đợt</th><th>Trạng thái</th>@if ($showFinancials)<th class="text-end">Số tiền</th>@endif</tr></thead>
                                         <tbody>
                                             @forelse ($detailContract->paymentSchedules as $schedule)
                                                 <tr>
                                                     <td>{{ $schedule->name }}</td>
                                                     <td><span class="badge rounded-pill {{ $schedule->status->badgeClass() }}">{{ $schedule->status->label() }}</span></td>
-                                                    <td class="text-end sales-number">{{ number_format($schedule->amount, 0, ',', '.') }}₫</td>
+                                                    @if ($showFinancials)
+                                                        <td class="text-end sales-number">{{ number_format($schedule->amount, 0, ',', '.') }}₫</td>
+                                                    @endif
                                                 </tr>
                                             @empty
                                                 <tr><td colspan="3" class="text-center sales-supporting-text py-3">Chưa có lịch thanh toán.</td></tr>

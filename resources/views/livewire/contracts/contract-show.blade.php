@@ -73,50 +73,52 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-xl-3">
-            <div class="card border-0 shadow-sm sales-kpi-card h-100">
-                <div class="card-body">
-                    <div class="sales-kpi-label">Giá trị hợp đồng</div>
-                    <div class="sales-kpi-value sales-money">{{ number_format($contract->value, 0, ',', '.') }}₫</div>
-                    <div class="small sales-supporting-text">{{ $contract->type->label() }}</div>
+    @if ($showFinancials)
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                    <div class="card-body">
+                        <div class="sales-kpi-label">Giá trị hợp đồng</div>
+                        <div class="sales-kpi-value sales-money">{{ number_format($contract->value, 0, ',', '.') }}₫</div>
+                        <div class="small sales-supporting-text">{{ $contract->type->label() }}</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card border-0 shadow-sm sales-kpi-card h-100">
-                <div class="card-body">
-                    <div class="sales-kpi-label">Tiền đã nhận</div>
-                    <div class="sales-kpi-value sales-money text-success">{{ number_format($financial['received'], 0, ',', '.') }}₫</div>
-                    <div class="small sales-supporting-text">{{ number_format($financial['unallocated'], 0, ',', '.') }}₫ chưa phân bổ</div>
+            <div class="col-6 col-xl-3">
+                <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                    <div class="card-body">
+                        <div class="sales-kpi-label">Tiền đã nhận</div>
+                        <div class="sales-kpi-value sales-money text-success">{{ number_format($financial['received'], 0, ',', '.') }}₫</div>
+                        <div class="small sales-supporting-text">{{ number_format($financial['unallocated'], 0, ',', '.') }}₫ chưa phân bổ</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card border-0 shadow-sm sales-kpi-card h-100">
-                <div class="card-body">
-                    <div class="sales-kpi-label">Còn phải thu</div>
-                    <div class="sales-kpi-value sales-money text-warning">{{ number_format($financial['outstanding'], 0, ',', '.') }}₫</div>
-                    <div class="small sales-supporting-text">{{ $paymentProgress }}% đã phân bổ</div>
+            <div class="col-6 col-xl-3">
+                <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                    <div class="card-body">
+                        <div class="sales-kpi-label">Còn phải thu</div>
+                        <div class="sales-kpi-value sales-money text-warning">{{ number_format($financial['outstanding'], 0, ',', '.') }}₫</div>
+                        <div class="small sales-supporting-text">{{ $paymentProgress }}% đã phân bổ</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-6 col-xl-3">
-            <div class="card border-0 shadow-sm sales-kpi-card h-100">
-                <div class="card-body">
-                    <div class="sales-kpi-label">Kế hoạch thanh toán</div>
-                    <div class="sales-kpi-value">{{ $activeSchedules->count() }} đợt</div>
-                    <div class="small">
-                        @if ($planState)
-                            <span class="badge rounded-pill {{ $planState->badgeClass() }}">{{ $planState->label() }}</span>
-                        @else
-                            <span class="sales-supporting-text">Chưa lập kế hoạch</span>
-                        @endif
+            <div class="col-6 col-xl-3">
+                <div class="card border-0 shadow-sm sales-kpi-card h-100">
+                    <div class="card-body">
+                        <div class="sales-kpi-label">Kế hoạch thanh toán</div>
+                        <div class="sales-kpi-value">{{ $activeSchedules->count() }} đợt</div>
+                        <div class="small">
+                            @if ($planState)
+                                <span class="badge rounded-pill {{ $planState->badgeClass() }}">{{ $planState->label() }}</span>
+                            @else
+                                <span class="sales-supporting-text">Chưa lập kế hoạch</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    @endif
 
     <div class="row g-3 mb-4">
         <div class="col-12 col-xl-8">
@@ -256,197 +258,201 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 py-3">
-            <div>
-                <div class="d-flex align-items-center gap-2">
-                    <h2 class="h6 mb-0">Lịch thanh toán</h2>
-                    @if ($planState)
-                        <span class="badge rounded-pill {{ $planState->badgeClass() }}">{{ $planState->label() }}</span>
-                    @endif
+    @if ($showFinancials)
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 py-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <h2 class="h6 mb-0">Lịch thanh toán</h2>
+                        @if ($planState)
+                            <span class="badge rounded-pill {{ $planState->badgeClass() }}">{{ $planState->label() }}</span>
+                        @endif
+                    </div>
+                    <div class="small sales-supporting-text mt-1">Kế hoạch phải thu; ngày đến hạn có thể được tính sau khi đạt điều kiện.</div>
                 </div>
-                <div class="small sales-supporting-text mt-1">Kế hoạch phải thu; ngày đến hạn có thể được tính sau khi đạt điều kiện.</div>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                @if ($canManagePlan)
-                    <button type="button" class="btn btn-sm btn-outline-success sales-action-button" wire:click="openScheduleCreate">
-                        <i class="fi fi-rr-plus me-1" aria-hidden="true"></i>
-                        Thêm đợt
-                    </button>
-                    @if ($activeSchedules->isNotEmpty() && ! $activeSchedules->contains(fn ($item) => $item->confirmed_at !== null))
-                        <button type="button" class="btn btn-sm btn-primary sales-action-button" wire:click="submitPaymentPlan">
-                            Gửi Kế toán
+                <div class="d-flex flex-wrap gap-2">
+                    @if ($canManagePlan)
+                        <button type="button" class="btn btn-sm btn-outline-success sales-action-button" wire:click="openScheduleCreate">
+                            <i class="fi fi-rr-plus me-1" aria-hidden="true"></i>
+                            Thêm đợt
+                        </button>
+                        @if ($activeSchedules->isNotEmpty() && ! $activeSchedules->contains(fn ($item) => $item->confirmed_at !== null))
+                            <button type="button" class="btn btn-sm btn-primary sales-action-button" wire:click="submitPaymentPlan">
+                                Gửi Kế toán
+                            </button>
+                        @endif
+                    @endif
+                    @if ($canConfirmPlan && $planState === \App\Enums\PaymentHandoverStatus::SubmittedToAccounting)
+                        <button type="button" class="btn btn-sm btn-outline-danger sales-action-button" wire:click="$dispatch('payment-return:show')">
+                            Trả lại
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success sales-action-button" wire:click="confirmPaymentPlan">
+                            Xác nhận kế hoạch
                         </button>
                     @endif
-                @endif
-                @if ($canConfirmPlan && $planState === \App\Enums\PaymentHandoverStatus::SubmittedToAccounting)
-                    <button type="button" class="btn btn-sm btn-outline-danger sales-action-button" wire:click="$dispatch('payment-return:show')">
-                        Trả lại
-                    </button>
-                    <button type="button" class="btn btn-sm btn-success sales-action-button" wire:click="confirmPaymentPlan">
-                        Xác nhận kế hoạch
-                    </button>
-                @endif
-                @if ($canRecordPayment)
-                    <button type="button" class="btn btn-sm btn-success sales-action-button" wire:click="openPayment">
-                        <i class="fi fi-rr-coins me-1" aria-hidden="true"></i>
-                        Ghi nhận tiền về
-                    </button>
-                @endif
+                    @if ($canRecordPayment)
+                        <button type="button" class="btn btn-sm btn-success sales-action-button" wire:click="openPayment">
+                            <i class="fi fi-rr-coins me-1" aria-hidden="true"></i>
+                            Ghi nhận tiền về
+                        </button>
+                    @endif
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 sales-table">
+                    <thead>
+                        <tr>
+                            <th>Đợt</th>
+                            <th>Điều kiện</th>
+                            <th class="text-end">Phải thu</th>
+                            <th class="text-end">Đã phân bổ</th>
+                            <th>Hạn thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($activeSchedules as $schedule)
+                            @php
+                                $allocated = (int) $schedule->allocations
+                                    ->filter(fn ($allocation) => $allocation->payment?->voided_at === null)
+                                    ->sum('allocated_amount');
+                                $condition = $schedule->condition_type === \App\Enums\PaymentConditionType::Custom
+                                    ? $schedule->custom_condition
+                                    : $schedule->condition_type->label();
+                            @endphp
+                            <tr wire:key="payment-schedule-{{ $schedule->id }}">
+                                <td>
+                                    <div class="fw-semibold">{{ $schedule->name }}</div>
+                                    <div class="small sales-supporting-text">
+                                        {{ $schedule->percentage !== null ? $schedule->percentage.'%' : 'Theo số tiền' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>{{ $condition }}</div>
+                                    @if ($schedule->next_action)
+                                        <div class="small text-danger mt-1">{{ $schedule->next_action }}</div>
+                                    @endif
+                                </td>
+                                <td class="text-end sales-number">{{ number_format($schedule->amount, 0, ',', '.') }}₫</td>
+                                <td class="text-end sales-number">
+                                    <span class="{{ $allocated > 0 ? 'text-success' : 'sales-supporting-text' }}">
+                                        {{ number_format($allocated, 0, ',', '.') }}₫
+                                    </span>
+                                </td>
+                                <td>
+                                    @if ($schedule->due_date)
+                                        {{ $schedule->due_date->format('d/m/Y') }}
+                                    @elseif ($schedule->triggered_at)
+                                        <span class="sales-supporting-text">Chưa quy định hạn</span>
+                                    @else
+                                        <span class="sales-supporting-text">Chờ điều kiện</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill {{ $schedule->status->badgeClass() }}">
+                                        {{ $schedule->status->label() }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1">
+                                        @if ($canManagePlan && $schedule->triggered_at === null)
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-primary sales-action-button"
+                                                wire:click="triggerSchedule({{ $schedule->id }})"
+                                                wire:confirm="Xác nhận điều kiện thanh toán của đợt này đã xảy ra hôm nay?"
+                                            >
+                                                Đạt điều kiện
+                                            </button>
+                                        @endif
+                                        @if ($canManagePlan && $schedule->confirmed_at === null)
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-secondary sales-icon-button"
+                                                wire:click="openScheduleEdit({{ $schedule->id }})"
+                                                aria-label="Sửa {{ $schedule->name }}"
+                                            >
+                                                <i class="fi fi-rr-edit" aria-hidden="true"></i>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-danger sales-icon-button"
+                                                wire:click="deleteSchedule({{ $schedule->id }})"
+                                                wire:confirm="Xóa đợt thanh toán này?"
+                                                aria-label="Xóa {{ $schedule->name }}"
+                                            >
+                                                <i class="fi fi-rr-trash" aria-hidden="true"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <i class="fi fi-rr-calendar-clock d-block fs-2 sales-supporting-text mb-2" aria-hidden="true"></i>
+                                    <div class="fw-semibold">Chưa có lịch thanh toán</div>
+                                    <div class="small sales-supporting-text">Kinh doanh thêm các đợt theo nội dung hợp đồng.</div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
+    @endif
 
-        <div class="table-responsive">
-            <table class="table align-middle mb-0 sales-table">
-                <thead>
-                    <tr>
-                        <th>Đợt</th>
-                        <th>Điều kiện</th>
-                        <th class="text-end">Phải thu</th>
-                        <th class="text-end">Đã phân bổ</th>
-                        <th>Hạn thanh toán</th>
-                        <th>Trạng thái</th>
-                        <th class="text-end">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($activeSchedules as $schedule)
-                        @php
-                            $allocated = (int) $schedule->allocations
-                                ->filter(fn ($allocation) => $allocation->payment?->voided_at === null)
-                                ->sum('allocated_amount');
-                            $condition = $schedule->condition_type === \App\Enums\PaymentConditionType::Custom
-                                ? $schedule->custom_condition
-                                : $schedule->condition_type->label();
-                        @endphp
-                        <tr wire:key="payment-schedule-{{ $schedule->id }}">
-                            <td>
-                                <div class="fw-semibold">{{ $schedule->name }}</div>
-                                <div class="small sales-supporting-text">
-                                    {{ $schedule->percentage !== null ? $schedule->percentage.'%' : 'Theo số tiền' }}
-                                </div>
-                            </td>
-                            <td>
-                                <div>{{ $condition }}</div>
-                                @if ($schedule->next_action)
-                                    <div class="small text-danger mt-1">{{ $schedule->next_action }}</div>
-                                @endif
-                            </td>
-                            <td class="text-end sales-number">{{ number_format($schedule->amount, 0, ',', '.') }}₫</td>
-                            <td class="text-end sales-number">
-                                <span class="{{ $allocated > 0 ? 'text-success' : 'sales-supporting-text' }}">
-                                    {{ number_format($allocated, 0, ',', '.') }}₫
-                                </span>
-                            </td>
-                            <td>
-                                @if ($schedule->due_date)
-                                    {{ $schedule->due_date->format('d/m/Y') }}
-                                @elseif ($schedule->triggered_at)
-                                    <span class="sales-supporting-text">Chưa quy định hạn</span>
-                                @else
-                                    <span class="sales-supporting-text">Chờ điều kiện</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge rounded-pill {{ $schedule->status->badgeClass() }}">
-                                    {{ $schedule->status->label() }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <div class="d-inline-flex gap-1">
-                                    @if ($canManagePlan && $schedule->triggered_at === null)
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-primary sales-action-button"
-                                            wire:click="triggerSchedule({{ $schedule->id }})"
-                                            wire:confirm="Xác nhận điều kiện thanh toán của đợt này đã xảy ra hôm nay?"
-                                        >
-                                            Đạt điều kiện
-                                        </button>
-                                    @endif
-                                    @if ($canManagePlan && $schedule->confirmed_at === null)
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-secondary sales-icon-button"
-                                            wire:click="openScheduleEdit({{ $schedule->id }})"
-                                            aria-label="Sửa {{ $schedule->name }}"
-                                        >
-                                            <i class="fi fi-rr-edit" aria-hidden="true"></i>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-danger sales-icon-button"
-                                            wire:click="deleteSchedule({{ $schedule->id }})"
-                                            wire:confirm="Xóa đợt thanh toán này?"
-                                            aria-label="Xóa {{ $schedule->name }}"
-                                        >
-                                            <i class="fi fi-rr-trash" aria-hidden="true"></i>
-                                        </button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
+    @if ($showFinancials)
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h2 class="h6 mb-1">Giao dịch thực nhận</h2>
+                <div class="small sales-supporting-text">Tiền về được giữ nguyên; việc phân bổ vào đợt được theo dõi riêng.</div>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 sales-table">
+                    <thead>
                         <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <i class="fi fi-rr-calendar-clock d-block fs-2 sales-supporting-text mb-2" aria-hidden="true"></i>
-                                <div class="fw-semibold">Chưa có lịch thanh toán</div>
-                                <div class="small sales-supporting-text">Kinh doanh thêm các đợt theo nội dung hợp đồng.</div>
-                            </td>
+                            <th>Ngày nhận</th>
+                            <th>Phương thức / tham chiếu</th>
+                            <th class="text-end">Số tiền</th>
+                            <th class="text-end">Đã phân bổ</th>
+                            <th>Người ghi nhận</th>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse ($contract->payments->whereNull('voided_at') as $payment)
+                            @php
+                                $allocatedPayment = (int) $payment->allocations->sum('allocated_amount');
+                            @endphp
+                            <tr wire:key="contract-payment-{{ $payment->id }}">
+                                <td>{{ $payment->paid_at->format('d/m/Y') }}</td>
+                                <td>
+                                    <div>{{ $payment->payment_method->label() }}</div>
+                                    <div class="small sales-supporting-text">{{ $payment->reference_number ?: 'Không có mã tham chiếu' }}</div>
+                                </td>
+                                <td class="text-end sales-number fw-semibold">{{ number_format($payment->amount, 0, ',', '.') }}₫</td>
+                                <td class="text-end sales-number">
+                                    {{ number_format($allocatedPayment, 0, ',', '.') }}₫
+                                    @if ($payment->amount > $allocatedPayment)
+                                        <div class="small text-warning">
+                                            {{ number_format($payment->amount - $allocatedPayment, 0, ',', '.') }}₫ chờ phân bổ
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>{{ $payment->recorder?->name ?: 'Hệ thống' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-4 sales-supporting-text">Chưa ghi nhận giao dịch nào.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white py-3">
-            <h2 class="h6 mb-1">Giao dịch thực nhận</h2>
-            <div class="small sales-supporting-text">Tiền về được giữ nguyên; việc phân bổ vào đợt được theo dõi riêng.</div>
-        </div>
-        <div class="table-responsive">
-            <table class="table align-middle mb-0 sales-table">
-                <thead>
-                    <tr>
-                        <th>Ngày nhận</th>
-                        <th>Phương thức / tham chiếu</th>
-                        <th class="text-end">Số tiền</th>
-                        <th class="text-end">Đã phân bổ</th>
-                        <th>Người ghi nhận</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($contract->payments->whereNull('voided_at') as $payment)
-                        @php
-                            $allocatedPayment = (int) $payment->allocations->sum('allocated_amount');
-                        @endphp
-                        <tr wire:key="contract-payment-{{ $payment->id }}">
-                            <td>{{ $payment->paid_at->format('d/m/Y') }}</td>
-                            <td>
-                                <div>{{ $payment->payment_method->label() }}</div>
-                                <div class="small sales-supporting-text">{{ $payment->reference_number ?: 'Không có mã tham chiếu' }}</div>
-                            </td>
-                            <td class="text-end sales-number fw-semibold">{{ number_format($payment->amount, 0, ',', '.') }}₫</td>
-                            <td class="text-end sales-number">
-                                {{ number_format($allocatedPayment, 0, ',', '.') }}₫
-                                @if ($payment->amount > $allocatedPayment)
-                                    <div class="small text-warning">
-                                        {{ number_format($payment->amount - $allocatedPayment, 0, ',', '.') }}₫ chờ phân bổ
-                                    </div>
-                                @endif
-                            </td>
-                            <td>{{ $payment->recorder?->name ?: 'Hệ thống' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center py-4 sales-supporting-text">Chưa ghi nhận giao dịch nào.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+    @endif
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 py-3">
