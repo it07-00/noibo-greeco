@@ -42,6 +42,10 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-sm-auto">
+                    <label class="form-label mb-0 text-muted small">Chọn tháng</label>
+                    <input type="month" id="filterMonth" class="form-control form-control-sm" style="min-width: 160px;" />
+                </div>
                 @if ($canViewNoibo)
                     <div class="col-sm-auto ms-sm-auto">
                         <div class="form-check form-switch mb-0">
@@ -545,6 +549,15 @@
                 },
                 editable: false,
                 selectable: true,
+                datesSet: function (dateInfo) {
+                    const currentDate = calendarInstance.getDate();
+                    const year = currentDate.getFullYear();
+                    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const monthInput = document.getElementById('filterMonth');
+                    if (monthInput) {
+                        monthInput.value = `${year}-${month}`;
+                    }
+                },
                 dayCellContent: function (arg) {
                     // Day number element
                     const numberEl = document.createElement('span');
@@ -725,6 +738,15 @@
             });
 
             calendarInstance.render();
+
+            const monthInput = document.getElementById('filterMonth');
+            if (monthInput) {
+                monthInput.onchange = function () {
+                    if (calendarInstance && this.value) {
+                        calendarInstance.gotoDate(this.value + '-01');
+                    }
+                };
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function () {

@@ -37,7 +37,7 @@ final class DailyReportIndex extends Component
 
     public string $viewMode = 'mine'; // 'mine' | 'all'
 
-    public string $viewType = 'table'; // 'table' | 'calendar'
+    public string $viewType = 'calendar'; // 'table' | 'calendar'
 
     // ── Create form ───────────────────────────────────────────────────────────
     public string $formDate = '';
