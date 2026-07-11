@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('resolved_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['daily_report_id', 'assignee_id']);
+            $table->unique(['daily_report_id', 'assignee_id'], 'dr_support_report_assignee_unique');
             $table->index(['assignee_id', 'status']);
         });
     }
