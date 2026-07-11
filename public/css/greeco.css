@@ -883,4 +883,31 @@ html, body {
     color: var(--bs-secondary-color) !important;
 }
 
+/* ApexCharts dark mode overrides */
+[data-bs-theme="dark"] .apexcharts-text tspan,
+[data-bs-theme="dark"] .apexcharts-text,
+[data-bs-theme="dark"] .apexcharts-legend-text {
+    fill: var(--bs-body-color) !important;
+    color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .apexcharts-xaxis-label,
+[data-bs-theme="dark"] .apexcharts-yaxis-label {
+    fill: var(--bs-secondary-color) !important;
+}
+[data-bs-theme="dark"] .apexcharts-grid-row,
+[data-bs-theme="dark"] .apexcharts-gridline {
+    stroke: rgba(255, 255, 255, 0.08) !important;
+}
+[data-bs-theme="dark"] .apexcharts-tooltip {
+    background: var(--bs-card-bg) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .apexcharts-tooltip-title {
+    background: var(--bs-secondary-bg) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--bs-heading-color) !important;
+}
+
+
 
