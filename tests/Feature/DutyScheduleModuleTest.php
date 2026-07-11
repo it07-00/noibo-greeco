@@ -292,14 +292,14 @@ final class DutyScheduleModuleTest extends TestCase
         $this->assertNotSame('N/A', $daySchedules[0]['creator_name']);
     }
 
-    public function test_director_event_click_is_routed_to_the_full_day_schedule_list(): void
+    public function test_regular_member_event_click_is_routed_to_the_full_day_schedule_list(): void
     {
         $this->seed(PermissionSeeder::class);
 
-        $director = User::factory()->create();
-        $director->assignRole(RoleEnum::Director->value);
+        $staff = User::factory()->create();
+        $staff->assignRole(RoleEnum::IT->value);
 
-        $this->actingAs($director);
+        $this->actingAs($staff);
 
         $this->get(route('duty-schedules.index'))
             ->assertOk()

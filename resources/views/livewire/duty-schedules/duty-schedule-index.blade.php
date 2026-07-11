@@ -681,64 +681,13 @@
                 },
                 eventClick: function (info) {
                     const event = info.event;
-                    const props = event.extendedProps;
 
-                    @if(auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value))
-                        if (event.start) {
-                            const year = event.start.getFullYear();
-                            const month = String(event.start.getMonth() + 1).padStart(2, '0');
-                            const day = String(event.start.getDate()).padStart(2, '0');
-                            wire.showDaySchedules(`${year}-${month}-${day}`);
-                        }
-                        return;
-                    @endif
-
-                    document.getElementById('detailTitle').innerText = props.raw_title || event.title;
-                    document.getElementById('detailStart').innerText = event.start ? formatDateTime(event.start) : '';
-                    document.getElementById('detailEnd').innerText = event.end ? formatDateTime(event.end) : 'Không có';
-                    document.getElementById('detailLocation').innerText = props.location || 'Không có';
-                    document.getElementById('detailDescription').innerText = props.description || 'Không có';
-                    document.getElementById('detailCreator').innerText = props.creator_name || 'N/A';
-
-                    const participantsContainer = document.getElementById('detailParticipants');
-                    participantsContainer.innerHTML = '';
-                    if (props.participants && props.participants.length > 0) {
-                        props.participants.forEach(p => {
-                            const span = document.createElement('span');
-                            span.className = 'schedule-detail-chip schedule-detail-chip-primary';
-                            span.innerText = p.name;
-                            participantsContainer.appendChild(span);
-                        });
-                    } else {
-                        participantsContainer.innerHTML = '<span class="schedule-detail-empty">Không có</span>';
+                    if (event.start) {
+                        const year = event.start.getFullYear();
+                        const month = String(event.start.getMonth() + 1).padStart(2, '0');
+                        const day = String(event.start.getDate()).padStart(2, '0');
+                        wire.showDaySchedules(`${year}-${month}-${day}`);
                     }
-
-                    const btnEdit = document.getElementById('detailBtnEdit');
-                    const btnDelete = document.getElementById('detailBtnDelete');
-
-                    if (props.can_edit) {
-                        btnEdit.style.display = 'inline-block';
-                        btnEdit.onclick = function () {
-                            hideBootstrapModal('eventDetailsModal');
-                            wire.edit(props.db_id);
-                        };
-                    } else {
-                        btnEdit.style.display = 'none';
-                    }
-
-                    if (props.can_delete) {
-                        btnDelete.style.display = 'inline-block';
-                        btnDelete.onclick = function () {
-                            if (confirm('Bạn có chắc chắn muốn xóa lịch công tác này không?')) {
-                                hideBootstrapModal('eventDetailsModal');
-                                wire.delete(props.db_id);
-                            }
-                        };
-                    } else {
-                        btnDelete.style.display = 'none';
-                    }
-
-                    showBootstrapModal('eventDetailsModal');
                 }
             });
 
