@@ -116,6 +116,21 @@ final class ContractShow extends Component
 
     public string $documentReviewFeedback = '';
 
+    public int $assignContractId = 0;
+
+    /**
+     * @var array<int, int>
+     */
+    public array $assignUserIds = [];
+
+    public string $assignExternal = '';
+
+    public string $assignDeadline = '';
+
+    protected $listeners = [
+        'contract-workflow:updated' => '$refresh',
+    ];
+
     public function mount(Contract $contract): void
     {
         Gate::authorize('view', $contract);
@@ -616,6 +631,8 @@ final class ContractShow extends Component
             'documentTypeOptions' => DocumentType::options(),
             'canSubmitDocument' => $this->actor()->can(PermissionEnum::ContractDocumentSubmit->value),
             'canReviewDocument' => $this->actor()->can(PermissionEnum::ContractDocumentReview->value),
+            'assignable_users' => User::where('is_active', true)->orderBy('name')->get(),
+            'canAssign' => $this->canAssign(),
         ]);
     }
 
@@ -704,5 +721,91 @@ final class ContractShow extends Component
             'title' => 'Không thể thực hiện',
             'text' => $message,
         ]);
+    }
+
+    public function canAssign(): bool
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+        return $user->hasRole(\App\Enums\RoleEnum::SuperAdmin->value) || 
+            $user->hasRole(\App\Enums\RoleEnum::Director->value) || 
+            $user->hasRole(\App\Enums\RoleEnum::IT->value) || 
+            $user->hasRole(\App\Enums\RoleEnum::Sales->value);
+    }
+
+    public function openAssign(): void
+    {
+        if (! $this->canAssign()) {
+            $this->errorAlert('Bạn không có quyền giao việc.');
+            return;
+        }
+
+        $existing = \App\Models\ContractAssignment::where('assignable_type', Contract::class)
+            ->where('assignable_id', $this->contract->id)
+            ->get();
+
+        $this->assignUserIds = $existing->whereNotNull('user_id')->pluck('user_id')->map(fn($id) => (int) $id)->toArray();
+        $this->assignExternal = $existing->whereNull('user_id')->first()?->external_assignee ?? '';
+        $this->assignDeadline = $existing->first()?->deadline?->toDateString() ?? '';
+        $this->resetValidation();
+        $this->dispatch('contract-assign:show');
+    }
+
+    public function saveAssign(): void
+    {
+        if (! $this->canAssign()) {
+            $this->errorAlert('Bạn không có quyền giao việc.');
+            return;
+        }
+
+        $validated = $this->validate([
+            'assignUserIds' => ['array'],
+            'assignUserIds.*' => ['integer', 'exists:users,id'],
+            'assignExternal' => ['nullable', 'string', 'max:191'],
+            'assignDeadline' => ['nullable', 'date'],
+        ]);
+
+        \App\Models\ContractAssignment::where('assignable_type', Contract::class)
+            ->where('assignable_id', $this->contract->id)
+            ->delete();
+
+        foreach ($this->assignUserIds as $userId) {
+            \App\Models\ContractAssignment::create([
+                'assignable_type' => Contract::class,
+                'assignable_id' => $this->contract->id,
+                'user_id' => (int) $userId,
+                'assigned_by' => auth()->id(),
+                'deadline' => $this->assignDeadline ?: null,
+            ]);
+        }
+
+        if (! empty($this->assignExternal)) {
+            \App\Models\ContractAssignment::create([
+                'assignable_type' => Contract::class,
+                'assignable_id' => $this->contract->id,
+                'user_id' => null,
+                'external_assignee' => $this->assignExternal,
+                'assigned_by' => auth()->id(),
+                'deadline' => $this->assignDeadline ?: null,
+            ]);
+        }
+
+        $contractLabel = $this->contract->contract_number ?: $this->contract->title;
+
+        foreach ($this->assignUserIds as $userId) {
+            $user = User::find($userId);
+            if ($user && $user->id !== auth()->id()) {
+                $user->notify(new \App\Notifications\ContractAssigned(
+                    $this->contract->id,
+                    $contractLabel,
+                    auth()->user()->name
+                ));
+            }
+        }
+
+        $this->dispatch('contract-assign:hide');
+        $this->successToast('Giao việc thành công!');
     }
 }

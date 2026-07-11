@@ -193,6 +193,69 @@
         </div>
     </div>
 
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm h-100">
+                <livewire:contracts.contract-workflow-panel :contractId="$contract->id" />
+            </div>
+        </div>
+        <div class="col-12 col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
+                    <h2 class="h6 mb-0">Phân công thực hiện</h2>
+                    @if ($canAssign)
+                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openAssign">
+                            <i class="fi fi-rr-user-add me-1"></i> Giao việc
+                        </button>
+                    @endif
+                </div>
+                <div class="card-body">
+                    @php
+                        $assignments = $contract->assignments;
+                    @endphp
+                    @if ($assignments->isNotEmpty())
+                        <div class="d-flex flex-column gap-3">
+                            <div>
+                                <span class="text-muted small d-block mb-2">Thành viên phụ trách:</span>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach ($assignments->whereNotNull('user_id') as $assignment)
+                                        <span class="badge bg-light text-dark border px-2 py-1.5 rounded-2 d-flex align-items-center gap-1">
+                                            <i class="fi fi-rr-user text-primary" style="font-size: 0.8rem;"></i>
+                                            {{ $assignment->user->name }}
+                                        </span>
+                                    @endforeach
+                                    @if ($assignments->whereNull('user_id')->isNotEmpty())
+                                        @foreach ($assignments->whereNull('user_id') as $assignment)
+                                            <span class="badge bg-light text-warning border border-warning-subtle px-2 py-1.5 rounded-2 d-flex align-items-center gap-1">
+                                                <i class="fi fi-rr-envelope text-warning" style="font-size: 0.8rem;"></i>
+                                                {{ $assignment->external_assignee }} (Ngoài)
+                                            </span>
+                                        @endforeach
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            @if ($assignments->first()?->deadline)
+                                <div>
+                                    <span class="text-muted small d-block mb-1">Hạn hoàn thành:</span>
+                                    <span class="fw-semibold text-danger">
+                                        <i class="fi fi-rr-calendar-clock me-1"></i>
+                                        {{ $assignments->first()->deadline->format('d/m/Y') }}
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <div class="text-center py-4 text-muted">
+                            <i class="fi fi-rr-users d-block fs-3 mb-2"></i>
+                            <span class="small">Chưa phân công thành viên thực hiện hợp đồng.</span>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 py-3">
             <div>
@@ -809,6 +872,56 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
                     <button type="submit" class="btn btn-danger">Trả lại kế hoạch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Task assignment modal --}}
+    <div wire:ignore.self class="modal fade" id="contractAssignModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" wire:submit.prevent="saveAssign">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="h5 modal-title mb-1">Giao việc cho hợp đồng</h2>
+                        <div class="small sales-supporting-text">Phân công thành viên thực hiện các bước công việc.</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Thành viên phụ trách nội bộ</label>
+                            <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                @foreach ($assignable_users as $user)
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" value="{{ $user->id }}" 
+                                            id="assignUser{{ $user->id }}" wire:model="assignUserIds">
+                                        <label class="form-check-label ms-1" for="assignUser{{ $user->id }}">
+                                            {{ $user->name }}
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @error('assignUserIds') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="col-12">
+                            <label for="assignExternal" class="form-label fw-semibold">Người thực hiện ngoài hệ thống</label>
+                            <input id="assignExternal" class="form-control" wire:model="assignExternal" placeholder="Nhập tên người thực hiện bên ngoài (nếu có)...">
+                            @error('assignExternal') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="col-12">
+                            <label for="assignDeadline" class="form-label fw-semibold">Hạn hoàn thành công việc</label>
+                            <input id="assignDeadline" type="date" class="form-control" wire:model="assignDeadline">
+                            @error('assignDeadline') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success">Xác nhận phân công</button>
                 </div>
             </form>
         </div>

@@ -113,4 +113,19 @@ final class Contract extends Model
     {
         return $this->hasMany(CommissionRequest::class)->latest();
     }
+
+    public function assignments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(ContractAssignment::class, 'assignable');
+    }
+
+    public function workflowSteps(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(ContractWorkflowStep::class, 'contract');
+    }
+
+    public function milestoneFiles(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(ContractMilestoneFile::class, 'contract');
+    }
 }

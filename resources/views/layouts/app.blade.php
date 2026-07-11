@@ -249,6 +249,8 @@
                 'contract-document:hide': ['contractDocumentModal', 'hide'],
                 'document-review:show': ['documentReviewModal', 'show'],
                 'document-review:hide': ['documentReviewModal', 'hide'],
+                'contract-assign:show': ['contractAssignModal', 'show'],
+                'contract-assign:hide': ['contractAssignModal', 'hide'],
                 'report-detail:show': ['reportDetailModal', 'show'],
                 'report-detail:hide': ['reportDetailModal', 'hide'],
             };
