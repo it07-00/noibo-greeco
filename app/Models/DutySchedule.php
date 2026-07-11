@@ -31,6 +31,7 @@ final class DutySchedule extends Model
             'start_at' => 'datetime',
             'end_at' => 'datetime',
             'is_private' => 'boolean',
+            'created_by' => 'integer',
         ];
     }
 

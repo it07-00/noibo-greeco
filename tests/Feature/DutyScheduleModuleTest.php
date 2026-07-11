@@ -186,6 +186,19 @@ final class DutyScheduleModuleTest extends TestCase
             ->assertDispatched('schedule:open-edit');
     }
 
+    public function test_creator_can_edit_when_database_returns_created_by_as_a_string(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $creator = User::factory()->create();
+        $schedule = new DutySchedule();
+        $schedule->setRawAttributes([
+            'created_by' => (string) $creator->id,
+        ]);
+
+        $this->assertTrue($creator->can('update', $schedule));
+    }
+
     public function test_private_schedules_mask_details_for_unauthorized_users(): void
     {
         $this->seed(PermissionSeeder::class);
