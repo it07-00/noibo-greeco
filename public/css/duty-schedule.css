@@ -470,16 +470,17 @@
 }
 
 .schedule-detail-chip-info {
-    color: #075985;
-    background-color: #e0f2fe;
-    border-color: #67e8f9;
+    color: #475569;
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
 }
 
 .schedule-detail-chip-primary {
-    color: #1e3a8a;
-    background-color: #dbeafe;
-    border-color: #93c5fd;
+    color: #475569;
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
 }
+
 
 .schedule-detail-empty {
     color: #64748b;
@@ -847,4 +848,75 @@
 .color-selector-label input[type="radio"]:checked + .bg-purple-subtle { border-color: #8b5cf6 !important; }
 .color-selector-label input[type="radio"]:checked + .bg-warning-subtle { border-color: #f59e0b !important; }
 .color-selector-label input[type="radio"]:checked + .bg-danger-subtle { border-color: #ef4444 !important; }
+
+/* Soft modern badge styles for schedules list cards */
+.daily-report-card .badge {
+    line-height: 1.4 !important;
+    height: auto !important;
+}
+
+.daily-report-card .report-header .badge {
+    border-radius: 9999px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 4px 10px !important;
+    border-width: 1px !important;
+}
+
+.daily-report-card .report-header .bg-primary-subtle {
+    background-color: #eff6ff !important;
+    color: #2563eb !important;
+    border-color: #bfdbfe !important;
+}
+
+.daily-report-card .report-header .bg-success-subtle {
+    background-color: #ecfdf5 !important;
+    color: #059669 !important;
+    border-color: #a7f3d0 !important;
+}
+
+.daily-report-card .report-header .bg-warning-subtle {
+    background-color: #fffbeb !important;
+    color: #d97706 !important;
+    border-color: #fde68a !important;
+}
+
+.daily-report-card .report-header .bg-danger-subtle {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+    border-color: #fecaca !important;
+}
+
+.daily-report-card .report-header .bg-info-subtle {
+    background-color: #ecfeff !important;
+    color: #0891b2 !important;
+    border-color: #a5f3fc !important;
+}
+
+.daily-report-card .report-header .bg-purple-subtle {
+    background-color: #f5f3ff !important;
+    color: #7c3aed !important;
+    border-color: #ddd6fe !important;
+}
+
+/* Softer Slate tags for Creator & Participants */
+.daily-report-card .badge.bg-info-subtle,
+.daily-report-card .badge.bg-primary-subtle {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease;
+}
+
+.daily-report-card .badge.bg-info-subtle:hover,
+.daily-report-card .badge.bg-primary-subtle:hover {
+    background-color: #e2e8f0 !important;
+    color: #1e293b !important;
+    border-color: #94a3b8 !important;
+}
+
 
