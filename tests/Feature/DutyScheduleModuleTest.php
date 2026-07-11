@@ -157,7 +157,7 @@ final class DutyScheduleModuleTest extends TestCase
         $this->assertTrue($admin->can('delete', $schedule));
     }
 
-    public function test_creator_can_edit_own_schedule_without_separate_update_permission(): void
+    public function test_creator_can_edit_own_schedule_without_separate_schedule_permissions(): void
     {
         $this->seed(PermissionSeeder::class);
 
@@ -165,7 +165,6 @@ final class DutyScheduleModuleTest extends TestCase
         $creator->givePermissionTo(
             PermissionEnum::DashboardView->value,
             PermissionEnum::ScheduleView->value,
-            PermissionEnum::ScheduleCreate->value,
         );
 
         $schedule = DutySchedule::create([

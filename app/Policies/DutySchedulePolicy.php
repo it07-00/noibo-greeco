@@ -33,10 +33,7 @@ final class DutySchedulePolicy
 
     public function update(User $user, DutySchedule $schedule): bool
     {
-        return $schedule->created_by === $user->id && (
-            $user->hasPermissionTo(PermissionEnum::ScheduleUpdate->value) ||
-            $user->hasPermissionTo(PermissionEnum::ScheduleCreate->value)
-        );
+        return $schedule->created_by === $user->id;
     }
 
     public function delete(User $user, DutySchedule $schedule): bool
