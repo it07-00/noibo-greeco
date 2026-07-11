@@ -64,15 +64,15 @@
                             <span class="{{ $avatarUrl ? 'd-none' : '' }}" data-current-user-avatar-initials>{{ $avatarInitials }}</span>
                         </div>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end w-225px mt-1">
+                    <ul class="dropdown-menu dropdown-menu-end w-250px mt-1">
                         <li class="d-flex align-items-center p-2">
-                            <div class="avatar avatar-sm rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold">
+                            <div class="avatar avatar-sm rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold flex-shrink-0">
                                 <img src="{{ $avatarUrl ?? $transparentPixel }}" alt="{{ $currentUser?->name }}" class="{{ $avatarUrl ? '' : 'd-none' }}" data-current-user-avatar-img>
                                 <span class="{{ $avatarUrl ? 'd-none' : '' }}" data-current-user-avatar-initials>{{ $avatarInitials }}</span>
                             </div>
-                            <div class="ms-2">
-                                <div class="fw-bold text-dark">{{ $currentUser?->name }}</div>
-                                <small class="text-body d-block lh-sm">{{ $currentUser?->email }}</small>
+                            <div class="ms-2 overflow-hidden" style="min-width: 0;">
+                                <div class="fw-bold text-dark text-truncate" title="{{ $currentUser?->name }}">{{ $currentUser?->name }}</div>
+                                <small class="text-body d-block lh-sm text-truncate" title="{{ $currentUser?->email }}">{{ $currentUser?->email }}</small>
                             </div>
                         </li>
                         <li>
