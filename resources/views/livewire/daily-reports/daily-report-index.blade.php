@@ -175,7 +175,7 @@
                                             {{ $report->report_date->format('d/m/Y') }}
                                         </span>
                                         <div class="text-muted text-xs mt-1">
-                                            {{ $report->report_date->diffForHumans() }}
+                                            {{ $report->created_at->diffForHumans() }}
                                         </div>
                                     </td>
 
