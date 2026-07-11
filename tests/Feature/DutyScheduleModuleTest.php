@@ -157,6 +157,36 @@ final class DutyScheduleModuleTest extends TestCase
         $this->assertTrue($admin->can('delete', $schedule));
     }
 
+    public function test_creator_can_edit_own_schedule_without_separate_update_permission(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $creator = User::factory()->create();
+        $creator->givePermissionTo(
+            PermissionEnum::DashboardView->value,
+            PermissionEnum::ScheduleView->value,
+            PermissionEnum::ScheduleCreate->value,
+        );
+
+        $schedule = DutySchedule::create([
+            'title' => 'Creator-owned schedule',
+            'start_at' => '2026-07-13 22:00:00',
+            'end_at' => '2026-07-13 23:00:00',
+            'created_by' => $creator->id,
+        ]);
+
+        $this->actingAs($creator);
+        $component = \Livewire\Livewire::test(\App\Livewire\DutySchedules\DutyScheduleIndex::class);
+        $events = $component->instance()->getEvents('2026-07-13 00:00:00', '2026-07-14 00:00:00');
+
+        $this->assertTrue($events[0]['can_edit']);
+
+        $component
+            ->call('edit', $schedule->id)
+            ->assertSet('scheduleId', $schedule->id)
+            ->assertDispatched('schedule:open-edit');
+    }
+
     public function test_private_schedules_mask_details_for_unauthorized_users(): void
     {
         $this->seed(PermissionSeeder::class);
