@@ -103,7 +103,7 @@
 
             {{-- ── Báo cáo & Thống kê ──────────────────────────────────────── --}}
             @php
-                $canSeeReportsHeading = auth()->user()?->can('sales-report.view');
+                $canSeeReportsHeading = auth()->user()?->can('sales-report.view') || auth()->user()?->can('cash-flow.view');
             @endphp
 
             @if ($canSeeReportsHeading)
@@ -122,6 +122,15 @@
                         <a class="menu-link {{ request()->routeIs('sales-targets.report') ? 'active' : '' }}" href="{{ route('sales-targets.report') }}">
                             <i class="fi fi-rr-chart-line-up"></i>
                             <span class="menu-label">Báo cáo doanh số cam kết</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if (auth()->user()?->can('cash-flow.view'))
+                    <li class="menu-item">
+                        <a class="menu-link {{ request()->routeIs('finance.cash-flow') ? 'active' : '' }}" href="{{ route('finance.cash-flow') }}">
+                            <i class="fi fi-rr-chart-pie-alt"></i>
+                            <span class="menu-label">Dòng tiền</span>
                         </a>
                     </li>
                 @endif

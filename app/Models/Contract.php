@@ -43,6 +43,15 @@ final class Contract extends Model
         'suspension_reason',
         'cancellation_reason',
         'notes',
+        'revenue',
+        'commission',
+        'ncc_payment',
+        'ncc_payment_sheet_url',
+        'ncc_payment_updated_at',
+        'ncc_payment_status',
+        'ncc_payment_paid_at',
+        'shd_greeco',
+        'submitted_at',
     ];
 
     protected function casts(): array
@@ -61,7 +70,25 @@ final class Contract extends Model
             'ends_at' => 'date',
             'completed_at' => 'datetime',
             'liquidated_at' => 'datetime',
+            'revenue' => 'integer',
+            'commission' => 'integer',
+            'ncc_payment' => 'integer',
+            'ncc_payment_updated_at' => 'datetime',
+            'ncc_payment_paid_at' => 'date',
+            'submitted_at' => 'date',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(static function (self $contract): void {
+            if (empty($contract->revenue)) {
+                $contract->revenue = (int) ($contract->value ?? 0);
+            }
+            if (empty($contract->commission)) {
+                $contract->commission = (int) ($contract->customer_commission ?? 0);
+            }
+        });
     }
 
     public function quotation(): BelongsTo

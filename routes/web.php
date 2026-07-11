@@ -21,6 +21,7 @@ use App\Livewire\Quotations\QuotationIndex;
 use App\Livewire\Reports\BusinessReportIndex;
 use App\Livewire\Reports\SalesSummaryIndex;
 use App\Livewire\Reports\SalesTargetReport;
+use App\Livewire\Finance\CashFlowDashboard;
 use App\Livewire\RolesPermissions\RolesPermissionsIndex;
 use App\Livewire\SalesTargets\SalesTargetIndex;
 use App\Livewire\Settings\SettingIndex;
@@ -117,6 +118,10 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/commissions/{id}/edit', CommissionRequestForm::class)
         ->middleware('can:commission.update')
         ->name('commissions.edit');
+
+    Route::get('/finance/cash-flow', CashFlowDashboard::class)
+        ->middleware('can:cash-flow.view')
+        ->name('finance.cash-flow');
 
     Route::get('/document-regulations', DocumentRegulationIndex::class)
         ->middleware('can:document.view')

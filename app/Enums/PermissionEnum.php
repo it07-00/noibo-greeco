@@ -62,6 +62,8 @@ enum PermissionEnum: string
     case CommissionApprove = 'commission.approve';
     case CommissionPay = 'commission.pay';
     case SalesReportViewAll = 'sales-report.view-all';
+    case CashFlowView = 'cash-flow.view';
+    case CashFlowExport = 'cash-flow.export';
 
     public function label(): string
     {
@@ -122,6 +124,8 @@ enum PermissionEnum: string
             self::CommissionApprove => 'Duyệt yêu cầu chi hoa hồng',
             self::CommissionPay => 'Xác nhận đã chi hoa hồng',
             self::SalesReportViewAll => 'Xem toàn bộ báo cáo kinh doanh phòng',
+            self::CashFlowView => 'Xem báo cáo dòng tiền',
+            self::CashFlowExport => 'Xuất Excel báo cáo dòng tiền',
         };
     }
 }
