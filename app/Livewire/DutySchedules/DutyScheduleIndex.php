@@ -200,7 +200,7 @@ final class DutyScheduleIndex extends Component
             }
         }
 
-        // Merge noibo events if enabled and user is Director or SuperAdmin
+        // Merge Bảo Châu events when enabled for any member who can access this page.
         if ($this->showNoiboSchedules && $this->canViewNoiboSchedules()) {
             $noiboItems = $this->noiboRepo->getEventsInRange($start, $end);
             foreach ($noiboItems as $item) {
@@ -481,9 +481,7 @@ final class DutyScheduleIndex extends Component
 
     public function canViewNoiboSchedules(): bool
     {
-        $user = auth()->user();
-
-        return $user !== null && $user->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value);
+        return auth()->check();
     }
 
     public function render(): View

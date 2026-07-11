@@ -53,6 +53,7 @@ final class DutyScheduleModuleTest extends TestCase
             ->get(route('duty-schedules.index'))
             ->assertOk()
             ->assertSee('Lịch công tác')
+            ->assertSee('Bảo Châu')
             ->assertDontSee('timeGridWeek', false)
             ->assertDontSee('timeGridDay', false);
     }
