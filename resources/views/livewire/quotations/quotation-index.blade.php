@@ -138,7 +138,7 @@
                                             style="font-size: 0.76rem;"
                                             title="Xem file báo giá"
                                         >
-                                            <i class="fi fi-rr-eye me-1" style="font-size: 0.72rem;"></i>File báo giá
+                                            <i class="fi fi-rr-document me-1" style="font-size: 0.72rem;"></i>File báo giá
                                         </a>
                                     </div>
                                 @endif
@@ -175,6 +175,16 @@
                             </td>
                             <td class="text-end">
                                 <div class="d-inline-flex gap-1">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-primary sales-icon-button"
+                                        wire:click="openDetail({{ $quotation->id }})"
+                                        aria-label="Xem chi tiết báo giá {{ $quotation->quotation_number }}"
+                                        title="Xem chi tiết báo giá"
+                                    >
+                                        <i class="fi fi-rr-eye" aria-hidden="true"></i>
+                                    </button>
+
                                     @can('update', $quotation)
                                         <button
                                             type="button"
@@ -208,7 +218,7 @@
                                             class="btn btn-sm btn-outline-success sales-icon-button"
                                             title="Xem file báo giá"
                                         >
-                                            <i class="fi fi-rr-eye" aria-hidden="true"></i>
+                                            <i class="fi fi-rr-document" aria-hidden="true"></i>
                                         </a>
                                     @endif
 
@@ -286,6 +296,105 @@
                 {{ $quotations->links() }}
             </div>
         @endif
+    </div>
+
+    <div wire:ignore.self class="modal fade" id="quotationDetailModal" tabindex="-1" aria-labelledby="quotationDetailTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="h5 modal-title mb-1" id="quotationDetailTitle">Chi tiết báo giá</h2>
+                        <div class="small sales-supporting-text">{{ $detailQuotation?->quotation_number }}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+
+                @if ($detailQuotation)
+                    <div class="modal-body">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="small sales-supporting-text">Khách hàng</div>
+                                <div class="fw-semibold">{{ $detailQuotation->customer?->name ?: '—' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Trạng thái</div>
+                                <span class="badge rounded-pill {{ $detailQuotation->status->badgeClass() }}">{{ $detailQuotation->status->label() }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Phụ trách</div>
+                                <div class="fw-semibold">{{ $detailQuotation->owner?->name ?: 'Chưa phân công' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Loại hợp đồng</div>
+                                <div>{{ $detailQuotation->contract_type->label() }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Ngày báo giá</div>
+                                <div>{{ $detailQuotation->issued_at?->format('d/m/Y') ?: '—' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Hiệu lực đến</div>
+                                <div>{{ $detailQuotation->valid_until?->format('d/m/Y') ?: '—' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Giá trị hợp đồng</div>
+                                <div class="fw-semibold sales-number">{{ number_format($detailQuotation->contract_value, 0, ',', '.') }}₫</div>
+                            </div>
+                        </div>
+
+                        <h3 class="h6 mb-3">Dịch vụ báo giá</h3>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Dịch vụ</th>
+                                        <th>Mô tả</th>
+                                        <th class="text-end">Số lượng</th>
+                                        <th class="text-end">Đơn giá</th>
+                                        <th class="text-end">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($detailQuotation->services as $service)
+                                        <tr>
+                                            <td>{{ $service->service_type->label() }}</td>
+                                            <td>{{ $service->description ?: '—' }}</td>
+                                            <td class="text-end">{{ number_format($service->quantity) }}</td>
+                                            <td class="text-end sales-number">{{ number_format($service->unit_price, 0, ',', '.') }}₫</td>
+                                            <td class="text-end sales-number fw-semibold">{{ number_format($service->quantity * $service->unit_price, 0, ',', '.') }}₫</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="5" class="text-center sales-supporting-text py-3">Chưa có dịch vụ.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if ($detailQuotation->working_situation || $detailQuotation->notes)
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="small sales-supporting-text">Tình hình làm việc</div>
+                                    <div class="text-break">{{ $detailQuotation->working_situation ?: '—' }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="small sales-supporting-text">Ghi chú</div>
+                                    <div class="text-break">{{ $detailQuotation->notes ?: '—' }}</div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="modal-footer">
+                        @if ($detailQuotation->file_path)
+                            <a href="{{ route('quotations.file.view', $detailQuotation) }}" target="_blank" rel="noopener" class="btn btn-outline-success">
+                                <i class="fi fi-rr-document me-1" aria-hidden="true"></i>Xem file báo giá
+                            </a>
+                        @endif
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                @endif
+            </div>
+        </div>
     </div>
 
     <div wire:ignore.self class="modal fade" id="quotationFormModal" tabindex="-1" aria-hidden="true">
@@ -467,7 +576,7 @@
                                 </div>
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('quotations.file.view', $editingId) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
-                                        <i class="fi fi-rr-eye" aria-hidden="true"></i> Xem file
+                                        <i class="fi fi-rr-document" aria-hidden="true"></i> Xem file
                                     </a>
                                     <button type="button" class="btn btn-sm btn-outline-danger" wire:click="deleteFile" wire:confirm="Bạn có chắc chắn muốn xóa file đính kèm này?">
                                         <i class="fi fi-rr-trash" aria-hidden="true"></i> Xóa
@@ -755,6 +864,7 @@
     </div>
 
     <script>
+        window.addEventListener('quotation-detail:show', () => window.GreecoModal?.show('quotationDetailModal'));
         window.addEventListener('quotation-form:show', () => window.GreecoModal?.show('quotationFormModal'));
         window.addEventListener('quotation-form:hide', () => window.GreecoModal?.hide('quotationFormModal'));
         window.addEventListener('convert-modal:show', () => window.GreecoModal?.show('convertModal'));

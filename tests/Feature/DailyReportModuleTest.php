@@ -404,4 +404,18 @@ final class DailyReportModuleTest extends TestCase
             ->set('viewMode', 'mine')
             ->assertSet('filterDate', now()->toDateString());
     }
+
+    public function test_date_filters_only_render_in_list_view(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $staff = User::factory()->create();
+        $staff->assignRole(RoleEnum::IT->value);
+        $this->actingAs($staff);
+
+        Livewire::test(DailyReportIndex::class)
+            ->set('viewType', 'calendar')
+            ->assertDontSeeHtml('id="filterDate"')
+            ->set('viewType', 'table')
+            ->assertSeeHtml('id="filterDate"');
+    }
 }

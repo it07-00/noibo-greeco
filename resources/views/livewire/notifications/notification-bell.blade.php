@@ -1,4 +1,8 @@
-<div wire:poll.30s="loadUnreadCount" class="notification-bell-wrapper">
+<div
+    wire:poll.10s="loadUnreadCount"
+    class="notification-bell-wrapper"
+    x-data="{ permission: ('Notification' in window) ? Notification.permission : 'unsupported' }"
+>
     <div class="dropdown">
         <button
             class="btn btn-icon btn-action-gray rounded-circle waves-effect waves-light position-relative"
@@ -35,6 +39,23 @@
                         <i class="fi fi-rr-check-double me-1"></i><span class="d-none d-sm-inline">Đánh dấu</span> đã đọc
                     </button>
                 @endif
+            </div>
+
+            <div class="px-3 py-2 border-bottom" x-show="permission !== 'granted'">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary w-100"
+                    x-show="permission === 'default'"
+                    @click="permission = await Notification.requestPermission()"
+                >
+                    <i class="fi fi-rr-bell-ring me-1"></i>Bật thông báo trình duyệt
+                </button>
+                <div class="small text-muted" x-show="permission === 'denied'">
+                    Trình duyệt đang chặn thông báo. Hãy cấp lại quyền trong cài đặt trang web.
+                </div>
+                <div class="small text-muted" x-show="permission === 'unsupported'">
+                    Trình duyệt này không hỗ trợ thông báo hệ thống.
+                </div>
             </div>
 
             {{-- Notification List --}}
@@ -109,4 +130,28 @@
             @endif
         </div>
     </div>
+
+    @script
+    <script>
+        $wire.on('browser-notification', (data) => {
+            const payload = Array.isArray(data) ? data[0] : data;
+
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                return;
+            }
+
+            const notification = new Notification(payload.title || 'Thông báo mới', {
+                body: payload.message || '',
+                icon: '/favicon.ico',
+                tag: payload.url || payload.title || 'greeco-notification',
+            });
+
+            notification.onclick = () => {
+                window.focus();
+                if (payload.url) window.location.href = payload.url;
+                notification.close();
+            };
+        });
+    </script>
+    @endscript
 </div>

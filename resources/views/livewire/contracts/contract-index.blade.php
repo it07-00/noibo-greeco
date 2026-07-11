@@ -135,13 +135,14 @@
                                 </span>
                             </td>
                             <td class="text-end">
-                                <a
-                                    href="{{ route('contracts.show', $contract) }}"
+                                <button
+                                    type="button"
+                                    wire:click="openDetail({{ $contract->id }})"
                                     class="btn btn-sm btn-outline-primary sales-action-button"
                                     title="Xem chi tiết hợp đồng"
                                 >
                                     <i class="fi fi-rr-eye me-1" aria-hidden="true"></i>Xem chi tiết hợp đồng
-                                </a>
+                                </button>
                             </td>
                         </tr>
                     @empty
@@ -163,4 +164,114 @@
             </div>
         @endif
     </div>
+
+    <div wire:ignore.self class="modal fade" id="contractDetailModal" tabindex="-1" aria-labelledby="contractDetailTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h2 class="h5 modal-title mb-1" id="contractDetailTitle">Chi tiết hợp đồng</h2>
+                        <div class="small sales-supporting-text">{{ $detailContract?->contract_number ?: $detailContract?->title }}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+
+                @if ($detailContract)
+                    <div class="modal-body">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="small sales-supporting-text">Khách hàng</div>
+                                <div class="fw-semibold">{{ $detailContract->customer?->name ?: '—' }}</div>
+                                <div class="small sales-supporting-text">{{ $detailContract->title }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Trạng thái</div>
+                                <span class="badge rounded-pill {{ $detailContract->status->badgeClass() }}">{{ $detailContract->status->label() }}</span>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Phụ trách</div>
+                                <div class="fw-semibold">{{ $detailContract->owner?->name ?: 'Chưa phân công' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Loại hợp đồng</div>
+                                <div>{{ $detailContract->type->label() }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Ngày ký</div>
+                                <div>{{ $detailContract->signed_at?->format('d/m/Y') ?: '—' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Thời gian thực hiện</div>
+                                <div>{{ $detailContract->starts_at?->format('d/m/Y') ?: '—' }} – {{ $detailContract->ends_at?->format('d/m/Y') ?: '—' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="small sales-supporting-text">Giá trị hợp đồng</div>
+                                <div class="fw-semibold sales-number">{{ number_format($detailContract->value, 0, ',', '.') }}₫</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <h3 class="h6 mb-3">Dịch vụ hợp đồng</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead><tr><th>Dịch vụ</th><th>Mô tả</th><th class="text-end">Giá trị</th></tr></thead>
+                                        <tbody>
+                                            @forelse ($detailContract->services as $service)
+                                                <tr>
+                                                    <td>{{ $service->service_type->label() }}</td>
+                                                    <td>{{ $service->description ?: '—' }}</td>
+                                                    <td class="text-end sales-number">{{ number_format($service->amount, 0, ',', '.') }}₫</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="3" class="text-center sales-supporting-text py-3">Chưa có dịch vụ.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <h3 class="h6 mb-3">Lịch thanh toán</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead><tr><th>Đợt</th><th>Trạng thái</th><th class="text-end">Số tiền</th></tr></thead>
+                                        <tbody>
+                                            @forelse ($detailContract->paymentSchedules as $schedule)
+                                                <tr>
+                                                    <td>{{ $schedule->name }}</td>
+                                                    <td><span class="badge rounded-pill {{ $schedule->status->badgeClass() }}">{{ $schedule->status->label() }}</span></td>
+                                                    <td class="text-end sales-number">{{ number_format($schedule->amount, 0, ',', '.') }}₫</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="3" class="text-center sales-supporting-text py-3">Chưa có lịch thanh toán.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if ($detailContract->notes)
+                            <div class="mt-4">
+                                <div class="small sales-supporting-text">Ghi chú</div>
+                                <div class="text-break">{{ $detailContract->notes }}</div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="modal-footer">
+                        <a href="{{ route('contracts.show', $detailContract) }}" class="btn btn-primary">
+                            <i class="fi fi-rr-folder-open me-1" aria-hidden="true"></i>Mở hồ sơ đầy đủ
+                        </a>
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('contract-detail:show', () => window.GreecoModal?.show('contractDetailModal'));
+    </script>
 </div>

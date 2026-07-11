@@ -408,6 +408,13 @@ final class SalesUiTest extends TestCase
         $viewResponse->assertOk();
         $this->assertStringStartsWith('inline;', (string) $viewResponse->headers->get('content-disposition'));
 
+        Livewire::test(QuotationIndex::class)
+            ->call('openDetail', $quotation->id)
+            ->assertSet('viewingId', $quotation->id)
+            ->assertDispatched('quotation-detail:show')
+            ->assertSee('Chi tiết báo giá')
+            ->assertSee($quotation->quotation_number);
+
         // Download file should work
         Livewire::test(QuotationIndex::class)
             ->call('downloadFile', $quotation->id)

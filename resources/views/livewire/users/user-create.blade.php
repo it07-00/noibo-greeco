@@ -36,17 +36,6 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label" for="create-department">Phòng ban</label>
-                                <select id="create-department" class="form-select @error('department_id') is-invalid @enderror" wire:model.defer="department_id">
-                                    <option value="">-- Chọn phòng ban --</option>
-                                    @foreach ($departments as $dept)
-                                        <option value="{{ $dept->id }}">{{ $dept->name }} ({{ $dept->code }})</option>
-                                    @endforeach
-                                </select>
-                                @error('department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-
-                            <div class="col-md-6">
                                 <label class="form-label" for="create-dob">Ngày sinh</label>
                                 <input id="create-dob" type="date" class="form-control @error('dob') is-invalid @enderror" wire:model.defer="dob">
                                 @error('dob') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -80,25 +69,35 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label">Vai trò</label>
-                                <div class="d-flex flex-wrap gap-3">
-                                    @foreach ($roleOptions as $roleOption)
-                                        <div class="form-check" wire:key="create-role-{{ $roleOption->id }}">
-                                            <input
-                                                class="form-check-input"
-                                                type="checkbox"
-                                                id="create-role-{{ $roleOption->id }}"
-                                                value="{{ $roleOption->name }}"
-                                                wire:model.defer="roles"
-                                            >
-                                            <label class="form-check-label" for="create-role-{{ $roleOption->id }}">
-                                                {{ $roleOption->name }}
-                                            </label>
+                                <div class="border rounded-3 p-3 bg-light">
+                                    <div class="fw-semibold mb-3">Phân công tổ chức</div>
+                                    <div class="row g-3">
+                                        <div class="col-md-5">
+                                            <label class="form-label" for="create-department">Phòng ban</label>
+                                            <select id="create-department" class="form-select @error('department_id') is-invalid @enderror" wire:model.live="department_id" wire:change="departmentChanged">
+                                                <option value="">-- Chọn phòng ban --</option>
+                                                @foreach ($departments as $dept)
+                                                    <option value="{{ $dept->id }}">{{ $dept->name }} ({{ $dept->code }})</option>
+                                                @endforeach
+                                            </select>
+                                            @error('department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                         </div>
-                                    @endforeach
+                                        <div class="col-md-7">
+                                            <label class="form-label">Vai trò</label>
+                                            <div class="d-flex flex-wrap gap-3 pt-2">
+                                                @foreach ($roleOptions as $roleOption)
+                                                    <div class="form-check" wire:key="create-role-{{ $roleOption->id }}">
+                                                        <input class="form-check-input" type="checkbox" id="create-role-{{ $roleOption->id }}" value="{{ $roleOption->name }}" wire:model.defer="roles">
+                                                        <label class="form-check-label" for="create-role-{{ $roleOption->id }}">{{ $roleOption->name }}</label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            <div class="form-text">Vai trò được lọc theo phòng ban đã chọn.</div>
+                                            @error('roles') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                            @error('roles.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                        </div>
+                                    </div>
                                 </div>
-                                @error('roles') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-                                @error('roles.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
                         </div>
                     </div>

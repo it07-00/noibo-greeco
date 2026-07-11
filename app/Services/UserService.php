@@ -137,7 +137,7 @@ final class UserService
     public function roleOptions(): Collection
     {
         return Role::query()
-            ->select(['id', 'name'])
+            ->select(['id', 'name', 'department_id'])
             ->orderBy('name')
             ->get();
     }

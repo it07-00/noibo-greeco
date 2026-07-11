@@ -12,14 +12,16 @@ final class NotificationBell extends Component
 {
     public int $unreadCount = 0;
 
+    public ?string $lastNotificationId = null;
+
     public function mount(): void
     {
-        $this->loadUnreadCount();
+        $this->refreshUnreadState(false);
     }
 
     public function loadUnreadCount(): void
     {
-        $this->unreadCount = Auth::user()?->unreadNotifications()->count() ?? 0;
+        $this->refreshUnreadState(true);
     }
 
     public function markAsRead(string $id): void
@@ -28,7 +30,7 @@ final class NotificationBell extends Component
 
         if ($notification) {
             $notification->markAsRead();
-            $this->loadUnreadCount();
+            $this->refreshUnreadState(false);
         }
 
         // Redirect to the notification URL
@@ -47,7 +49,7 @@ final class NotificationBell extends Component
     public function deleteNotification(string $id): void
     {
         Auth::user()?->notifications()->where('id', $id)->delete();
-        $this->loadUnreadCount();
+        $this->refreshUnreadState(false);
     }
 
     public function render(): View
@@ -61,5 +63,22 @@ final class NotificationBell extends Component
         return view('livewire.notifications.notification-bell', [
             'notifications' => $notifications,
         ]);
+    }
+
+    private function refreshUnreadState(bool $announceNew): void
+    {
+        $user = Auth::user();
+        $this->unreadCount = $user?->unreadNotifications()->count() ?? 0;
+        $latest = $user?->unreadNotifications()->latest()->first();
+
+        if ($announceNew && $latest && $latest->id !== $this->lastNotificationId) {
+            $this->dispatch('browser-notification', [
+                'title' => $latest->data['title'] ?? 'Thông báo mới',
+                'message' => $latest->data['message'] ?? '',
+                'url' => $latest->data['url'] ?? null,
+            ]);
+        }
+
+        $this->lastNotificationId = $latest?->id;
     }
 }

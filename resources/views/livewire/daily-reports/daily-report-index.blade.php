@@ -25,7 +25,7 @@
                     type="button"
                     class="btn btn-outline-primary"
                     :class="viewType === 'table' ? 'active' : ''"
-                    @click="viewType = 'table'"
+                    @click="$wire.set('viewType', 'table')"
                 >
                     <i class="fi fi-rr-list-check me-1"></i> Danh sách
                 </button>
@@ -33,7 +33,7 @@
                     type="button"
                     class="btn btn-outline-primary"
                     :class="viewType === 'calendar' ? 'active' : ''"
-                    @click="viewType = 'calendar'"
+                    @click="$wire.set('viewType', 'calendar')"
                 >
                     <i class="fi fi-rr-calendar me-1"></i> Lịch
                 </button>
@@ -75,6 +75,7 @@
     @endif
 
     {{-- ── Filter Bar ───────────────────────────────────────────────────────── --}}
+    @if ($viewType === 'table')
     <div class="card mb-3">
         <div class="card-body py-2">
             <div class="row g-2 align-items-center">
@@ -127,6 +128,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <div :class="viewType === 'table' ? '' : 'd-none'">
         {{-- ── Reports Table ────────────────────────────────────────────────────── --}}

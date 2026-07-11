@@ -49,6 +49,8 @@ final class QuotationIndex extends Component
 
     public int $editingId = 0;
 
+    public int $viewingId = 0;
+
     public int|string $formCustomerId = 0;
 
     public int|string $formOwnerId = 0;
@@ -186,6 +188,15 @@ final class QuotationIndex extends Component
             ->all();
         $this->resetValidation();
         $this->dispatch('quotation-form:show');
+    }
+
+    public function openDetail(int $quotationId): void
+    {
+        $quotation = Quotation::query()->findOrFail($quotationId);
+        Gate::authorize('view', $quotation);
+
+        $this->viewingId = $quotation->id;
+        $this->dispatch('quotation-detail:show');
     }
 
     public function addServiceRow(): void
@@ -647,6 +658,9 @@ final class QuotationIndex extends Component
             'convertPaymentMethodOptions' => PaymentMethod::options(),
             'conversionSource' => $this->convertingQuotationId > 0
                 ? Quotation::query()->with('services')->find($this->convertingQuotationId)
+                : null,
+            'detailQuotation' => $this->viewingId > 0
+                ? Quotation::query()->with(['customer', 'owner', 'services', 'contract'])->find($this->viewingId)
                 : null,
         ]);
     }

@@ -8,7 +8,9 @@ use App\DTOs\UserDTO;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Livewire\Users\UserIndex;
+use App\Livewire\Users\UserCreate;
 use App\Livewire\Users\UserResetPassword;
+use App\Models\Department;
 use App\Models\User;
 use App\Services\UserService;
 use Database\Seeders\PermissionSeeder;
@@ -88,6 +90,27 @@ final class UserModuleTest extends TestCase
             ->get(route('users.index'))
             ->assertOk()
             ->assertSee('Users');
+    }
+
+    public function test_user_form_filters_roles_by_selected_department(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $admin = User::factory()->create();
+        $admin->givePermissionTo(PermissionEnum::UserCreate->value);
+        $salesDepartment = Department::query()->where('code', 'KD')->firstOrFail();
+        $otherDepartment = Department::query()->where('code', 'TCKT')->firstOrFail();
+        $salesRole = Role::query()->create(['name' => 'Sales specialist', 'guard_name' => 'web', 'department_id' => $salesDepartment->id]);
+        $otherRole = Role::query()->create(['name' => 'Accountant specialist', 'guard_name' => 'web', 'department_id' => $otherDepartment->id]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(UserCreate::class)
+            ->set('roles', [$salesRole->name, $otherRole->name])
+            ->set('department_id', $salesDepartment->id)
+            ->call('departmentChanged')
+            ->assertSet('roles', [$salesRole->name])
+            ->assertSee($salesRole->name)
+            ->assertDontSee($otherRole->name);
     }
 
     public function test_user_service_creates_updates_and_soft_deletes_user(): void

@@ -9,6 +9,7 @@ use App\Enums\ContractType;
 use App\Enums\DocumentStatus;
 use App\Enums\DocumentType;
 use App\Enums\RoleEnum;
+use App\Livewire\Contracts\ContractIndex;
 use App\Models\Contract;
 use App\Models\ContractDocument;
 use App\Models\Customer;
@@ -17,6 +18,7 @@ use App\Services\Contracts\ContractDocumentService;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 final class ContractDocumentWorkflowTest extends TestCase
@@ -78,6 +80,23 @@ final class ContractDocumentWorkflowTest extends TestCase
 
         $response->assertOk();
         $response->assertDownload('Hop dong da ky.pdf');
+    }
+
+    public function test_authorized_user_can_open_contract_detail_modal(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $sales = User::factory()->create();
+        $sales->assignRole(RoleEnum::Sales->value);
+        $contract = $this->contract($sales);
+
+        $this->actingAs($sales);
+
+        Livewire::test(ContractIndex::class)
+            ->call('openDetail', $contract->id)
+            ->assertSet('viewingId', $contract->id)
+            ->assertDispatched('contract-detail:show')
+            ->assertSee('Chi tiết hợp đồng')
+            ->assertSee($contract->title);
     }
 
     private function contract(User $owner): Contract

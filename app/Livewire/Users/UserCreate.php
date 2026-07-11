@@ -11,6 +11,7 @@ use App\Services\UserService;
 use App\Support\UserValidationRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -65,6 +66,12 @@ final class UserCreate extends Component
         $this->dispatch('user-create:hide');
     }
 
+    public function departmentChanged(): void
+    {
+        $availableRoles = $this->filteredRoleOptions()->pluck('name')->all();
+        $this->roles = array_values(array_intersect($this->roles, $availableRoles));
+    }
+
     public function save(): void
     {
         Gate::authorize('create', User::class);
@@ -82,7 +89,7 @@ final class UserCreate extends Component
     public function render(): View
     {
         return view('livewire.users.user-create', [
-            'roleOptions' => $this->users->roleOptions(),
+            'roleOptions' => $this->filteredRoleOptions(),
             'departments' => Department::orderBy('name')->get(),
         ]);
     }
@@ -98,5 +105,16 @@ final class UserCreate extends Component
         $this->department_id = null;
         $this->dob = '';
         $this->address = '';
+    }
+
+    private function filteredRoleOptions(): Collection
+    {
+        $roles = $this->users->roleOptions();
+
+        if (! $this->department_id) {
+            return $roles;
+        }
+
+        return $roles->filter(fn ($role): bool => $role->department_id === null || (int) $role->department_id === (int) $this->department_id);
     }
 }

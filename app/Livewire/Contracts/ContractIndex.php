@@ -29,6 +29,8 @@ final class ContractIndex extends Component
 
     public string $filterType = '';
 
+    public int $viewingId = 0;
+
     public function mount(): void
     {
         Gate::authorize('viewAny', Contract::class);
@@ -49,6 +51,15 @@ final class ContractIndex extends Component
         $this->resetPage();
     }
 
+    public function openDetail(int $contractId): void
+    {
+        $contract = Contract::query()->findOrFail($contractId);
+        Gate::authorize('view', $contract);
+
+        $this->viewingId = $contract->id;
+        $this->dispatch('contract-detail:show');
+    }
+
     public function render(ContractService $service): View
     {
         return view('livewire.contracts.contract-index', [
@@ -60,6 +71,9 @@ final class ContractIndex extends Component
             'summary' => $service->summary(),
             'statusOptions' => ContractStatus::options(),
             'typeOptions' => ContractType::options(),
+            'detailContract' => $this->viewingId > 0
+                ? Contract::query()->with(['customer', 'owner', 'quotation', 'services', 'paymentSchedules'])->find($this->viewingId)
+                : null,
         ]);
     }
 }

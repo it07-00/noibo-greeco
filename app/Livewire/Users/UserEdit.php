@@ -11,6 +11,7 @@ use App\Services\UserService;
 use App\Support\UserValidationRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -78,6 +79,12 @@ final class UserEdit extends Component
         $this->dispatch('user-edit:hide');
     }
 
+    public function departmentChanged(): void
+    {
+        $availableRoles = $this->filteredRoleOptions()->pluck('name')->all();
+        $this->roles = array_values(array_intersect($this->roles, $availableRoles));
+    }
+
     public function save(): void
     {
         abort_if($this->userId === null, 404);
@@ -98,8 +105,19 @@ final class UserEdit extends Component
     public function render(): View
     {
         return view('livewire.users.user-edit', [
-            'roleOptions' => $this->users->roleOptions(),
+            'roleOptions' => $this->filteredRoleOptions(),
             'departments' => Department::orderBy('name')->get(),
         ]);
+    }
+
+    private function filteredRoleOptions(): Collection
+    {
+        $roles = $this->users->roleOptions();
+
+        if (! $this->department_id) {
+            return $roles;
+        }
+
+        return $roles->filter(fn ($role): bool => $role->department_id === null || (int) $role->department_id === (int) $this->department_id);
     }
 }
