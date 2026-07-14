@@ -10,18 +10,19 @@ use App\Livewire\Commissions\CommissionRequestForm;
 use App\Livewire\Commissions\CommissionRequestIndex;
 use App\Livewire\Contracts\ContractIndex;
 use App\Livewire\Contracts\ContractShow;
+use App\Livewire\Courses\CourseIndex;
 use App\Livewire\Customers\CustomerIndex;
 use App\Livewire\DailyReports\DailyReportIndex;
 use App\Livewire\Departments\DepartmentIndex;
 use App\Livewire\DocumentRegulations\DocumentRegulationIndex;
 use App\Livewire\DutySchedules\DutyScheduleIndex;
+use App\Livewire\Finance\CashFlowDashboard;
 use App\Livewire\Mail\MailCenterIndex;
 use App\Livewire\Profile\ProfileEdit;
 use App\Livewire\Quotations\QuotationIndex;
 use App\Livewire\Reports\BusinessReportIndex;
 use App\Livewire\Reports\SalesSummaryIndex;
 use App\Livewire\Reports\SalesTargetReport;
-use App\Livewire\Finance\CashFlowDashboard;
 use App\Livewire\RolesPermissions\RolesPermissionsIndex;
 use App\Livewire\SalesTargets\SalesTargetIndex;
 use App\Livewire\Settings\SettingIndex;
@@ -71,6 +72,10 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/customers', CustomerIndex::class)
         ->middleware('can:customer.view')
         ->name('customers.index');
+
+    Route::get('/courses', CourseIndex::class)
+        ->middleware('can:course.view')
+        ->name('courses.index');
 
     Route::get('/quotations', QuotationIndex::class)
         ->middleware('can:quotation.view')

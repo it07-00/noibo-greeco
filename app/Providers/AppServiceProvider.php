@@ -8,6 +8,7 @@ use App\Models\Contract;
 use App\Models\ContractDocument;
 use App\Models\ContractPayment;
 use App\Models\ContractPaymentSchedule;
+use App\Models\Course;
 use App\Models\Customer;
 use App\Models\DailyReport;
 use App\Models\DocumentRegulation;
@@ -19,6 +20,7 @@ use App\Policies\ContractDocumentPolicy;
 use App\Policies\ContractPaymentPolicy;
 use App\Policies\ContractPaymentSchedulePolicy;
 use App\Policies\ContractPolicy;
+use App\Policies\CoursePolicy;
 use App\Policies\CustomerPolicy;
 use App\Policies\DailyReportPolicy;
 use App\Policies\DocumentRegulationPolicy;
@@ -26,9 +28,11 @@ use App\Policies\QuotationPolicy;
 use App\Policies\RolePolicy;
 use App\Policies\UserPolicy;
 use App\Support\ActivityLogger;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -52,12 +56,12 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
-        \Carbon\Carbon::setLocale(config('app.locale'));
+        Carbon::setLocale(config('app.locale'));
 
         Event::listen(
-            \Illuminate\Foundation\Events\LocaleUpdated::class,
-            static function (\Illuminate\Foundation\Events\LocaleUpdated $event): void {
-                \Carbon\Carbon::setLocale($event->locale);
+            LocaleUpdated::class,
+            static function (LocaleUpdated $event): void {
+                Carbon::setLocale($event->locale);
             }
         );
 
@@ -70,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(DailyReport::class, DailyReportPolicy::class);
         Gate::policy(DocumentRegulation::class, DocumentRegulationPolicy::class);
         Gate::policy(Customer::class, CustomerPolicy::class);
+        Gate::policy(Course::class, CoursePolicy::class);
         Gate::policy(Quotation::class, QuotationPolicy::class);
         Gate::policy(Contract::class, ContractPolicy::class);
         Gate::policy(ContractPaymentSchedule::class, ContractPaymentSchedulePolicy::class);

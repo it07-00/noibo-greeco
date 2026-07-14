@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\CustomerType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -16,6 +18,7 @@ final class Customer extends Model
 
     protected $fillable = [
         'name',
+        'type',
         'tax_code',
         'contact_name',
         'email',
@@ -27,6 +30,13 @@ final class Customer extends Model
         'notes',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'type' => CustomerType::class,
+        ];
+    }
+
     public function quotations(): HasMany
     {
         return $this->hasMany(Quotation::class);
@@ -35,5 +45,11 @@ final class Customer extends Model
     public function contracts(): HasMany
     {
         return $this->hasMany(Contract::class);
+    }
+
+    public function courses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'course_enrollments')
+            ->withTimestamps();
     }
 }

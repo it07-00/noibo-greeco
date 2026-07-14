@@ -429,7 +429,7 @@
                                 <option value="0">Chọn khách hàng</option>
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}">
-                                        {{ $customer->name }}{{ $customer->tax_code ? ' — '.$customer->tax_code : '' }}
+                                        {{ $customer->name }} — {{ $customer->type->label() }}{{ $customer->tax_code ? ' — '.$customer->tax_code : '' }}
                                     </option>
                                 @endforeach
                             </select>

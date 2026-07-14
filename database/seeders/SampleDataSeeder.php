@@ -248,5 +248,7 @@ final class SampleDataSeeder extends Seeder
                 'sort_order' => 0,
             ]);
         }
+
+        $this->call(CourseSampleDataSeeder::class);
     }
 }

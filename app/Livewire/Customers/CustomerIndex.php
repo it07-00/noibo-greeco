@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customers;
 
+use App\Enums\CustomerType;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Contracts\View\View;
@@ -25,9 +26,13 @@ final class CustomerIndex extends Component
 
     public string $search = '';
 
+    public string $typeFilter = '';
+
     public int $editingId = 0;
 
     public string $name = '';
+
+    public string $customerType = CustomerType::Organization->value;
 
     public string $taxCode = '';
 
@@ -57,6 +62,11 @@ final class CustomerIndex extends Component
         $this->resetPage();
     }
 
+    public function updatedTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
     public function openCreate(): void
     {
         Gate::authorize('create', Customer::class);
@@ -71,6 +81,7 @@ final class CustomerIndex extends Component
 
         $this->editingId = $customer->id;
         $this->name = $customer->name;
+        $this->customerType = $customer->type->value;
         $this->taxCode = $customer->tax_code ?? '';
         $this->contactName = $customer->contact_name ?? '';
         $this->email = $customer->email ?? '';
@@ -86,6 +97,12 @@ final class CustomerIndex extends Component
 
     public function lookupTaxCode(): void
     {
+        if ($this->customerType !== CustomerType::Organization->value) {
+            $this->addError('taxCode', 'Chỉ tra cứu mã số thuế cho khách hàng tổ chức.');
+
+            return;
+        }
+
         if (empty($this->taxCode)) {
             $this->addError('taxCode', 'Vui lòng nhập mã số thuế để tra cứu.');
 
@@ -140,6 +157,7 @@ final class CustomerIndex extends Component
 
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:191'],
+            'customerType' => ['required', Rule::enum(CustomerType::class)],
             'taxCode' => [
                 'nullable',
                 'string',
@@ -162,8 +180,13 @@ final class CustomerIndex extends Component
 
         $service->save([
             'name' => trim($validated['name']),
-            'tax_code' => $validated['taxCode'] ?: null,
-            'contact_name' => $validated['contactName'] ?: null,
+            'type' => $validated['customerType'],
+            'tax_code' => $validated['customerType'] === CustomerType::Organization->value
+                ? ($validated['taxCode'] ?: null)
+                : null,
+            'contact_name' => $validated['customerType'] === CustomerType::Organization->value
+                ? ($validated['contactName'] ?: null)
+                : null,
             'email' => $validated['email'] ?: null,
             'phone' => $validated['phone'] ?: null,
             'billing_address' => $validated['billingAddress'] ?: null,
@@ -187,7 +210,8 @@ final class CustomerIndex extends Component
     public function render(CustomerService $service): View
     {
         return view('livewire.customers.customer-index', [
-            'customers' => $service->paginate(trim($this->search)),
+            'customers' => $service->paginate(trim($this->search), $this->typeFilter),
+            'customerTypes' => CustomerType::options(),
         ]);
     }
 
@@ -196,6 +220,7 @@ final class CustomerIndex extends Component
         $this->reset([
             'editingId',
             'name',
+            'customerType',
             'taxCode',
             'contactName',
             'email',
@@ -206,6 +231,7 @@ final class CustomerIndex extends Component
             'industry',
             'notes',
         ]);
+        $this->customerType = CustomerType::Organization->value;
         $this->resetValidation();
     }
 }

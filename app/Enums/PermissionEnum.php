@@ -30,6 +30,8 @@ enum PermissionEnum: string
     case ScheduleViewPrivate = 'schedule.view-private';
     case CustomerView = 'customer.view';
     case CustomerManage = 'customer.manage';
+    case CourseView = 'course.view';
+    case CourseManage = 'course.manage';
     case QuotationView = 'quotation.view';
     case QuotationCreate = 'quotation.create';
     case QuotationUpdate = 'quotation.update';
@@ -92,6 +94,8 @@ enum PermissionEnum: string
             self::ReportDelete => 'Xóa báo cáo ngày',
             self::CustomerView => 'Xem khách hàng',
             self::CustomerManage => 'Quản lý khách hàng',
+            self::CourseView => 'Xem khóa học',
+            self::CourseManage => 'Quản lý khóa học và học viên',
             self::QuotationView => 'Xem báo giá',
             self::QuotationCreate => 'Tạo báo giá',
             self::QuotationUpdate => 'Cập nhật báo giá',

@@ -118,6 +118,7 @@ final class PermissionSeeder extends Seeder
         $director->syncPermissions($directorPermissions);
         $director->givePermissionTo([
             PermissionEnum::CustomerView->value,
+            PermissionEnum::CourseView->value,
             PermissionEnum::QuotationView->value,
             PermissionEnum::ContractView->value,
             PermissionEnum::ContractApprove->value,
@@ -142,6 +143,8 @@ final class PermissionSeeder extends Seeder
         $sales->givePermissionTo([
             PermissionEnum::CustomerView->value,
             PermissionEnum::CustomerManage->value,
+            PermissionEnum::CourseView->value,
+            PermissionEnum::CourseManage->value,
             PermissionEnum::QuotationView->value,
             PermissionEnum::QuotationCreate->value,
             PermissionEnum::QuotationUpdate->value,
@@ -167,6 +170,8 @@ final class PermissionSeeder extends Seeder
         $consultant->syncPermissions($staffPermissions);
         $consultant->givePermissionTo([
             PermissionEnum::CustomerView->value,
+            PermissionEnum::CourseView->value,
+            PermissionEnum::CourseManage->value,
             PermissionEnum::QuotationView->value,
             PermissionEnum::ContractView->value,
             PermissionEnum::ContractUpdate->value,

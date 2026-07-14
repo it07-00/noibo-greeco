@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 return [
+    'customer_type' => [
+        'organization' => 'Tổ chức',
+        'individual' => 'Cá nhân (học viên)',
+    ],
     'contract_type' => [
         'training' => 'Đào tạo và bồi dưỡng chuyên môn',
         'consulting' => 'Tư vấn',

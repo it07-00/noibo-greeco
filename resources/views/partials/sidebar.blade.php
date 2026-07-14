@@ -59,7 +59,7 @@
                 </li>
             @endif
 
-            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view') || auth()->user()?->hasRole(\App\Enums\RoleEnum::Sales->value) || auth()->user()?->can('commission.view'))
+            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('course.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view') || auth()->user()?->hasRole(\App\Enums\RoleEnum::Sales->value) || auth()->user()?->can('commission.view'))
                 <li class="menu-heading">
                     <span class="menu-label">Kinh doanh</span>
                 </li>
@@ -70,6 +70,15 @@
                     <a class="menu-link {{ request()->routeIs('customers.*') ? 'active' : '' }}" href="{{ route('customers.index') }}">
                         <i class="fi fi-rr-users-alt"></i>
                         <span class="menu-label">Khách hàng</span>
+                    </a>
+                </li>
+            @endif
+
+            @if (auth()->user()?->can('course.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('courses.*') ? 'active' : '' }}" href="{{ route('courses.index') }}">
+                        <i class="fi fi-rr-graduation-cap"></i>
+                        <span class="menu-label">Quản lý khóa học</span>
                     </a>
                 </li>
             @endif

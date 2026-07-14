@@ -22,6 +22,8 @@ use App\Services\Quotations\QuotationToContractService;
 use App\Services\Quotations\QuotationWorkflowService;
 use DomainException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -166,9 +168,9 @@ final class QuotationIndex extends Component
         $this->formCustomerId = $quotation->customer_id;
         $this->formOwnerId = $quotation->owner_id ?? (int) Auth::id();
         $this->formContractType = $quotation->contract_type->value;
-        /** @var \Illuminate\Support\Carbon|null $issuedAt */
+        /** @var Carbon|null $issuedAt */
         $issuedAt = $quotation->issued_at;
-        /** @var \Illuminate\Support\Carbon|null $validUntil */
+        /** @var Carbon|null $validUntil */
         $validUntil = $quotation->valid_until;
         $this->formIssuedAt = $issuedAt?->toDateString() ?? '';
         $this->formValidUntil = $validUntil?->toDateString() ?? '';
@@ -295,7 +297,7 @@ final class QuotationIndex extends Component
                 }
 
                 $path = $this->formFile->store(
-                    path: 'quotations/' . $savedQuotation->id,
+                    path: 'quotations/'.$savedQuotation->id,
                     options: 'local',
                 );
 
@@ -611,9 +613,9 @@ final class QuotationIndex extends Component
         }
 
         $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
-        $fileName = 'Bao_gia_' . ($quotation->quotation_number ?: $quotation->id) . '.' . $extension;
+        $fileName = 'Bao_gia_'.($quotation->quotation_number ?: $quotation->id).'.'.$extension;
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
 
         return $disk->download($quotation->file_path, $fileName);
@@ -655,7 +657,7 @@ final class QuotationIndex extends Component
                 $this->filterContractType,
             ),
             'summary' => $service->summary(),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'tax_code']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name', 'type', 'tax_code']),
             'salesUsers' => User::role(RoleEnum::Sales->value)->orderBy('name')->get(['id', 'name']),
             'canChooseOwner' => $this->canChooseOwner(),
             'contractTypeOptions' => ContractType::options(),

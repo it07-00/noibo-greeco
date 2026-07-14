@@ -258,6 +258,10 @@ final class RolesPermissionsIndex extends Component
                 PermissionEnum::CustomerView->value => 'Xem khách hàng',
                 PermissionEnum::CustomerManage->value => 'Quản lý khách hàng',
             ],
+            'Khóa học' => [
+                PermissionEnum::CourseView->value => 'Xem khóa học và học viên',
+                PermissionEnum::CourseManage->value => 'Tạo, sửa, xóa khóa học và xếp học viên',
+            ],
             'Theo dõi báo giá' => [
                 PermissionEnum::QuotationView->value => 'Xem báo giá',
                 PermissionEnum::QuotationCreate->value => 'Tạo báo giá',

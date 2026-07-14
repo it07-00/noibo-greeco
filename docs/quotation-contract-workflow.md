@@ -58,6 +58,25 @@ Những thông tin này được lưu thành các bản ghi trong bảng nghiệ
 
 ## 3. Loại hợp đồng và dịch vụ
 
+### Loại khách hàng
+
+Danh mục khách hàng dùng chung cho hai nhóm:
+
+- `organization`: tổ chức/doanh nghiệp tham gia luồng báo giá và hợp đồng.
+- `individual`: khách hàng cá nhân (học viên) đăng ký khóa học riêng lẻ.
+
+Dữ liệu khách hàng cũ mặc định là `organization`. Khách hàng cá nhân không yêu cầu mã số thuế hoặc
+người liên hệ và vẫn có thể được chọn trong báo giá khi nghiệp vụ phát sinh.
+
+### Quản lý khóa học và học viên
+
+- Mỗi khóa học có mã, tên, thời gian, địa điểm và mô tả.
+- Một khóa học có nhiều khách hàng cá nhân tham gia.
+- Một khách hàng cá nhân có thể tham gia nhiều khóa học.
+- Liên kết được lưu tại `course_enrollments` với khóa duy nhất `(course_id, customer_id)` để không đăng ký trùng.
+- Chỉ khách hàng loại `individual` được thêm vào danh sách học viên.
+- Quyền `course.view` dùng để xem; `course.manage` dùng để tạo, sửa, xóa khóa và xếp học viên.
+
 ### `ContractType`
 
 | Mã | Nhãn |

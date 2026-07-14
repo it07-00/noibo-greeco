@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Enums\ContractType;
+use App\Enums\CustomerType;
 use App\Enums\DocumentType;
 use App\Enums\PaymentConditionType;
+use App\Enums\PaymentTermUnit;
 use App\Enums\QuotationStatus;
 use App\Enums\RoleEnum;
 use App\Enums\ServiceType;
@@ -59,6 +61,35 @@ final class SalesUiTest extends TestCase
             'name' => 'Công ty Xanh Việt',
             'tax_code' => '0312345678',
         ]);
+    }
+
+    public function test_sales_user_can_create_and_filter_individual_course_customer(): void
+    {
+        $this->actingAs($this->salesUser());
+
+        Livewire::test(CustomerIndex::class)
+            ->set('customerType', CustomerType::Individual->value)
+            ->set('name', 'Nguyễn Minh Anh')
+            ->set('phone', '0909999999')
+            ->set('email', 'minhanh@example.com')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Nguyễn Minh Anh',
+            'type' => CustomerType::Individual->value,
+            'phone' => '0909999999',
+        ]);
+
+        Customer::query()->create([
+            'name' => 'Công ty Chỉ Hiện Ở Nhóm Tổ Chức',
+            'type' => CustomerType::Organization,
+        ]);
+
+        Livewire::test(CustomerIndex::class)
+            ->set('typeFilter', CustomerType::Individual->value)
+            ->assertSee('Nguyễn Minh Anh')
+            ->assertDontSee('Công ty Chỉ Hiện Ở Nhóm Tổ Chức');
     }
 
     public function test_sales_user_can_lookup_tax_code_successfully(): void
@@ -336,7 +367,7 @@ final class SalesUiTest extends TestCase
     {
         $sales = $this->salesUser();
         $customer = Customer::query()->create(['name' => 'Công ty Test Xóa']);
-        
+
         $draftQuotation = Quotation::query()->create([
             'customer_id' => $customer->id,
             'owner_id' => $sales->id,
@@ -484,10 +515,10 @@ final class SalesUiTest extends TestCase
                     'custom_condition' => '',
                     'expected_trigger_date' => '',
                     'payment_term_days' => 15,
-                    'payment_term_unit' => \App\Enums\PaymentTermUnit::CalendarDays->value,
+                    'payment_term_unit' => PaymentTermUnit::CalendarDays->value,
                     'due_date' => '',
                     'notes' => '',
-                ]
+                ],
             ])
             ->call('saveConversion')
             ->assertHasNoErrors();

@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Enums\ContractType;
+use App\Enums\CustomerType;
 use App\Enums\ServiceType;
 use Tests\TestCase;
 
 final class BusinessEnumTest extends TestCase
 {
+    public function test_customer_types_are_stable_and_complete(): void
+    {
+        self::assertSame(['organization', 'individual'], CustomerType::values());
+    }
+
     public function test_contract_types_are_stable_and_complete(): void
     {
         self::assertSame([
