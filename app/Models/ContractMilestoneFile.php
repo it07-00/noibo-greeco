@@ -45,12 +45,16 @@ final class ContractMilestoneFile extends Model
 
         $uploadDisk = config('filesystems.upload_disk', 'public');
 
-        if (Storage::disk($uploadDisk)->exists($this->file_path)) {
-            return Storage::disk($uploadDisk)->url($this->file_path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk($uploadDisk);
+        if ($disk->exists($this->file_path)) {
+            return $disk->url($this->file_path);
         }
 
-        if ($uploadDisk !== 'public' && Storage::disk('public')->exists($this->file_path)) {
-            return Storage::disk('public')->url($this->file_path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $publicDisk */
+        $publicDisk = Storage::disk('public');
+        if ($uploadDisk !== 'public' && $publicDisk->exists($this->file_path)) {
+            return $publicDisk->url($this->file_path);
         }
 
         return null;

@@ -189,7 +189,9 @@ final class CommissionRequestForm extends Component
         if ($exit) {
             session()->flash('status', $message);
 
-            return $this->redirectRoute('commissions.index');
+            $this->redirectRoute('commissions.index');
+
+            return null;
         }
 
         $this->dispatch('swal:alert', ['icon' => 'success', 'title' => $message, 'toast' => true, 'position' => 'top-end', 'timer' => 2200]);

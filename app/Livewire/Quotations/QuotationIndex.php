@@ -166,8 +166,12 @@ final class QuotationIndex extends Component
         $this->formCustomerId = $quotation->customer_id;
         $this->formOwnerId = $quotation->owner_id ?? (int) Auth::id();
         $this->formContractType = $quotation->contract_type->value;
-        $this->formIssuedAt = $quotation->issued_at?->toDateString() ?? '';
-        $this->formValidUntil = $quotation->valid_until?->toDateString() ?? '';
+        /** @var \Illuminate\Support\Carbon|null $issuedAt */
+        $issuedAt = $quotation->issued_at;
+        /** @var \Illuminate\Support\Carbon|null $validUntil */
+        $validUntil = $quotation->valid_until;
+        $this->formIssuedAt = $issuedAt?->toDateString() ?? '';
+        $this->formValidUntil = $validUntil?->toDateString() ?? '';
         $this->formNotes = $quotation->notes ?? '';
         $this->formWorkingSituation = $quotation->working_situation ?? '';
         $this->formOriginalAmount = (string) $quotation->original_amount;
@@ -536,11 +540,13 @@ final class QuotationIndex extends Component
 
         $this->dispatch('convert-modal:hide');
 
-        return $this->redirectRoute(
+        $this->redirectRoute(
             'contracts.show',
             ['contract' => $contract->id],
             navigate: true,
         );
+
+        return null;
     }
 
     public function convertToContract(
@@ -562,11 +568,13 @@ final class QuotationIndex extends Component
             return null;
         }
 
-        return $this->redirectRoute(
+        $this->redirectRoute(
             'contracts.show',
             ['contract' => $contract->id],
             navigate: true,
         );
+
+        return null;
     }
 
     public function delete(int $quotationId): void
@@ -605,7 +613,10 @@ final class QuotationIndex extends Component
         $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
         $fileName = 'Bao_gia_' . ($quotation->quotation_number ?: $quotation->id) . '.' . $extension;
 
-        return Storage::disk('local')->download($quotation->file_path, $fileName);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        return $disk->download($quotation->file_path, $fileName);
     }
 
     public function deleteFile(): void

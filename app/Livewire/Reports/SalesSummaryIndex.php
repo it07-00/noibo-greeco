@@ -182,7 +182,7 @@ final class SalesSummaryIndex extends Component
                     ->join(', ') ?: '—',
                 'value' => (float) $contract->value,
                 'is_renewal' => $contract->renewal_status === ContractRenewalStatus::Renewed,
-                'date' => $contract->signed_at ? $contract->signed_at->format('Y-m-d') : null,
+                'date' => $contract->signed_at ? \Carbon\Carbon::parse($contract->signed_at)->format('Y-m-d') : null,
             ])
             ->sortByDesc('date')
             ->values();

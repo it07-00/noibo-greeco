@@ -166,7 +166,10 @@ final class CommissionRequestIndex extends Component
         $extension = pathinfo($request->payment_bill_path, PATHINFO_EXTENSION);
         $fileName = 'Hoa_don_chi_hoa_hong_HD_' . ($request->contract?->contract_number ?: $request->contract_id) . '.' . $extension;
 
-        return Storage::disk('local')->download($request->payment_bill_path, $fileName);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        return $disk->download($request->payment_bill_path, $fileName);
     }
 
     public function startReject(int $id): void

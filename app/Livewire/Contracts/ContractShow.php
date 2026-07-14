@@ -142,9 +142,15 @@ final class ContractShow extends Component
         Gate::authorize('update', $this->contract);
         $this->contractNumber = $this->contract->contract_number ?? '';
         $this->contractTitle = $this->contract->title;
-        $this->contractSignedAt = $this->contract->signed_at?->toDateString() ?? '';
-        $this->contractStartsAt = $this->contract->starts_at?->toDateString() ?? '';
-        $this->contractEndsAt = $this->contract->ends_at?->toDateString() ?? '';
+        /** @var \Illuminate\Support\Carbon|null $signedAt */
+        $signedAt = $this->contract->signed_at;
+        /** @var \Illuminate\Support\Carbon|null $startsAt */
+        $startsAt = $this->contract->starts_at;
+        /** @var \Illuminate\Support\Carbon|null $endsAt */
+        $endsAt = $this->contract->ends_at;
+        $this->contractSignedAt = $signedAt?->toDateString() ?? '';
+        $this->contractStartsAt = $startsAt?->toDateString() ?? '';
+        $this->contractEndsAt = $endsAt?->toDateString() ?? '';
         $this->contractNotes = $this->contract->notes ?? '';
         $this->contractPaymentMethod = $this->contract->payment_method?->value ?? '';
         $this->contractRenewalStatus = $this->contract->renewal_status?->value ?? '';
@@ -218,12 +224,16 @@ final class ContractShow extends Component
         $this->scheduleAmount = (string) $schedule->amount;
         $this->scheduleConditionType = $schedule->condition_type->value;
         $this->scheduleCustomCondition = $schedule->custom_condition ?? '';
-        $this->scheduleExpectedTriggerDate = $schedule->expected_trigger_date?->toDateString() ?? '';
+        /** @var \Illuminate\Support\Carbon|null $expectedTriggerDate */
+        $expectedTriggerDate = $schedule->expected_trigger_date;
+        $this->scheduleExpectedTriggerDate = $expectedTriggerDate?->toDateString() ?? '';
         $this->schedulePaymentTermDays = $schedule->payment_term_days !== null
             ? (string) $schedule->payment_term_days
             : '';
         $this->schedulePaymentTermUnit = $schedule->payment_term_unit?->value ?? '';
-        $this->scheduleDueDate = $schedule->due_date?->toDateString() ?? '';
+        /** @var \Illuminate\Support\Carbon|null $dueDate */
+        $dueDate = $schedule->due_date;
+        $this->scheduleDueDate = $dueDate?->toDateString() ?? '';
         $this->scheduleNotes = $schedule->notes ?? '';
         $this->resetValidation();
         $this->dispatch('payment-schedule:show');
@@ -467,7 +477,9 @@ final class ContractShow extends Component
         $this->documentPaymentScheduleId = $document->payment_schedule_id
             ? (string) $document->payment_schedule_id
             : '';
-        $this->documentExpiresAt = $document->expires_at?->toDateString() ?? '';
+        /** @var \Illuminate\Support\Carbon|null $expiresAt */
+        $expiresAt = $document->expires_at;
+        $this->documentExpiresAt = $expiresAt?->toDateString() ?? '';
         $this->dispatch('contract-document:show');
     }
 
@@ -651,7 +663,10 @@ final class ContractShow extends Component
         $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
         $fileName = 'Bao_gia_' . ($quotation->quotation_number ?: $quotation->id) . '.' . $extension;
 
-        return Storage::disk('local')->download($quotation->file_path, $fileName);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('local');
+
+        return $disk->download($quotation->file_path, $fileName);
     }
 
     private function findSchedule(int $scheduleId): ContractPaymentSchedule
@@ -749,7 +764,9 @@ final class ContractShow extends Component
 
         $this->assignUserIds = $existing->whereNotNull('user_id')->pluck('user_id')->map(fn($id) => (int) $id)->toArray();
         $this->assignExternal = $existing->whereNull('user_id')->first()?->external_assignee ?? '';
-        $this->assignDeadline = $existing->first()?->deadline?->toDateString() ?? '';
+        /** @var \Illuminate\Support\Carbon|null $deadline */
+        $deadline = $existing->first()?->deadline;
+        $this->assignDeadline = $deadline?->toDateString() ?? '';
         $this->resetValidation();
         $this->dispatch('contract-assign:show');
     }

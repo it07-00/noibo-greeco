@@ -80,7 +80,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             Login::class,
             static function (Login $event): void {
-                ActivityLogger::log('login', 'Đăng nhập thành công', $event->user);
+                $user = $event->user instanceof User ? $event->user : null;
+                ActivityLogger::log('login', 'Đăng nhập thành công', $user);
             }
         );
 
@@ -95,7 +96,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             Logout::class,
             static function (Logout $event): void {
-                ActivityLogger::log('logout', 'Đăng xuất', $event->user);
+                $user = $event->user instanceof User ? $event->user : null;
+                ActivityLogger::log('logout', 'Đăng xuất', $user);
             }
         );
 

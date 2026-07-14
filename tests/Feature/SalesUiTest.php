@@ -379,7 +379,7 @@ final class SalesUiTest extends TestCase
 
         $this->actingAs($sales);
 
-        $file = \Illuminate\Http\UploadedFile::fake()->create('quotation_offer.pdf', 500, 'application/pdf');
+        $file = UploadedFile::fake()->create('quotation_offer.pdf', 500, 'application/pdf');
 
         // Create quotation with file
         Livewire::test(QuotationIndex::class)
@@ -420,6 +420,8 @@ final class SalesUiTest extends TestCase
             ->call('downloadFile', $quotation->id)
             ->assertFileDownloaded();
 
+        $oldFilePath = $quotation->file_path;
+
         // Edit and clear file
         Livewire::test(QuotationIndex::class)
             ->call('openEdit', $quotation->id)
@@ -429,7 +431,7 @@ final class SalesUiTest extends TestCase
 
         $quotation->refresh();
         $this->assertNull($quotation->file_path);
-        Storage::disk('local')->assertMissing($quotation->file_path);
+        Storage::disk('local')->assertMissing($oldFilePath);
     }
 
     public function test_can_create_and_convert_quotation_over_2_billion_vnd(): void

@@ -46,16 +46,19 @@ return new class extends Migration
         }
 
         // 4. Assign permissions to roles
+        /** @var \Spatie\Permission\Models\Role|null $superAdmin */
         $superAdmin = Role::where('name', 'Super Admin')->first();
         if ($superAdmin) {
             $superAdmin->givePermissionTo($permissions);
         }
 
+        /** @var \Spatie\Permission\Models\Role|null $director */
         $director = Role::where('name', 'Viện Trưởng')->first();
         if ($director) {
             $director->givePermissionTo($permissions);
         }
 
+        /** @var \Spatie\Permission\Models\Role|null $accountant */
         $accountant = Role::where('name', 'Kế toán')->first();
         if ($accountant) {
             $accountant->givePermissionTo($permissions);

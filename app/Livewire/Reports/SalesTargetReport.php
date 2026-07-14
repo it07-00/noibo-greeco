@@ -105,7 +105,7 @@ final class SalesTargetReport extends Component
                 ->join(', ') ?: '—',
             'value' => (float) $contract->value,
             'is_renewal' => $contract->renewal_status === ContractRenewalStatus::Renewed,
-            'date' => $contract->signed_at ? $contract->signed_at->format('d/m/Y') : '—',
+            'date' => $contract->signed_at ? \Carbon\Carbon::parse($contract->signed_at)->format('d/m/Y') : '—',
             'notes' => $contract->notes ?? '',
         ])->toArray();
 
@@ -126,7 +126,7 @@ final class SalesTargetReport extends Component
                 ->join(', ') ?: '—',
             'staff' => $quotation->owner?->name ?? '—',
             'value' => (float) $quotation->contract_value,
-            'date' => $quotation->issued_at ? $quotation->issued_at->format('d/m/Y') : '—',
+            'date' => $quotation->issued_at ? \Carbon\Carbon::parse($quotation->issued_at)->format('d/m/Y') : '—',
             'notes' => $quotation->notes ?? '',
         ])->toArray();
     }

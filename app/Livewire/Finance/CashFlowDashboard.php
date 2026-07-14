@@ -607,7 +607,7 @@ final class CashFlowDashboard extends Component
 
         return response()->streamDownload(
             function () use ($rows, $periodLabel, $totals) {
-                echo view('finance.cash-flow-export', compact('rows', 'periodLabel', 'totals'));
+                echo view('finance.cash-flow-export', compact('rows', 'periodLabel', 'totals'))->render();
             },
             'DongTien_'.now()->format('d_m_Y').'.xls',
             ['Content-Type' => 'application/vnd.ms-excel; charset=UTF-8']
