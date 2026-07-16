@@ -12,14 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Defensive drop of existing foreign keys (names may vary on production)
         if (DB::getDriverName() === 'mysql') {
-            Schema::table('duty_schedule_user', function (Blueprint $table) {
-                $table->dropForeignIfExists(['duty_schedule_id']);
-                $table->dropForeignIfExists(['user_id']);
-            });
-
-            // Also try explicit constraint names in case the above doesn't match
+            // Drop foreign keys by querying actual constraint names — safe on all Laravel versions
             $this->dropForeignByNameIfExists('duty_schedule_user', 'duty_schedule_user_duty_schedule_id_foreign');
             $this->dropForeignByNameIfExists('duty_schedule_user', 'duty_schedule_user_user_id_foreign');
         }
@@ -27,28 +21,30 @@ return new class extends Migration
         Schema::table('duty_schedule_user', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->nullable()->change();
 
-            if (! $this->columnExists('duty_schedule_user', 'baochau_user_id')) {
+            if (! Schema::hasColumn('duty_schedule_user', 'baochau_user_id')) {
                 $table->unsignedBigInteger('baochau_user_id')->nullable()->after('user_id');
             }
 
-            if (! $this->columnExists('duty_schedule_user', 'baochau_user_name')) {
+            if (! Schema::hasColumn('duty_schedule_user', 'baochau_user_name')) {
                 $table->string('baochau_user_name')->nullable()->after('baochau_user_id');
             }
         });
 
-        Schema::table('duty_schedule_user', function (Blueprint $table) {
-            if (DB::getDriverName() === 'mysql') {
-                // Drop old unique if still exists
-                $this->dropUniqueByNameIfExists('duty_schedule_user', 'duty_schedule_user_duty_schedule_id_user_id_unique');
+        if (DB::getDriverName() === 'mysql') {
+            // Drop old unique if still exists
+            $this->dropUniqueByNameIfExists('duty_schedule_user', 'duty_schedule_user_duty_schedule_id_user_id_unique');
 
+            Schema::table('duty_schedule_user', function (Blueprint $table) {
                 $table->foreign('duty_schedule_id')->references('id')->on('duty_schedules')->cascadeOnDelete();
                 $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            }
+            });
+        }
 
-            if (! $this->uniqueExists('duty_schedule_user', 'dsu_schedule_user_baochau_unique')) {
+        if (! $this->uniqueExists('duty_schedule_user', 'dsu_schedule_user_baochau_unique')) {
+            Schema::table('duty_schedule_user', function (Blueprint $table) {
                 $table->unique(['duty_schedule_id', 'user_id', 'baochau_user_id'], 'dsu_schedule_user_baochau_unique');
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -56,38 +52,37 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('duty_schedule_user', function (Blueprint $table) {
-            $table->dropUniqueIfExists('dsu_schedule_user_baochau_unique');
+        if (DB::getDriverName() === 'mysql') {
+            $this->dropForeignByNameIfExists('duty_schedule_user', 'duty_schedule_user_duty_schedule_id_foreign');
+            $this->dropForeignByNameIfExists('duty_schedule_user', 'duty_schedule_user_user_id_foreign');
+        }
 
-            if (DB::getDriverName() === 'mysql') {
-                $table->dropForeignIfExists(['duty_schedule_id']);
-                $table->dropForeignIfExists(['user_id']);
+        $this->dropUniqueByNameIfExists('duty_schedule_user', 'dsu_schedule_user_baochau_unique');
+
+        Schema::table('duty_schedule_user', function (Blueprint $table) {
+            if (Schema::hasColumn('duty_schedule_user', 'baochau_user_id')) {
+                $table->dropColumn('baochau_user_id');
             }
-        });
 
-        Schema::table('duty_schedule_user', function (Blueprint $table) {
-            $table->dropColumnIfExists(['baochau_user_id', 'baochau_user_name']);
+            if (Schema::hasColumn('duty_schedule_user', 'baochau_user_name')) {
+                $table->dropColumn('baochau_user_name');
+            }
+
             $table->unsignedBigInteger('user_id')->change();
         });
 
-        Schema::table('duty_schedule_user', function (Blueprint $table) {
-            if (DB::getDriverName() === 'mysql') {
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('duty_schedule_user', function (Blueprint $table) {
                 $table->foreign('duty_schedule_id')->references('id')->on('duty_schedules')->cascadeOnDelete();
                 $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
                 $table->unique(['duty_schedule_id', 'user_id']);
-            }
-        });
-    }
-
-    private function columnExists(string $table, string $column): bool
-    {
-        return Schema::hasColumn($table, $column);
+            });
+        }
     }
 
     private function uniqueExists(string $table, string $name): bool
     {
         if (DB::getDriverName() !== 'mysql') {
-            // SQLite in-memory (test) — assume not yet created
             return false;
         }
 
@@ -105,10 +100,6 @@ return new class extends Migration
 
     private function dropForeignByNameIfExists(string $table, string $name): void
     {
-        if (DB::getDriverName() !== 'mysql') {
-            return;
-        }
-
         $count = DB::select(
             "SELECT COUNT(*) as cnt FROM information_schema.TABLE_CONSTRAINTS
              WHERE TABLE_SCHEMA = DATABASE()
