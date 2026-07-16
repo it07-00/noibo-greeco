@@ -377,14 +377,17 @@ final class DutyScheduleIndex extends Component
 
             foreach ($baochauParticipantsData as $bp) {
                 DB::table('duty_schedule_user')->insert([
-                    'duty_schedule_id' => $schedule->id,
-                    'user_id' => null,
-                    'baochau_user_id' => $bp['id'],
+                    'duty_schedule_id'  => $schedule->id,
+                    'user_id'           => null,
+                    'baochau_user_id'   => $bp['id'],
                     'baochau_user_name' => $bp['name'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
                 ]);
             }
+
+            // Notify Bảo Châu participants via cross-system API
+            $this->notifyBaochauParticipants($schedule, $baochauParticipantsData, 'updated');
 
             $message = 'Cập nhật lịch công tác thành công!';
         } else {
@@ -394,14 +397,17 @@ final class DutyScheduleIndex extends Component
 
             foreach ($baochauParticipantsData as $bp) {
                 DB::table('duty_schedule_user')->insert([
-                    'duty_schedule_id' => $schedule->id,
-                    'user_id' => null,
-                    'baochau_user_id' => $bp['id'],
+                    'duty_schedule_id'  => $schedule->id,
+                    'user_id'           => null,
+                    'baochau_user_id'   => $bp['id'],
                     'baochau_user_name' => $bp['name'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
                 ]);
             }
+
+            // Notify Bảo Châu participants via cross-system API
+            $this->notifyBaochauParticipants($schedule, $baochauParticipantsData, 'added');
 
             $message = 'Tạo lịch công tác thành công!';
         }
@@ -586,5 +592,42 @@ final class DutyScheduleIndex extends Component
                 return [];
             }
         });
+    }
+
+    /**
+     * Fire a POST to Bảo Châu's /api/notify so Bảo Châu users receive a notification
+     * in their own system when added to a Greeco duty schedule.
+     *
+     * @param array<int, array{id: int, name: string}> $baochauParticipants
+     */
+    private function notifyBaochauParticipants(DutySchedule $schedule, array $baochauParticipants, string $action = 'added'): void
+    {
+        if (empty($baochauParticipants)) {
+            return;
+        }
+
+        $apiUrl   = rtrim((string) config('services.noibo.api_url'), '/');
+        $apiToken = (string) config('services.noibo.api_token');
+
+        if ($apiUrl === '' || $apiToken === '') {
+            return;
+        }
+
+        $userIds = array_column($baochauParticipants, 'id');
+
+        try {
+            Http::timeout(5)->post("{$apiUrl}/api/notify", [
+                'token'        => $apiToken,
+                'user_ids'     => $userIds,
+                'event_title'  => $schedule->title,
+                'creator_name' => auth()->user()->name,
+                'action'       => $action,
+                'event_date'   => $schedule->start_at->format('Y-m-d'),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('DutyScheduleIndex: không thể gửi thông báo sang Bảo Châu.', [
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

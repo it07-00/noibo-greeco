@@ -7,9 +7,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DutySchedule;
 use App\Models\User;
+use App\Notifications\DutyScheduleAssigned;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 final class DutyScheduleApiController extends Controller
 {
@@ -54,17 +56,17 @@ final class DutyScheduleApiController extends Controller
 
         $data = $events->map(function (DutySchedule $event) {
             return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'description' => $event->description,
-                'start_date' => $event->start_at->format('Y-m-d'),
-                'start_time' => $event->start_at->format('H:i:s'),
-                'end_date' => $event->end_at ? $event->end_at->format('Y-m-d') : $event->start_at->format('Y-m-d'),
-                'end_time' => $event->end_at ? $event->end_at->format('H:i:s') : null,
-                'color' => $event->label_color,
+                'id'           => $event->id,
+                'title'        => $event->title,
+                'description'  => $event->description,
+                'start_date'   => $event->start_at->format('Y-m-d'),
+                'start_time'   => $event->start_at->format('H:i:s'),
+                'end_date'     => $event->end_at ? $event->end_at->format('Y-m-d') : $event->start_at->format('Y-m-d'),
+                'end_time'     => $event->end_at ? $event->end_at->format('H:i:s') : null,
+                'color'        => $event->label_color,
                 'creator_name' => $event->creator?->name ?? 'N/A',
                 'participants' => collect($event->combined_participants)->map(fn ($p) => [
-                    'id' => $p['id'],
+                    'id'   => $p['id'],
                     'name' => $p['name'],
                 ])->toArray(),
             ];
@@ -72,7 +74,7 @@ final class DutyScheduleApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $data->toArray(),
+            'data'    => $data->toArray(),
         ]);
     }
 
@@ -97,14 +99,55 @@ final class DutyScheduleApiController extends Controller
             ->orderBy('name')
             ->get()
             ->map(fn ($u) => [
-                'id' => $u->id,
-                'name' => $u->name,
+                'id'         => $u->id,
+                'name'       => $u->name,
                 'department' => $u->department?->name ?? 'Nhân viên',
             ]);
 
         return response()->json([
             'success' => true,
-            'data' => $users->toArray(),
+            'data'    => $users->toArray(),
         ]);
+    }
+
+    /**
+     * Receive a cross-system notification request from Bảo Châu.
+     * Bảo Châu calls this when it adds Greeco users to a work schedule.
+     *
+     * POST /api/notify
+     * Body (JSON): { token, user_ids[], event_title, creator_name, action, event_date }
+     */
+    public function notify(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token'        => ['required', 'string'],
+            'user_ids'     => ['required', 'array'],
+            'user_ids.*'   => ['integer'],
+            'event_title'  => ['required', 'string'],
+            'creator_name' => ['required', 'string'],
+            'action'       => ['nullable', 'string', 'in:added,updated,deleted'],
+        ]);
+
+        if ($request->input('token') !== config('services.noibo.api_token')) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $users = User::whereIn('id', $request->input('user_ids', []))
+            ->whereNull('locked_at')
+            ->get();
+
+        if ($users->isEmpty()) {
+            return response()->json(['success' => true, 'notified' => 0]);
+        }
+
+        // Build a stub DutySchedule for the notification (not persisted, used for message only)
+        $stub = new DutySchedule();
+        $stub->title = $request->input('event_title');
+
+        $creatorName = $request->input('creator_name');
+
+        Notification::send($users, new DutyScheduleAssigned($stub, $creatorName));
+
+        return response()->json(['success' => true, 'notified' => $users->count()]);
     }
 }
