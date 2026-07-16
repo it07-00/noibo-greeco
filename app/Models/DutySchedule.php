@@ -7,7 +7,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 final class DutySchedule extends Model
 {
@@ -44,10 +46,31 @@ final class DutySchedule extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<User>
+     * @return BelongsToMany<User>
      */
-    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'duty_schedule_user');
+    }
+
+    public function getCombinedParticipantsAttribute()
+    {
+        $local = $this->users->map(fn ($u) => [
+            'id' => $u->id,
+            'name' => $u->name,
+            'system' => 'greeco',
+        ]);
+
+        $baochau = DB::table('duty_schedule_user')
+            ->where('duty_schedule_id', $this->id)
+            ->whereNotNull('baochau_user_id')
+            ->get()
+            ->map(fn ($row) => [
+                'id' => $row->baochau_user_id,
+                'name' => 'Bảo Châu: '.$row->baochau_user_name,
+                'system' => 'baochau',
+            ]);
+
+        return $local->concat($baochau);
     }
 }

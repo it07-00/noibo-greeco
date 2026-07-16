@@ -199,17 +199,33 @@
                             <div class="col-12 mb-3">
                                 <label class="form-label fw-semibold">Thành viên tham gia</label>
                                 <div
-                                    class="border rounded p-3 user-select-list @error('user_ids') is-invalid @enderror">
+                                    class="border rounded p-3 user-select-list @error('user_ids') is-invalid @enderror"
+                                    style="max-height: 220px; overflow-y: auto;">
+                                    <div class="small fw-bold text-success mb-2 pb-1 border-bottom">Greeco</div>
                                     @foreach ($users as $u)
                                         <div class="form-check mb-1">
                                             <input type="checkbox" class="form-check-input" id="user_check_{{ $u->id }}"
                                                 value="{{ $u->id }}" wire:model="user_ids" />
                                             <label class="form-check-label text-dark fw-medium"
                                                 for="user_check_{{ $u->id }}">
-                                                {{ $u->name }}
+                                                {{ $u->name }}@if($u->id === auth()->id()) (Bạn)@endif
                                             </label>
                                         </div>
                                     @endforeach
+
+                                    @if (!empty($baochauUsers))
+                                        <div class="small fw-bold text-primary mt-3 mb-2 pb-1 border-bottom">Bảo Châu</div>
+                                        @foreach ($baochauUsers as $bu)
+                                            <div class="form-check mb-1">
+                                                <input type="checkbox" class="form-check-input" id="user_check_baochau_{{ $bu['id'] }}"
+                                                    value="baochau_{{ $bu['id'] }}" wire:model="user_ids" />
+                                                <label class="form-check-label text-dark fw-medium"
+                                                    for="user_check_baochau_{{ $bu['id'] }}">
+                                                    {{ $bu['name'] }} ({{ $bu['department'] ?? 'Bảo Châu' }})
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    @endif
                                 </div>
                                 @error('user_ids')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>

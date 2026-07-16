@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DutySchedule;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -62,9 +63,9 @@ final class DutyScheduleApiController extends Controller
                 'end_time' => $event->end_at ? $event->end_at->format('H:i:s') : null,
                 'color' => $event->label_color,
                 'creator_name' => $event->creator?->name ?? 'N/A',
-                'participants' => $event->users->map(fn ($p) => [
-                    'id' => $p->id,
-                    'name' => $p->name,
+                'participants' => collect($event->combined_participants)->map(fn ($p) => [
+                    'id' => $p['id'],
+                    'name' => $p['name'],
                 ])->toArray(),
             ];
         });
@@ -72,6 +73,38 @@ final class DutyScheduleApiController extends Controller
         return response()->json([
             'success' => true,
             'data' => $data->toArray(),
+        ]);
+    }
+
+    /**
+     * Return all active users as JSON for cross-system participant selection.
+     *
+     * GET /api/users?token=xxx
+     */
+    public function users(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+        ]);
+
+        if ($request->input('token') !== config('services.noibo.api_token')) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $users = User::query()
+            ->with('department')
+            ->whereNull('locked_at')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'department' => $u->department?->name ?? 'Nhân viên',
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $users->toArray(),
         ]);
     }
 }

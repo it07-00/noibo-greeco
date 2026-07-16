@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Livewire\DutySchedules;
 
 use App\DTOs\DutyScheduleDTO;
-use App\Enums\RoleEnum;
+use App\Enums\PermissionEnum;
 use App\Models\DutySchedule;
 use App\Models\User;
 use App\Repositories\NoiboWorkScheduleRepository;
 use App\Services\DutyScheduleService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -93,7 +96,6 @@ final class DutyScheduleIndex extends Component
             'label_color' => ['required', 'string', 'in:primary,success,warning,danger,info,purple'],
             'is_private' => ['nullable', 'boolean'],
             'user_ids' => ['nullable', 'array'],
-            'user_ids.*' => ['exists:users,id'],
         ];
     }
 
@@ -121,7 +123,7 @@ final class DutyScheduleIndex extends Component
         foreach ($events as $event) {
             $isCreator = (int) auth()->id() === (int) $event->created_by;
             $isParticipant = $event->users->contains(auth()->id());
-            $hasPrivatePermission = auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value) ?? false;
+            $hasPrivatePermission = auth()->user()?->hasPermissionTo(PermissionEnum::ScheduleViewPrivate->value) ?? false;
             $canSeeDetails = $isCreator || $isParticipant || $hasPrivatePermission;
 
             $isPrivate = (bool) $event->is_private;
@@ -134,8 +136,9 @@ final class DutyScheduleIndex extends Component
             } else {
                 $creatorName = $event->creator?->name ?? 'N/A';
                 $participantsStr = '';
-                if ($event->users->isNotEmpty()) {
-                    $participantsNames = $event->users->pluck('name')->toArray();
+                $combined = collect($event->combined_participants);
+                if ($combined->isNotEmpty()) {
+                    $participantsNames = $combined->pluck('name')->toArray();
                     $participantsStr = ' (với '.implode(', ', $participantsNames).')';
                 }
                 $title = $titlePrefix."{$creatorName}: {$rawTitle}{$participantsStr}";
@@ -150,17 +153,17 @@ final class DutyScheduleIndex extends Component
             if ($endCal && $endCal->clone()->startOfDay()->gt($startCal->clone()->startOfDay())) {
                 $currentDay = $startCal->clone()->startOfDay();
                 $lastDay = $endCal->clone()->startOfDay();
-                
+
                 $startTimeStr = $startCal->format('H:i:s');
                 $endTimeStr = $endCal->format('H:i:s');
-                
+
                 while ($currentDay->lte($lastDay)) {
-                    $occStart = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $startTimeStr);
-                    $occEnd = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $endTimeStr);
+                    $occStart = Carbon::parse($currentDay->format('Y-m-d').' '.$startTimeStr);
+                    $occEnd = Carbon::parse($currentDay->format('Y-m-d').' '.$endTimeStr);
                     $dayStr = $currentDay->format('Y-m-d');
 
                     $result[] = [
-                        'id' => $event->id . '_' . $dayStr,
+                        'id' => $event->id.'_'.$dayStr,
                         'db_id' => $event->id,
                         'title' => $title,
                         'raw_title' => $titlePrefix.$rawTitle,
@@ -171,12 +174,12 @@ final class DutyScheduleIndex extends Component
                         'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
                         'label_color' => $event->label_color,
                         'creator_name' => $event->creator?->name ?? 'N/A',
-                        'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
+                        'participants' => collect($event->combined_participants)->map(fn ($u) => ['id' => $u['id'], 'name' => $u['name']])->toArray(),
                         'can_edit' => auth()->user()?->can('update', $event) ?? false,
                         'can_delete' => auth()->user()?->can('delete', $event) ?? false,
                         'source' => 'greeco',
                     ];
-                    
+
                     $currentDay->addDay();
                 }
             } else {
@@ -192,7 +195,7 @@ final class DutyScheduleIndex extends Component
                     'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
                     'label_color' => $event->label_color,
                     'creator_name' => $event->creator?->name ?? 'N/A',
-                    'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
+                    'participants' => collect($event->combined_participants)->map(fn ($u) => ['id' => $u['id'], 'name' => $u['name']])->toArray(),
                     'can_edit' => auth()->user()?->can('update', $event) ?? false,
                     'can_delete' => auth()->user()?->can('delete', $event) ?? false,
                     'source' => 'greeco',
@@ -204,8 +207,8 @@ final class DutyScheduleIndex extends Component
         if ($this->showNoiboSchedules && $this->canViewNoiboSchedules()) {
             $noiboItems = $this->noiboRepo->getEventsInRange($start, $end);
             foreach ($noiboItems as $item) {
-                $startCal = Carbon::parse($item['start_date'] . ($item['start_time'] ? ' ' . $item['start_time'] : ''));
-                
+                $startCal = Carbon::parse($item['start_date'].($item['start_time'] ? ' '.$item['start_time'] : ''));
+
                 $endDate = $item['end_date'] ?? $item['start_date'];
                 $endTime = $item['end_time'] ?? null;
                 if ($endTime !== null && $endTime !== '') {
@@ -226,18 +229,18 @@ final class DutyScheduleIndex extends Component
                 if ($endCal->clone()->startOfDay()->gt($startCal->clone()->startOfDay())) {
                     $currentDay = $startCal->clone()->startOfDay();
                     $lastDay = $endCal->clone()->startOfDay();
-                    
+
                     $startTimeStr = $startCal->format('H:i:s');
                     $endTimeStr = $endCal->format('H:i:s');
-                    
+
                     while ($currentDay->lte($lastDay)) {
-                        $occStart = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $startTimeStr);
-                        $occEnd = Carbon::parse($currentDay->format('Y-m-d') . ' ' . $endTimeStr);
+                        $occStart = Carbon::parse($currentDay->format('Y-m-d').' '.$startTimeStr);
+                        $occEnd = Carbon::parse($currentDay->format('Y-m-d').' '.$endTimeStr);
                         $dayStr = $currentDay->format('Y-m-d');
 
                         $result[] = [
-                            'id' => 'noibo_' . $item['id'] . '_' . $dayStr,
-                            'db_id' => 'noibo_' . $item['id'],
+                            'id' => 'noibo_'.$item['id'].'_'.$dayStr,
+                            'db_id' => 'noibo_'.$item['id'],
                             'title' => $title,
                             'raw_title' => $item['title'],
                             'start' => $occStart->toIso8601String(),
@@ -252,13 +255,13 @@ final class DutyScheduleIndex extends Component
                             'can_delete' => false,
                             'source' => 'noibo',
                         ];
-                        
+
                         $currentDay->addDay();
                     }
                 } else {
                     $result[] = [
-                        'id' => 'noibo_' . $item['id'],
-                        'db_id' => 'noibo_' . $item['id'],
+                        'id' => 'noibo_'.$item['id'],
+                        'db_id' => 'noibo_'.$item['id'],
                         'title' => $title,
                         'raw_title' => $item['title'],
                         'start' => $startCal->toIso8601String(),
@@ -279,7 +282,6 @@ final class DutyScheduleIndex extends Component
 
         return $result;
     }
-
 
     private function getEventClasses(string $labelColor): array
     {
@@ -333,6 +335,24 @@ final class DutyScheduleIndex extends Component
     {
         $this->validate();
 
+        $localUserIds = [];
+        $baochauParticipantsData = [];
+        $baochauUsers = collect($this->getBaochauUsers());
+
+        foreach ($this->user_ids as $val) {
+            if (str_starts_with((string) $val, 'baochau_')) {
+                $baochauId = (int) substr((string) $val, 8);
+                $baochauUser = $baochauUsers->firstWhere('id', $baochauId);
+                $baochauName = $baochauUser['name'] ?? 'Bảo Châu User';
+                $baochauParticipantsData[] = [
+                    'id' => $baochauId,
+                    'name' => $baochauName,
+                ];
+            } else {
+                $localUserIds[] = (int) $val;
+            }
+        }
+
         $dto = DutyScheduleDTO::fromArray([
             'title' => $this->title,
             'description' => $this->description,
@@ -341,7 +361,7 @@ final class DutyScheduleIndex extends Component
             'end_at' => $this->end_at,
             'label_color' => $this->label_color,
             'is_private' => $this->is_private,
-            'user_ids' => $this->user_ids,
+            'user_ids' => $localUserIds,
         ]);
 
         if ($this->scheduleId !== null) {
@@ -349,11 +369,40 @@ final class DutyScheduleIndex extends Component
             Gate::authorize('update', $schedule);
 
             $this->scheduleService->update($schedule, $dto);
+
+            DB::table('duty_schedule_user')
+                ->where('duty_schedule_id', $schedule->id)
+                ->whereNotNull('baochau_user_id')
+                ->delete();
+
+            foreach ($baochauParticipantsData as $bp) {
+                DB::table('duty_schedule_user')->insert([
+                    'duty_schedule_id' => $schedule->id,
+                    'user_id' => null,
+                    'baochau_user_id' => $bp['id'],
+                    'baochau_user_name' => $bp['name'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
             $message = 'Cập nhật lịch công tác thành công!';
         } else {
             Gate::authorize('create', DutySchedule::class);
 
-            $this->scheduleService->create($dto);
+            $schedule = $this->scheduleService->create($dto);
+
+            foreach ($baochauParticipantsData as $bp) {
+                DB::table('duty_schedule_user')->insert([
+                    'duty_schedule_id' => $schedule->id,
+                    'user_id' => null,
+                    'baochau_user_id' => $bp['id'],
+                    'baochau_user_name' => $bp['name'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
             $message = 'Tạo lịch công tác thành công!';
         }
 
@@ -375,7 +424,17 @@ final class DutyScheduleIndex extends Component
         $this->end_at = $schedule->end_at?->format('Y-m-d\TH:i');
         $this->label_color = $schedule->label_color;
         $this->is_private = (bool) $schedule->is_private;
-        $this->user_ids = $schedule->users->pluck('id')->toArray();
+        $baochauParticipants = DB::table('duty_schedule_user')
+            ->where('duty_schedule_id', $schedule->id)
+            ->whereNotNull('baochau_user_id')
+            ->pluck('baochau_user_id')
+            ->map(fn ($id) => 'baochau_'.$id)
+            ->toArray();
+
+        $this->user_ids = array_merge(
+            $schedule->users->pluck('id')->toArray(),
+            $baochauParticipants
+        );
 
         $this->dispatch('schedule:open-edit');
     }
@@ -418,7 +477,7 @@ final class DutyScheduleIndex extends Component
         $this->daySchedules = $schedules->map(function (DutySchedule $event) {
             $isCreator = auth()->id() === $event->created_by;
             $isParticipant = $event->users->contains(auth()->id());
-            $hasPrivatePermission = auth()->user()?->hasPermissionTo(\App\Enums\PermissionEnum::ScheduleViewPrivate->value) ?? false;
+            $hasPrivatePermission = auth()->user()?->hasPermissionTo(PermissionEnum::ScheduleViewPrivate->value) ?? false;
             $canSeeDetails = $isCreator || $isParticipant || $hasPrivatePermission;
 
             $isPrivate = (bool) $event->is_private;
@@ -438,7 +497,7 @@ final class DutyScheduleIndex extends Component
                 'location' => $location,
                 'label_color' => $isPrivate && ! $canSeeDetails ? 'private' : $event->label_color,
                 'creator_name' => $event->creator?->name ?? 'N/A',
-                'participants' => $event->users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name])->toArray(),
+                'participants' => collect($event->combined_participants)->map(fn ($u) => ['id' => $u['id'], 'name' => $u['name']])->toArray(),
                 'can_edit' => auth()->user()?->can('update', $event) ?? false,
                 'can_delete' => auth()->user()?->can('delete', $event) ?? false,
                 'source' => 'greeco',
@@ -487,10 +546,45 @@ final class DutyScheduleIndex extends Component
     public function render(): View
     {
         $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $baochauUsers = $this->getBaochauUsers();
 
         return view('livewire.duty-schedules.duty-schedule-index', [
             'users' => $users,
+            'baochauUsers' => $baochauUsers,
             'canViewNoibo' => $this->canViewNoiboSchedules(),
         ]);
+    }
+
+    public function getBaochauUsers(): array
+    {
+        $apiUrl = rtrim((string) config('services.noibo.api_url'), '/');
+        $apiToken = (string) config('services.noibo.api_token');
+
+        if ($apiUrl === '' || $apiToken === '') {
+            return [];
+        }
+
+        $cacheKey = 'baochau_users_list';
+
+        return cache()->remember($cacheKey, 300, function () use ($apiUrl, $apiToken) {
+            try {
+                $response = Http::timeout(5)
+                    ->get("{$apiUrl}/api/users", [
+                        'token' => $apiToken,
+                    ]);
+
+                if (! $response->successful()) {
+                    return [];
+                }
+
+                $data = $response->json('data', []);
+
+                return is_array($data) ? $data : [];
+            } catch (\Throwable $e) {
+                Log::warning('Noibo API users request failed: '.$e->getMessage());
+
+                return [];
+            }
+        });
     }
 }
