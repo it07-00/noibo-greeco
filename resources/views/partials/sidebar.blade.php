@@ -101,6 +101,15 @@
                 </li>
             @endif
 
+            @if (auth()->user()?->can('marketing-plan.view'))
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('marketing-plans.*') ? 'active' : '' }}" href="{{ route('marketing-plans.index') }}">
+                        <i class="fi fi-rr-bullhorn"></i>
+                        <span class="menu-label">Kế hoạch Marketing</span>
+                    </a>
+                </li>
+            @endif
+
             @if (auth()->user()?->can('sales-target.manage') && auth()->user()?->can('business-dashboard.view'))
                 <li class="menu-item">
                     <a class="menu-link {{ request()->routeIs('sales-targets.index') ? 'active' : '' }}" href="{{ route('sales-targets.index') }}">

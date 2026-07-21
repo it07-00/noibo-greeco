@@ -66,6 +66,11 @@ enum PermissionEnum: string
     case SalesReportViewAll = 'sales-report.view-all';
     case CashFlowView = 'cash-flow.view';
     case CashFlowExport = 'cash-flow.export';
+    case MarketingPlanView = 'marketing-plan.view';
+    case MarketingPlanCreate = 'marketing-plan.create';
+    case MarketingPlanUpdate = 'marketing-plan.update';
+    case MarketingPlanDelete = 'marketing-plan.delete';
+    case MarketingPlanApprove = 'marketing-plan.approve';
 
     public function label(): string
     {
@@ -130,6 +135,11 @@ enum PermissionEnum: string
             self::SalesReportViewAll => 'Xem toàn bộ báo cáo kinh doanh phòng',
             self::CashFlowView => 'Xem báo cáo dòng tiền',
             self::CashFlowExport => 'Xuất Excel báo cáo dòng tiền',
+            self::MarketingPlanView => 'Xem kế hoạch Marketing',
+            self::MarketingPlanCreate => 'Tạo kế hoạch Marketing',
+            self::MarketingPlanUpdate => 'Cập nhật kế hoạch Marketing',
+            self::MarketingPlanDelete => 'Xóa kế hoạch Marketing',
+            self::MarketingPlanApprove => 'Phê duyệt kế hoạch Marketing',
         };
     }
 }

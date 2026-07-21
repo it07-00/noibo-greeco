@@ -16,6 +16,7 @@ use App\Livewire\DailyReports\DailyReportIndex;
 use App\Livewire\Departments\DepartmentIndex;
 use App\Livewire\DocumentRegulations\DocumentRegulationIndex;
 use App\Livewire\DutySchedules\DutyScheduleIndex;
+use App\Livewire\Marketing\MarketingPlanIndex;
 use App\Livewire\Finance\CashFlowDashboard;
 use App\Livewire\Mail\MailCenterIndex;
 use App\Livewire\Profile\ProfileEdit;
@@ -52,6 +53,10 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/duty-schedules', DutyScheduleIndex::class)
         ->middleware('can:schedule.view')
         ->name('duty-schedules.index');
+
+    Route::get('/marketing-plans', MarketingPlanIndex::class)
+        ->middleware('can:marketing-plan.view')
+        ->name('marketing-plans.index');
 
     Route::get('/settings', SettingIndex::class)
         ->middleware('can:setting.view')
