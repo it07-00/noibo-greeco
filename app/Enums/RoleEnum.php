@@ -12,6 +12,7 @@ enum RoleEnum: string
     case Sales = 'Phòng Kinh doanh';
     case Consultant = 'Tư vấn';
     case Accountant = 'Kế toán';
+    case Marketing = 'Phòng Marketing';
 
     /**
      * @return list<string>

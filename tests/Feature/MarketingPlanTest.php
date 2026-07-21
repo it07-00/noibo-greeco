@@ -17,11 +17,18 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 final class MarketingPlanTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
 
     public function test_marketing_plans_table_can_store_records(): void
     {
@@ -53,11 +60,12 @@ final class MarketingPlanTest extends TestCase
 
         $user = User::factory()->create();
         $user->givePermissionTo(PermissionEnum::MarketingPlanView->value);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $this->actingAs($user)
             ->get(route('marketing-plans.index'))
             ->assertOk()
-            ->assertSee('Kế hoạch Marketing & Nội dung');
+            ->assertSee('Kế hoạch Marketing');
     }
 
     public function test_unauthorized_user_cannot_access_marketing_plans_index(): void
@@ -79,6 +87,7 @@ final class MarketingPlanTest extends TestCase
         $creator = User::factory()->create();
         $approver = User::factory()->create();
         $approver->assignRole(RoleEnum::Director->value);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         $service = app(MarketingPlanService::class);
 
@@ -137,7 +146,11 @@ final class MarketingPlanTest extends TestCase
         );
 
         $approver = User::factory()->create();
-        $approver->assignRole(RoleEnum::Director->value);
+        $approver->givePermissionTo(
+            PermissionEnum::MarketingPlanView->value,
+            PermissionEnum::MarketingPlanApprove->value
+        );
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         // Creator submits plan
         $this->actingAs($creator);

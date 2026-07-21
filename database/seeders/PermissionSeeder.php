@@ -26,6 +26,7 @@ final class PermissionSeeder extends Seeder
             ['name' => 'Công nghệ thông tin', 'code' => 'IT', 'description' => 'Bộ phận Công nghệ thông tin & Kỹ thuật'],
             ['name' => 'Kinh doanh', 'code' => 'KD', 'description' => 'Bộ phận Kinh doanh & Phát triển thị trường'],
             ['name' => 'Tư vấn & CSKH', 'code' => 'TV', 'description' => 'Bộ phận Tư vấn & Chăm sóc khách hàng'],
+            ['name' => 'Phòng Marketing', 'code' => 'MKT', 'description' => 'Bộ phận Truyền thông & Marketing'],
         ];
 
         foreach ($departments as $dept) {
@@ -46,6 +47,7 @@ final class PermissionSeeder extends Seeder
         $deptKd = DB::table('departments')->where('code', 'KD')->value('id');
         $deptTv = DB::table('departments')->where('code', 'TV')->value('id');
         $deptTckt = DB::table('departments')->where('code', 'TCKT')->value('id');
+        $deptMkt = DB::table('departments')->where('code', 'MKT')->value('id');
 
         $superAdmin = Role::findOrCreate(RoleEnum::SuperAdmin->value, 'web');
         $superAdmin->update([
@@ -81,6 +83,12 @@ final class PermissionSeeder extends Seeder
         $accountant->update([
             'description' => 'Bộ phận kế toán, quản lý tài chính và bảng lương',
             'department_id' => $deptTckt,
+        ]);
+
+        $marketing = Role::findOrCreate(RoleEnum::Marketing->value, 'web');
+        $marketing->update([
+            'description' => 'Bộ phận Marketing, truyền thông, soạn thảo bài viết và lên kế hoạch marketing',
+            'department_id' => $deptMkt,
         ]);
 
         $superAdmin->syncPermissions(Permission::all());
@@ -198,6 +206,14 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::CommissionView->value,
             PermissionEnum::CommissionApprove->value,
             PermissionEnum::CommissionPay->value,
+        ]);
+
+        $marketing->syncPermissions($staffPermissions);
+        $marketing->givePermissionTo([
+            PermissionEnum::MarketingPlanView->value,
+            PermissionEnum::MarketingPlanCreate->value,
+            PermissionEnum::MarketingPlanUpdate->value,
+            PermissionEnum::MarketingPlanDelete->value,
         ]);
 
         $itDeptId = DB::table('departments')

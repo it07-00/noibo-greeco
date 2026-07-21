@@ -55,28 +55,19 @@ final class MarketingPlanIndex extends Component
 
     public ?string $notes = null;
 
-    /**
-     * @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile>
-     */
-    public array $newImages = [];
+    public $newImages = [];
 
-    /**
-     * @var array<int, array{id: int, url: string, name: string}>
-     */
-    public array $existingImages = [];
+    public $existingImages = [];
 
-    /**
-     * @var array<int, int>
-     */
-    public array $deleteImageIds = [];
+    public $deleteImageIds = [];
 
     // Rejection reason modal property
     public ?int $rejectPlanId = null;
 
     public string $rejection_reason = '';
 
-    // Detail view modal
-    public ?MarketingPlan $selectedPlan = null;
+    // Detail view modal ID
+    public ?int $selectedPlanId = null;
 
     public function boot(MarketingPlanService $planService): void
     {
@@ -86,6 +77,15 @@ final class MarketingPlanIndex extends Component
     public function mount(): void
     {
         Gate::authorize('viewAny', MarketingPlan::class);
+    }
+
+    public function getSelectedPlanProperty(): ?MarketingPlan
+    {
+        if ($this->selectedPlanId === null) {
+            return null;
+        }
+
+        return MarketingPlan::with(['creator', 'approver', 'images'])->find($this->selectedPlanId);
     }
 
     public function updatedFilterCategory(): void
@@ -118,15 +118,20 @@ final class MarketingPlanIndex extends Component
 
     protected function rules(): array
     {
-        return [
+        $rules = [
             'title' => ['required', 'string', 'max:255'],
             'category' => ['required', 'string'],
             'content' => ['nullable', 'string'],
             'scheduled_at' => ['required', 'date'],
             'status' => ['required', 'string'],
             'notes' => ['nullable', 'string'],
-            'newImages.*' => ['nullable', 'image', 'max:10240'],
         ];
+
+        if (! empty($this->newImages)) {
+            $rules['newImages.*'] = ['nullable', 'image', 'max:10240'];
+        }
+
+        return $rules;
     }
 
     protected array $validationAttributes = [
@@ -240,7 +245,7 @@ final class MarketingPlanIndex extends Component
         $plan = MarketingPlan::with(['creator', 'approver', 'images'])->findOrFail($id);
         Gate::authorize('view', $plan);
 
-        $this->selectedPlan = $plan;
+        $this->selectedPlanId = $plan->id;
         $this->dispatch('marketing:open-detail');
     }
 
@@ -306,9 +311,6 @@ final class MarketingPlanIndex extends Component
         ]);
 
         $this->dispatch('marketing:filter-changed');
-        if ($this->selectedPlan && $this->selectedPlan->id === $id) {
-            $this->selectedPlan = $plan->fresh(['creator', 'approver', 'images']);
-        }
     }
 
     public function approvePlan(int $id): void
@@ -325,9 +327,6 @@ final class MarketingPlanIndex extends Component
         ]);
 
         $this->dispatch('marketing:filter-changed');
-        if ($this->selectedPlan && $this->selectedPlan->id === $id) {
-            $this->selectedPlan = $plan->fresh(['creator', 'approver', 'images']);
-        }
     }
 
     public function openRejectModal(int $id): void
@@ -361,10 +360,6 @@ final class MarketingPlanIndex extends Component
 
             $this->dispatch('marketing:close-reject-modal');
             $this->dispatch('marketing:filter-changed');
-
-            if ($this->selectedPlan && $this->selectedPlan->id === $this->rejectPlanId) {
-                $this->selectedPlan = $plan->fresh(['creator', 'approver', 'images']);
-            }
         }
     }
 
@@ -388,16 +383,21 @@ final class MarketingPlanIndex extends Component
 
     public function resetForm(): void
     {
-        $this->planId = null;
-        $this->title = '';
+        $this->reset([
+            'planId',
+            'title',
+            'category',
+            'content',
+            'scheduled_at',
+            'status',
+            'notes',
+            'newImages',
+            'existingImages',
+            'deleteImageIds',
+            'selectedPlanId',
+        ]);
         $this->category = 'website';
-        $this->content = null;
-        $this->scheduled_at = '';
         $this->status = 'draft';
-        $this->notes = null;
-        $this->newImages = [];
-        $this->existingImages = [];
-        $this->deleteImageIds = [];
     }
 
     public function render(): View
@@ -430,6 +430,7 @@ final class MarketingPlanIndex extends Component
         return view('livewire.marketing.marketing-plan-index', [
             'listPlans' => $listPlans,
             'users' => $users,
+            'selectedPlan' => $this->selectedPlan,
             'categoriesEnum' => MarketingCategory::cases(),
             'statusesEnum' => MarketingPlanStatus::cases(),
         ]);
