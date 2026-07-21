@@ -21,6 +21,13 @@ final class Course extends Model
         'ends_at',
         'location',
         'description',
+        'duration',
+        'fee',
+        'instructor',
+        'audience',
+        'objectives',
+        'content_summary',
+        'content_detail',
     ];
 
     protected function casts(): array
@@ -28,6 +35,7 @@ final class Course extends Model
         return [
             'starts_at' => 'date',
             'ends_at' => 'date',
+            'fee' => 'float',
         ];
     }
 

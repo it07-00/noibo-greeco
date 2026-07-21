@@ -40,6 +40,20 @@ final class CourseIndex extends Component
 
     public string $description = '';
 
+    public string $duration = '';
+
+    public string $fee = '';
+
+    public string $instructor = '';
+
+    public string $audience = '';
+
+    public string $objectives = '';
+
+    public string $contentSummary = '';
+
+    public string $contentDetail = '';
+
     /** @var list<int|string> */
     public array $selectedStudentIds = [];
 
@@ -72,6 +86,13 @@ final class CourseIndex extends Component
         $this->endsAt = $course->ends_at?->format('Y-m-d') ?? '';
         $this->location = $course->location ?? '';
         $this->description = $course->description ?? '';
+        $this->duration = $course->duration ?? '';
+        $this->fee = $course->fee > 0 ? (string) (int) $course->fee : '';
+        $this->instructor = $course->instructor ?? '';
+        $this->audience = $course->audience ?? '';
+        $this->objectives = $course->objectives ?? '';
+        $this->contentSummary = $course->content_summary ?? '';
+        $this->contentDetail = $course->content_detail ?? '';
         $this->selectedStudentIds = $course->students->pluck('id')->all();
         $this->resetValidation();
         $this->dispatch('course-form:show');
@@ -96,6 +117,13 @@ final class CourseIndex extends Component
             'endsAt' => ['nullable', 'date', 'after_or_equal:startsAt'],
             'location' => ['nullable', 'string', 'max:191'],
             'description' => ['nullable', 'string', 'max:3000'],
+            'duration' => ['nullable', 'string', 'max:100'],
+            'fee' => ['nullable', 'numeric', 'min:0'],
+            'instructor' => ['nullable', 'string', 'max:191'],
+            'audience' => ['nullable', 'string'],
+            'objectives' => ['nullable', 'string'],
+            'contentSummary' => ['nullable', 'string'],
+            'contentDetail' => ['nullable', 'string'],
             'selectedStudentIds' => ['array'],
             'selectedStudentIds.*' => [
                 'integer',
@@ -119,6 +147,13 @@ final class CourseIndex extends Component
                 'ends_at' => $validated['endsAt'] ?: null,
                 'location' => $validated['location'] ?: null,
                 'description' => $validated['description'] ?: null,
+                'duration' => $validated['duration'] ?: null,
+                'fee' => $validated['fee'] !== '' ? (float) $validated['fee'] : null,
+                'instructor' => $validated['instructor'] ?: null,
+                'audience' => $validated['audience'] ?: null,
+                'objectives' => $validated['objectives'] ?: null,
+                'content_summary' => $validated['contentSummary'] ?: null,
+                'content_detail' => $validated['contentDetail'] ?: null,
             ];
 
             $savedCourse = $course ?? new Course;
@@ -162,12 +197,12 @@ final class CourseIndex extends Component
                 $query->where(function ($nested) use ($search): void {
                     $nested->where('name', 'like', "%{$search}%")
                         ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('instructor', 'like', "%{$search}%")
                         ->orWhere('location', 'like', "%{$search}%")
                         ->orWhereHas('students', fn ($studentQuery) => $studentQuery->where('name', 'like', "%{$search}%"));
                 });
             })
-            ->orderByDesc('starts_at')
-            ->orderBy('name')
+            ->orderBy('code')
             ->paginate(12);
 
         return view('livewire.courses.course-index', [
@@ -189,6 +224,13 @@ final class CourseIndex extends Component
             'endsAt',
             'location',
             'description',
+            'duration',
+            'fee',
+            'instructor',
+            'audience',
+            'objectives',
+            'contentSummary',
+            'contentDetail',
             'selectedStudentIds',
         ]);
         $this->resetValidation();
