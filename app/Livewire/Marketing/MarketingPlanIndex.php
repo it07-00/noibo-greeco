@@ -148,7 +148,7 @@ final class MarketingPlanIndex extends Component
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getEvents(string $start, string $end): array
+    public function getEvents(string $start = '', string $end = ''): array
     {
         Gate::authorize('viewAny', MarketingPlan::class);
 
@@ -199,7 +199,7 @@ final class MarketingPlanIndex extends Component
         return $result;
     }
 
-    public function getCalendarEvents(string $start, string $end): array
+    public function getCalendarEvents(string $start = '', string $end = ''): array
     {
         return $this->getEvents($start, $end);
     }
@@ -299,6 +299,7 @@ final class MarketingPlanIndex extends Component
             $message = 'Tạo mới kế hoạch Marketing thành công!';
         }
 
+        $this->dispatch('marketing:saved', message: $message);
         $this->dispatch('swal:alert', [
             'icon' => 'success',
             'title' => 'Thành công!',
