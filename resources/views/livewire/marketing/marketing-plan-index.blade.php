@@ -648,6 +648,7 @@
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/marketing-plan.css') }}">
 @endpush
 
 @push('scripts')
@@ -756,44 +757,38 @@
                         }
                     }
                 },
-                dayCellContent: function(arg) {
-                    return {
-                        html: `<div class="d-flex align-items-center justify-content-between w-100 pe-1">
-                                <span class="${arg.isToday ? 'badge bg-primary rounded-circle px-2 py-1' : 'fw-bold text-secondary small'}">${arg.dayNumberText.replace('Ngày ', '')}</span>
-                                <button type="button" class="btn btn-sm btn-light border p-0 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Tạo kế hoạch ngày này" onclick="event.stopPropagation(); window.Livewire.find('${mCalendarWireId}').$call('openCreate', '${arg.date.toISOString().split('T')[0]}')">
-                                    <i class="fi fi-rr-plus extra-small text-muted"></i>
-                                </button>
-                               </div>`
-                    };
+                dayCellDidMount: function(arg) {
+                    const dateStr = arg.date.toISOString().split('T')[0];
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'mk-day-add-btn';
+                    btn.title = 'Tạo kế hoạch';
+                    btn.innerHTML = '<i class="fi fi-rr-plus"></i>';
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        if (window.Livewire && mCalendarWireId) {
+                            window.Livewire.find(mCalendarWireId).$call('openCreate', dateStr);
+                        }
+                    });
+                    arg.el.appendChild(btn);
                 },
                 eventContent: function(arg) {
                     const st = arg.event.extendedProps.status || 'draft';
-                    const catLabel = arg.event.extendedProps.category_label || '';
+                    const rawTitle = arg.event.extendedProps.raw_title || arg.event.title;
                     const hasImg = arg.event.extendedProps.thumbnail_url;
-                    const imgUrl = arg.event.extendedProps.thumbnail_url;
 
-                    let bgBadge = 'bg-secondary';
-                    if (st === 'pending_approval') bgBadge = 'bg-warning text-dark';
-                    if (st === 'approved') bgBadge = 'bg-success';
-                    if (st === 'rejected') bgBadge = 'bg-danger';
-
-                    let mediaHtml = '';
-                    if (hasImg && imgUrl) {
-                        mediaHtml = `<img src="${imgUrl}" class="rounded-1 me-1 object-fit-cover" width="18" height="18" alt="">`;
+                    let iconHtml = '';
+                    if (hasImg) {
+                        iconHtml = `<img src="${arg.event.extendedProps.thumbnail_url}" class="mk-event-icon" style="object-fit:cover;" alt="">`;
                     } else {
-                        mediaHtml = `<i class="fi fi-rr-document me-1 text-muted"></i>`;
+                        const icons = { draft: 'fi-rr-edit', pending_approval: 'fi-rr-time-check', approved: 'fi-rr-check', rejected: 'fi-rr-cross-circle' };
+                        iconHtml = `<span class="mk-event-icon"><i class="fi ${icons[st] || 'fi-rr-document'}"></i></span>`;
                     }
 
                     return {
-                        html: `<div class="p-1 rounded-2 bg-white border shadow-sm">
-                                <div class="d-flex align-items-center justify-content-between mb-1 gap-1">
-                                    <span class="badge ${bgBadge} extra-small">${arg.event.extendedProps.status_label || ''}</span>
-                                    <small class="text-muted text-truncate" style="font-size: 0.65rem;">${catLabel}</small>
-                                </div>
-                                <div class="d-flex align-items-center fw-semibold text-dark text-truncate small">
-                                    ${mediaHtml}
-                                    <span class="text-truncate">${arg.event.title}</span>
-                                </div>
+                        html: `<div class="mk-cal-event" data-status="${st}">
+                                    ${iconHtml}
+                                    <span class="mk-event-title">${rawTitle}</span>
                                </div>`
                     };
                 }
