@@ -1,18 +1,19 @@
-<div class="marketing-workspace">
-    <section class="marketing-page-head d-flex align-items-center justify-content-between flex-wrap gap-4 p-4 mb-3 bg-white border rounded-4 shadow-sm overflow-hidden" aria-labelledby="marketing-page-title">
-        <div class="marketing-page-copy">
+<div class="container-fluid p-0">
+    {{-- ── Header Section ────────────────────────────────────────────────── --}}
+    <section class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 mb-3 bg-white border rounded-4 shadow-sm overflow-hidden" aria-labelledby="marketing-page-title">
+        <div>
             <nav aria-label="Điều hướng phân cấp">
-                <ol class="breadcrumb marketing-breadcrumb mb-2">
+                <ol class="breadcrumb mb-2 small">
                     <li class="breadcrumb-item">
-                        <a href="{{ route('dashboard') }}">Dashboard</a>
+                        <a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Kế hoạch Marketing</li>
                 </ol>
             </nav>
             <div class="d-flex align-items-start gap-3">
-                <span class="marketing-page-icon" aria-hidden="true">
-                    <i class="fi fi-rr-calendar-lines"></i>
-                </span>
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 p-3 flex-shrink-0">
+                    <i class="fi fi-rr-calendar-lines fs-4"></i>
+                </div>
                 <div>
                     <h1 class="h3 fw-bold text-dark mb-1" id="marketing-page-title">Kế hoạch Marketing & Nội dung</h1>
                     <p class="text-muted small mb-0">Sắp xếp lịch xuất bản, theo dõi tiến độ và phê duyệt nội dung tại một nơi.</p>
@@ -20,7 +21,7 @@
             </div>
         </div>
 
-        <div class="marketing-page-actions d-flex align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center flex-wrap gap-2">
             <div class="btn-group bg-light border rounded-3 p-1" role="group" aria-label="Chọn kiểu hiển thị">
                 <button type="button"
                     class="btn btn-sm rounded-2 px-3 {{ $viewMode === 'calendar' ? 'btn-primary' : 'btn-light text-muted' }}"
@@ -55,11 +56,11 @@
     <section class="bg-white border rounded-4 shadow-sm p-3 p-lg-4 mb-3" aria-label="Bộ lọc kế hoạch">
         <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
             <div>
-                <span class="d-block text-primary text-uppercase fw-bold text-xs mb-1">Bộ lọc</span>
+                <span class="d-block text-primary text-uppercase fw-bold small mb-1">Bộ lọc</span>
                 <h2 class="h6 fw-bold text-dark mb-0">Tìm nhanh kế hoạch</h2>
             </div>
             <span class="badge bg-light text-muted border rounded-pill px-3 py-2">
-                <i class="fi fi-rr-document" aria-hidden="true"></i>
+                <i class="fi fi-rr-document me-1" aria-hidden="true"></i>
                 {{ number_format($listPlans->total()) }} kế hoạch
             </span>
         </div>
@@ -68,7 +69,7 @@
                 <label for="marketing-search" class="form-label small fw-semibold">Tìm kiếm</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-muted border-end-0"><i class="fi fi-rr-search" aria-hidden="true"></i></span>
-                    <input id="marketing-search" type="search" class="form-control"
+                    <input id="marketing-search" type="search" class="form-control border-start-0"
                         placeholder="Tìm tiêu đề hoặc nội dung..."
                         wire:model.live.debounce.300ms="search">
                 </div>
@@ -77,7 +78,7 @@
                 <label for="marketing-category-filter" class="form-label small fw-semibold">Danh mục</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-muted border-end-0"><i class="fi fi-rr-apps" aria-hidden="true"></i></span>
-                    <select id="marketing-category-filter" class="form-select" wire:model.live="filterCategory">
+                    <select id="marketing-category-filter" class="form-select border-start-0" wire:model.live="filterCategory">
                         <option value="all">Tất cả danh mục</option>
                         @foreach ($categoriesEnum as $cat)
                             <option value="{{ $cat->value }}">{{ $cat->label() }}</option>
@@ -89,7 +90,7 @@
                 <label for="marketing-status-filter" class="form-label small fw-semibold">Trạng thái</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-muted border-end-0"><i class="fi fi-rr-settings-sliders" aria-hidden="true"></i></span>
-                    <select id="marketing-status-filter" class="form-select" wire:model.live="filterStatus">
+                    <select id="marketing-status-filter" class="form-select border-start-0" wire:model.live="filterStatus">
                         <option value="all">Tất cả trạng thái</option>
                         @foreach ($statusesEnum as $st)
                             <option value="{{ $st->value }}">{{ $st->label() }}</option>
@@ -101,7 +102,7 @@
                 <label for="marketing-creator-filter" class="form-label small fw-semibold">Người soạn</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-muted border-end-0"><i class="fi fi-rr-user" aria-hidden="true"></i></span>
-                    <select id="marketing-creator-filter" class="form-select" wire:model.live="filterCreatorId">
+                    <select id="marketing-creator-filter" class="form-select border-start-0" wire:model.live="filterCreatorId">
                         <option value="0">Tất cả thành viên</option>
                         @foreach ($users as $u)
                             <option value="{{ $u->id }}">{{ $u->name }}</option>
@@ -117,108 +118,112 @@
         <section class="bg-white border rounded-4 shadow-sm mb-3 overflow-hidden" aria-label="Lịch kế hoạch Marketing" wire:key="marketing-calendar-view">
             <header class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 border-bottom bg-white">
                 <div>
-                    <span class="d-block text-primary text-uppercase fw-bold text-xs mb-1">Lịch nội dung</span>
+                    <span class="d-block text-primary text-uppercase fw-bold small mb-1">Lịch nội dung</span>
                     <h2 class="h6 fw-bold text-dark mb-0">Kế hoạch theo tháng</h2>
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-3 small text-muted" aria-label="Chú thích trạng thái">
                     @foreach ($statusesEnum as $st)
-                        <span class="marketing-legend-item marketing-status-{{ str_replace('_approval', '', $st->value) }}">
-                            <span class="marketing-legend-dot" aria-hidden="true"></span>{{ $st->label() }}
+                        <span class="d-inline-flex align-items-center gap-1 small fw-semibold">
+                            <span class="badge rounded-pill {{ $st->badgeClass() }} p-1 me-1"></span>{{ $st->label() }}
                         </span>
                     @endforeach
                 </div>
             </header>
-            <div class="calendar-scroll-wrapper p-3">
+            <div class="p-3 overflow-auto">
                 <div id="marketingCalendar" wire:ignore></div>
             </div>
         </section>
     @else
         {{-- ── List / Table View ────────────────────────────────────────────────── --}}
-        <section class="marketing-list-card bg-white border rounded-4 shadow-sm mb-3 overflow-hidden" aria-label="Danh sách kế hoạch Marketing" wire:key="marketing-list-view">
+        <section class="bg-white border rounded-4 shadow-sm mb-3 overflow-hidden" aria-label="Danh sách kế hoạch Marketing" wire:key="marketing-list-view">
             <header class="d-flex align-items-center justify-content-between flex-wrap gap-3 p-3 border-bottom bg-white">
                 <div>
-                    <span class="d-block text-primary text-uppercase fw-bold text-xs mb-1">Danh sách nội dung</span>
+                    <span class="d-block text-primary text-uppercase fw-bold small mb-1">Danh sách nội dung</span>
                     <h2 class="h6 fw-bold text-dark mb-0">Tất cả kế hoạch</h2>
                 </div>
                 <span class="small text-muted">
-                    <i class="fi fi-rr-info" aria-hidden="true"></i> Chọn tiêu đề để xem chi tiết
+                    <i class="fi fi-rr-info me-1" aria-hidden="true"></i> Chọn tiêu đề để xem chi tiết
                 </span>
             </header>
-            <div class="marketing-list-body">
+            <div>
                 <div class="table-responsive">
-                    <table class="table marketing-plan-table align-middle mb-0">
-                        <thead>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light text-uppercase text-secondary small fw-bold">
                             <tr>
-                                <th class="marketing-thumbnail-column">Nội dung</th>
+                                <th style="width: 70px;">Nội dung</th>
                                 <th>Tiêu đề & mô tả</th>
                                 <th>Danh mục</th>
                                 <th>Thời gian xuất bản</th>
                                 <th>Người soạn</th>
                                 <th>Trạng thái</th>
-                                <th class="text-end" style="width: 150px;">Thao tác</th>
+                                <th class="text-end" style="width: 130px;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($listPlans as $plan)
                                 <tr wire:key="marketing-plan-row-{{ $plan->id }}">
-                                    <td data-label="Nội dung">
+                                    <td>
                                         @if ($plan->images->count() > 0)
                                             <img src="{{ Storage::url($plan->images->first()->file_path) }}"
-                                                class="marketing-plan-thumbnail"
-                                                alt="Ảnh minh họa cho {{ $plan->title }}"
-                                                width="56" height="56" loading="lazy">
+                                                class="rounded-3 border object-fit-cover"
+                                                alt="{{ $plan->title }}"
+                                                width="48" height="48" loading="lazy">
                                         @else
-                                            <div class="marketing-plan-thumbnail marketing-plan-thumbnail-empty" aria-hidden="true">
-                                                <i class="fi fi-rr-document"></i>
+                                            <div class="d-inline-flex align-items-center justify-content-center bg-light border rounded-3 text-secondary p-2">
+                                                <i class="fi fi-rr-document fs-5"></i>
                                             </div>
                                         @endif
                                     </td>
-                                    <td data-label="Tiêu đề">
-                                        <button type="button" class="marketing-plan-title-button" wire:click="openDetail({{ $plan->id }})">
+                                    <td>
+                                        <button type="button" class="btn btn-link p-0 text-start text-dark fw-bold text-decoration-none d-block mb-1" wire:click="openDetail({{ $plan->id }})">
                                             {{ $plan->title }}
                                         </button>
-                                        <p class="marketing-plan-excerpt mb-0">{{ Str::limit(strip_tags($plan->content), 90) ?: 'Chưa có nội dung chi tiết.' }}</p>
+                                        <p class="text-muted small mb-0 text-truncate" style="max-width: 360px;">{{ Str::limit(strip_tags($plan->content), 90) ?: 'Chưa có nội dung chi tiết.' }}</p>
                                     </td>
-                                    <td data-label="Danh mục">
+                                    <td>
                                         @php $catEnum = $plan->category; @endphp
                                         @if ($catEnum)
-                                            <span class="badge marketing-category-badge {{ $catEnum->badgeClass() }}">
+                                            <span class="badge rounded-pill {{ $catEnum->badgeClass() }}">
                                                 {{ $catEnum->label() }}
                                             </span>
                                         @endif
                                     </td>
-                                    <td data-label="Xuất bản">
-                                        <div class="marketing-plan-date">
-                                            <span class="marketing-date-icon" aria-hidden="true"><i class="fi fi-rr-calendar"></i></span>
-                                            <span>
-                                                <strong>{{ $plan->scheduled_at->format('H:i · d/m/Y') }}</strong>
-                                                <small>{{ $plan->scheduled_at->diffForHumans() }}</small>
-                                            </span>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="d-inline-flex align-items-center justify-content-center bg-light border rounded-2 p-2 text-secondary">
+                                                <i class="fi fi-rr-calendar"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="d-block small text-dark">{{ $plan->scheduled_at->format('H:i · d/m/Y') }}</strong>
+                                                <small class="text-muted">{{ $plan->scheduled_at->diffForHumans() }}</small>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td data-label="Người soạn">
-                                        <span class="marketing-creator">
-                                            <span class="marketing-creator-avatar" aria-hidden="true"><i class="fi fi-rr-user"></i></span>
-                                            {{ $plan->creator?->name ?? 'N/A' }}
-                                        </span>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="d-inline-flex align-items-center justify-content-center bg-light border rounded-circle text-secondary p-1">
+                                                <i class="fi fi-rr-user small"></i>
+                                            </div>
+                                            <span class="small fw-semibold text-dark">{{ $plan->creator?->name ?? 'N/A' }}</span>
+                                        </div>
                                     </td>
-                                    <td data-label="Trạng thái">
-                                        <span class="badge marketing-status-badge {{ $plan->status->badgeClass() }}">
+                                    <td>
+                                        <span class="badge rounded-pill {{ $plan->status->badgeClass() }}">
                                             {{ $plan->status->label() }}
                                         </span>
                                     </td>
-                                    <td class="text-end" data-label="Thao tác">
-                                        <div class="marketing-row-actions">
-                                            <button type="button" class="marketing-icon-button marketing-icon-button-view" aria-label="Xem chi tiết {{ $plan->title }}" title="Xem chi tiết" wire:click="openDetail({{ $plan->id }})">
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-light border text-secondary" aria-label="Xem chi tiết {{ $plan->title }}" title="Xem chi tiết" wire:click="openDetail({{ $plan->id }})">
                                                 <i class="fi fi-rr-eye"></i>
                                             </button>
                                             @can('update', $plan)
-                                                <button type="button" class="marketing-icon-button marketing-icon-button-edit" aria-label="Chỉnh sửa {{ $plan->title }}" title="Chỉnh sửa" wire:click="openEdit({{ $plan->id }})">
+                                                <button type="button" class="btn btn-sm btn-light border text-secondary" aria-label="Chỉnh sửa {{ $plan->title }}" title="Chỉnh sửa" wire:click="openEdit({{ $plan->id }})">
                                                     <i class="fi fi-rr-edit"></i>
                                                 </button>
                                             @endcan
                                             @can('delete', $plan)
-                                                <button type="button" class="marketing-icon-button marketing-icon-button-delete" aria-label="Xóa {{ $plan->title }}" title="Xóa" wire:click="deletePlan({{ $plan->id }})" wire:confirm="Bạn có chắc chắn muốn xóa bài viết này?">
+                                                <button type="button" class="btn btn-sm btn-light border text-danger" aria-label="Xóa {{ $plan->title }}" title="Xóa" wire:click="deletePlan({{ $plan->id }})" wire:confirm="Bạn có chắc chắn muốn xóa bài viết này?">
                                                     <i class="fi fi-rr-trash"></i>
                                                 </button>
                                             @endcan
@@ -227,11 +232,13 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7">
-                                        <div class="marketing-empty-state">
-                                            <span class="marketing-empty-icon" aria-hidden="true"><i class="fi fi-rr-search-alt"></i></span>
-                                            <h3>Chưa tìm thấy kế hoạch phù hợp</h3>
-                                            <p>Thử thay đổi từ khóa hoặc bộ lọc để xem thêm nội dung.</p>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="py-3">
+                                            <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-4 p-3 mb-3">
+                                                <i class="fi fi-rr-search-alt fs-2"></i>
+                                            </div>
+                                            <h3 class="h6 fw-bold text-dark">Chưa tìm thấy kế hoạch phù hợp</h3>
+                                            <p class="text-muted small mb-3">Thử thay đổi từ khóa hoặc bộ lọc để xem thêm nội dung.</p>
                                             @can('create', App\Models\MarketingPlan::class)
                                                 <button type="button" class="btn btn-outline-primary" wire:click="openCreate('{{ date('Y-m-d') }}')">
                                                     <i class="fi fi-rr-plus me-2" aria-hidden="true"></i>Tạo kế hoạch mới
@@ -245,7 +252,7 @@
                     </table>
                 </div>
                 @if ($listPlans->hasPages())
-                    <div class="marketing-pagination">
+                    <div class="p-3 border-top">
                         {{ $listPlans->links() }}
                     </div>
                 @endif
@@ -256,14 +263,14 @@
     {{-- ── Modal Create / Edit Plan ─────────────────────────────────────────── --}}
     <div class="modal fade" id="modalPlanForm" tabindex="-1" aria-labelledby="modalPlanFormLabel" aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
-            <div class="modal-content border-0 rounded-4 overflow-hidden">
-                <div class="modal-header bg-white border-bottom p-3 p-lg-4">
+            <div class="modal-content border-0 rounded-4 overflow-hidden shadow">
+                <div class="modal-header bg-white border-bottom p-4">
                     <div class="d-flex align-items-center gap-3">
-                        <span class="marketing-modal-icon" aria-hidden="true">
-                            <i class="fi {{ $planId ? 'fi-rr-edit' : 'fi-rr-add-document' }}"></i>
-                        </span>
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+                            <i class="fi {{ $planId ? 'fi-rr-edit' : 'fi-rr-add-document' }} fs-4"></i>
+                        </div>
                         <div>
-                            <span class="d-block text-primary text-uppercase fw-bold text-xs mb-1">{{ $planId ? 'Chỉnh sửa nội dung' : 'Nội dung mới' }}</span>
+                            <span class="d-block text-primary text-uppercase fw-bold small mb-1">{{ $planId ? 'Chỉnh sửa nội dung' : 'Nội dung mới' }}</span>
                             <h2 class="modal-title h5 fw-bold text-dark mb-1" id="modalPlanFormLabel">
                                 {{ $planId ? 'Cập nhật kế hoạch bài viết' : 'Tạo kế hoạch bài viết' }}
                             </h2>
@@ -273,10 +280,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng" wire:click="resetForm"></button>
                 </div>
                 <form wire:submit.prevent="save" class="d-flex flex-column flex-grow-1 overflow-hidden">
-                    <div class="modal-body bg-light p-3">
-                        <div class="bg-white border rounded-3 p-3">
-                            <div class="d-flex align-items-start gap-2 mb-3">
-                                <span class="marketing-form-step">01</span>
+                    <div class="modal-body bg-light p-4">
+                        <div class="bg-white border rounded-3 p-4 mb-3">
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">01</span>
                                 <div>
                                     <h3 class="h6 fw-bold text-dark mb-1">Thông tin xuất bản</h3>
                                     <p class="text-muted small mb-0">Thông tin chính để hiển thị trên lịch và danh sách.</p>
@@ -306,9 +313,9 @@
                             </div>
                         </div>
 
-                        <div class="bg-white border rounded-3 p-3 mt-3">
-                            <div class="d-flex align-items-start gap-2 mb-3">
-                                <span class="marketing-form-step">02</span>
+                        <div class="bg-white border rounded-3 p-4 mb-3">
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">02</span>
                                 <div>
                                     <h3 class="h6 fw-bold text-dark mb-1">Nội dung bài viết</h3>
                                     <p class="text-muted small mb-0">Soạn nội dung cần xuất bản hoặc gửi người quản lý phê duyệt.</p>
@@ -316,15 +323,15 @@
                             </div>
                             <div wire:ignore>
                                 <label class="visually-hidden" for="quillEditor">Nội dung bài viết</label>
-                                <div id="quillEditor" class="marketing-quill-editor"></div>
+                                <div id="quillEditor" class="bg-white rounded-3 border" style="min-height: 200px;"></div>
                                 <input type="hidden" id="contentHiddenInput" wire:model="content">
                             </div>
                             @error('content') <div class="text-danger small mt-2" role="alert">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="bg-white border rounded-3 p-3 mt-3">
-                            <div class="d-flex align-items-start gap-2 mb-3">
-                                <span class="marketing-form-step">03</span>
+                        <div class="bg-white border rounded-3 p-4">
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">03</span>
                                 <div>
                                     <h3 class="h6 fw-bold text-dark mb-1">Tài liệu & ghi chú</h3>
                                     <p class="text-muted small mb-0">Đính kèm hình ảnh minh họa và ghi chú cho đội ngũ.</p>
@@ -332,29 +339,31 @@
                             </div>
 
                             <div class="bg-light border rounded-3 p-3">
-                                <label for="marketing-plan-images" class="d-flex align-items-center gap-2 mb-2">
-                                    <span class="marketing-upload-icon" aria-hidden="true"><i class="fi fi-rr-cloud-upload-alt"></i></span>
-                                    <span>
-                                        <strong class="d-block small">Chọn hình ảnh đính kèm</strong>
+                                <label for="marketing-plan-images" class="d-flex align-items-center gap-3 mb-2 cursor-pointer">
+                                    <div class="d-inline-flex align-items-center justify-content-center bg-white border rounded-3 p-3 text-primary">
+                                        <i class="fi fi-rr-cloud-upload-alt fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <strong class="d-block small text-dark">Chọn hình ảnh đính kèm</strong>
                                         <small class="d-block text-muted">JPG, PNG hoặc WEBP · tối đa 10MB mỗi ảnh</small>
-                                    </span>
+                                    </div>
                                 </label>
                                 <input id="marketing-plan-images" type="file" wire:model="newImages" multiple accept="image/*" class="form-control @error('newImages.*') is-invalid @enderror">
                                 @error('newImages.*') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
 
-                                <div wire:loading wire:target="newImages" class="marketing-upload-progress" role="status">
-                                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Đang tải ảnh lên...
+                                <div wire:loading wire:target="newImages" class="text-primary small mt-2" role="status">
+                                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Đang tải ảnh lên...
                                 </div>
 
                                 @if (count($existingImages) > 0)
-                                    <div class="marketing-image-group">
-                                        <span class="marketing-image-group-title">Hình ảnh hiện tại</span>
-                                        <div class="marketing-image-grid">
+                                    <div class="mt-3">
+                                        <span class="d-block text-muted small fw-semibold mb-2">Hình ảnh hiện tại</span>
+                                        <div class="d-flex flex-wrap gap-2">
                                             @foreach ($existingImages as $img)
-                                                <div class="marketing-image-preview">
-                                                    <img src="{{ $img['url'] }}" alt="{{ $img['name'] }}" width="96" height="96">
-                                                    <button type="button" class="marketing-image-remove" aria-label="Xóa ảnh {{ $img['name'] }}" title="Xóa ảnh này" wire:click="markForImageDeletion({{ $img['id'] }})">
-                                                        <i class="fi fi-rr-cross" aria-hidden="true"></i>
+                                                <div class="position-relative border rounded-3 p-1 bg-white" style="width: 80px; height: 80px;">
+                                                    <img src="{{ $img['url'] }}" alt="{{ $img['name'] }}" class="w-100 h-100 rounded-2 object-fit-cover">
+                                                    <button type="button" class="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 translate-middle-y rounded-circle d-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" aria-label="Xóa ảnh {{ $img['name'] }}" title="Xóa ảnh này" wire:click="markForImageDeletion({{ $img['id'] }})">
+                                                        <i class="fi fi-rr-cross extra-small" aria-hidden="true"></i>
                                                     </button>
                                                 </div>
                                             @endforeach
@@ -363,15 +372,15 @@
                                 @endif
 
                                 @if (count($newImages) > 0)
-                                    <div class="marketing-image-group">
-                                        <span class="marketing-image-group-title">Hình ảnh vừa chọn</span>
-                                        <div class="marketing-image-grid">
+                                    <div class="mt-3">
+                                        <span class="d-block text-muted small fw-semibold mb-2">Hình ảnh vừa chọn</span>
+                                        <div class="d-flex flex-wrap gap-2">
                                             @foreach ($newImages as $index => $imgFile)
                                                 @if ($imgFile && method_exists($imgFile, 'temporaryUrl'))
-                                                    <div class="marketing-image-preview">
-                                                        <img src="{{ $imgFile->temporaryUrl() }}" alt="Ảnh vừa chọn {{ $index + 1 }}" width="96" height="96">
-                                                        <button type="button" class="marketing-image-remove" aria-label="Hủy ảnh vừa chọn {{ $index + 1 }}" title="Hủy ảnh này" wire:click="removeNewImage({{ $index }})">
-                                                            <i class="fi fi-rr-cross" aria-hidden="true"></i>
+                                                    <div class="position-relative border rounded-3 p-1 bg-white" style="width: 80px; height: 80px;">
+                                                        <img src="{{ $imgFile->temporaryUrl() }}" alt="Ảnh vừa chọn {{ $index + 1 }}" class="w-100 h-100 rounded-2 object-fit-cover">
+                                                        <button type="button" class="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 translate-middle-y rounded-circle d-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" aria-label="Hủy ảnh vừa chọn {{ $index + 1 }}" title="Hủy ảnh này" wire:click="removeNewImage({{ $index }})">
+                                                            <i class="fi fi-rr-cross extra-small" aria-hidden="true"></i>
                                                         </button>
                                                     </div>
                                                 @endif
@@ -410,121 +419,151 @@
     {{-- ── Modal View Detail & Approval ─────────────────────────────────────── --}}
     <div class="modal fade" id="modalPlanDetail" tabindex="-1" aria-labelledby="modalPlanDetailLabel" aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
-            <div class="modal-content border-0 rounded-4 overflow-hidden">
+            <div class="modal-content border-0 rounded-4 overflow-hidden shadow">
                 @if ($selectedPlan)
-                    <div class="modal-header marketing-detail-header p-3 p-lg-4 border-bottom">
-                        <div class="marketing-detail-heading">
-                            <div class="d-flex flex-wrap gap-2 mb-2">
-                                <span class="badge marketing-status-badge {{ $selectedPlan->status->badgeClass() }}">
-                                    {{ $selectedPlan->status->label() }}
-                                </span>
-                                @php $catEnum = $selectedPlan->category; @endphp
-                                @if ($catEnum)
-                                    <span class="badge marketing-category-badge {{ $catEnum->badgeClass() }}">
-                                        {{ $catEnum->label() }}
+                    <div class="modal-header p-4 border-bottom bg-white">
+                        <div class="w-100">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <span class="badge rounded-pill {{ $selectedPlan->status->badgeClass() }}">
+                                        {{ $selectedPlan->status->label() }}
                                     </span>
-                                @endif
+                                    @php $catEnum = $selectedPlan->category; @endphp
+                                    @if ($catEnum)
+                                        <span class="badge rounded-pill {{ $catEnum->badgeClass() }}">
+                                            {{ $catEnum->label() }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <span class="text-muted small">
+                                    <i class="fi fi-rr-time-fast me-1 text-primary"></i>
+                                    Tạo {{ $selectedPlan->created_at->diffForHumans() }}
+                                </span>
                             </div>
-                            <h2 class="modal-title h4 fw-bold text-dark mb-2" id="modalPlanDetailLabel">{{ $selectedPlan->title }}</h2>
-                            <p class="small text-muted mb-0">
-                                <i class="fi fi-rr-calendar-clock" aria-hidden="true"></i>
-                                Dự kiến xuất bản <strong>{{ $selectedPlan->scheduled_at->format('H:i · d/m/Y') }}</strong>
-                            </p>
+                            <h2 class="modal-title h4 fw-bold text-dark mb-0" id="modalPlanDetailLabel">{{ $selectedPlan->title }}</h2>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        <button type="button" class="btn-close ms-2" data-bs-dismiss="modal" aria-label="Đóng"></button>
                     </div>
 
-                    <div class="modal-body bg-light p-3 p-lg-4">
+                    <div class="modal-body bg-light p-4">
                         {{-- Rejection reason alert --}}
                         @if ($selectedPlan->status === App\Enums\MarketingPlanStatus::Rejected && $selectedPlan->rejection_reason)
-                            <div class="alert alert-danger d-flex align-items-start gap-2 mb-3" role="alert">
-                                <span class="marketing-rejection-icon" aria-hidden="true"><i class="fi fi-rr-exclamation"></i></span>
+                            <div class="alert alert-danger d-flex align-items-start gap-3 p-3 rounded-3 mb-4 shadow-sm" role="alert">
+                                <i class="fi fi-rr-exclamation fs-5 flex-shrink-0"></i>
                                 <div>
-                                    <strong>Lý do từ chối phê duyệt</strong>
-                                    <p class="mb-0">{{ $selectedPlan->rejection_reason }}</p>
+                                    <h6 class="fw-bold mb-1">Lý do từ chối phê duyệt</h6>
+                                    <p class="mb-0 small text-danger-emphasis">{{ $selectedPlan->rejection_reason }}</p>
                                 </div>
                             </div>
                         @endif
 
-                        {{-- Metadata --}}
-                        <div class="row g-2 mb-3">
-                            <div class="col-md">
-                              <div class="marketing-meta-item d-flex align-items-center gap-2 p-3 bg-white border rounded-3 h-100">
-                                <span class="marketing-meta-icon" aria-hidden="true"><i class="fi fi-rr-user"></i></span>
-                                <div>
-                                    <small>Người soạn bài</small>
-                                    <strong>{{ $selectedPlan->creator?->name ?? 'N/A' }}</strong>
+                        {{-- Metadata Cards Grid --}}
+                        <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-lg-4 mb-4">
+                            <div class="col">
+                              <div class="p-3 bg-white border rounded-3 shadow-sm d-flex align-items-center gap-3 h-100">
+                                <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-3 p-2 flex-shrink-0">
+                                    <i class="fi fi-rr-user fs-5"></i>
+                                </div>
+                                <div class="min-w-0 flex-grow-1">
+                                    <span class="d-block text-uppercase text-secondary fw-bold small">Người soạn bài</span>
+                                    <strong class="d-block text-dark text-truncate small fw-bold">{{ $selectedPlan->creator?->name ?? 'N/A' }}</strong>
                                 </div>
                               </div>
                             </div>
-                            <div class="col-md">
-                              <div class="marketing-meta-item d-flex align-items-center gap-2 p-3 bg-white border rounded-3 h-100">
-                                <span class="marketing-meta-icon" aria-hidden="true"><i class="fi fi-rr-time-check"></i></span>
-                                <div>
-                                    <small>Ngày tạo kế hoạch</small>
-                                    <strong>{{ $selectedPlan->created_at->format('H:i · d/m/Y') }}</strong>
+                            <div class="col">
+                              <div class="p-3 bg-white border rounded-3 shadow-sm d-flex align-items-center gap-3 h-100">
+                                <div class="d-inline-flex align-items-center justify-content-center bg-info-subtle text-info rounded-3 p-2 flex-shrink-0">
+                                    <i class="fi fi-rr-clock fs-5"></i>
+                                </div>
+                                <div class="min-w-0 flex-grow-1">
+                                    <span class="d-block text-uppercase text-secondary fw-bold small">Ngày tạo kế hoạch</span>
+                                    <strong class="d-block text-dark small fw-bold">{{ $selectedPlan->created_at->format('H:i · d/m/Y') }}</strong>
                                 </div>
                               </div>
                             </div>
-                            @if ($selectedPlan->approved_by)
-                                <div class="col-md">
-                                  <div class="marketing-meta-item d-flex align-items-center gap-2 p-3 bg-white border rounded-3 h-100">
-                                    <span class="marketing-meta-icon" aria-hidden="true"><i class="fi fi-rr-user-check"></i></span>
-                                    <div>
-                                        <small>Người xử lý duyệt</small>
-                                        <strong>{{ $selectedPlan->approver?->name ?? 'N/A' }}</strong>
-                                        <span>{{ $selectedPlan->approved_at?->format('H:i · d/m/Y') }}</span>
-                                    </div>
-                                  </div>
+                            <div class="col">
+                              <div class="p-3 bg-white border rounded-3 shadow-sm d-flex align-items-center gap-3 h-100">
+                                <div class="d-inline-flex align-items-center justify-content-center bg-secondary-subtle text-secondary rounded-3 p-2 flex-shrink-0">
+                                    <i class="fi fi-rr-calendar-clock fs-5"></i>
                                 </div>
-                            @endif
+                                <div class="min-w-0 flex-grow-1">
+                                    <span class="d-block text-uppercase text-secondary fw-bold small">Thời gian xuất bản</span>
+                                    <strong class="d-block text-dark small fw-bold">{{ $selectedPlan->scheduled_at->format('H:i · d/m/Y') }}</strong>
+                                    <span class="d-block text-muted small">{{ $selectedPlan->scheduled_at->diffForHumans() }}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col">
+                              <div class="p-3 bg-white border rounded-3 shadow-sm d-flex align-items-center gap-3 h-100">
+                                <div class="d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-3 p-2 flex-shrink-0">
+                                    <i class="fi {{ $selectedPlan->approved_by ? 'fi-rr-user-check' : 'fi-rr-shield' }} fs-5"></i>
+                                </div>
+                                <div class="min-w-0 flex-grow-1">
+                                    <span class="d-block text-uppercase text-secondary fw-bold small">Người xử lý duyệt</span>
+                                    <strong class="d-block text-dark text-truncate small fw-bold">{{ $selectedPlan->approver?->name ?? 'Chưa duyệt' }}</strong>
+                                    @if ($selectedPlan->approved_at)
+                                        <span class="d-block text-muted small">{{ $selectedPlan->approved_at->format('H:i · d/m/Y') }}</span>
+                                    @endif
+                                </div>
+                              </div>
+                            </div>
                         </div>
 
                         {{-- Rich Text Content Display --}}
-                        <section class="bg-white border rounded-3 p-3">
-                            <div class="d-flex align-items-center gap-2 mb-3">
-                                <span class="marketing-detail-section-icon" aria-hidden="true"><i class="fi fi-rr-document-signed"></i></span>
+                        <section class="bg-white border rounded-3 p-4 mb-4 shadow-sm">
+                            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                                <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-2 p-2">
+                                    <i class="fi fi-rr-document-signed"></i>
+                                </div>
                                 <div>
-                                    <span class="d-block text-primary text-uppercase fw-bold text-xs">Nội dung</span>
+                                    <span class="d-block text-primary text-uppercase fw-bold small">Nội dung</span>
                                     <h3 class="h6 fw-bold text-dark mb-0">Nội dung truyền thông</h3>
                                 </div>
                             </div>
-                            <div class="ql-editor-preview bg-light border rounded-3 p-3">
+                            <div class="bg-light border rounded-3 p-3">
                                 {!! $selectedPlan->content ?: '<em class="text-muted">Chưa nhập nội dung chi tiết.</em>' !!}
                             </div>
                         </section>
 
                         {{-- Images Gallery --}}
                         @if ($selectedPlan->images->count() > 0)
-                            <section class="bg-white border rounded-3 p-3 mt-3">
-                                <div class="d-flex align-items-center gap-2 mb-3">
-                                    <span class="marketing-detail-section-icon" aria-hidden="true"><i class="fi fi-rr-picture"></i></span>
+                            <section class="bg-white border rounded-3 p-4 mb-4 shadow-sm">
+                                <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                                    <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-2 p-2">
+                                        <i class="fi fi-rr-picture"></i>
+                                    </div>
                                     <div>
-                                        <span class="d-block text-primary text-uppercase fw-bold text-xs">Tài liệu</span>
-                                        <h3 class="h6 fw-bold text-dark mb-0">Hình ảnh đính kèm <small class="text-muted">{{ $selectedPlan->images->count() }} ảnh</small></h3>
+                                        <span class="d-block text-primary text-uppercase fw-bold small">Tài liệu</span>
+                                        <h3 class="h6 fw-bold text-dark mb-0">Hình ảnh đính kèm <small class="text-muted">({{ $selectedPlan->images->count() }} ảnh)</small></h3>
                                     </div>
                                 </div>
-                                <div class="marketing-detail-gallery">
+                                <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-4">
                                     @foreach ($selectedPlan->images as $img)
-                                        <a href="{{ Storage::url($img->file_path) }}" target="_blank" rel="noopener" class="marketing-gallery-item">
-                                            <img src="{{ Storage::url($img->file_path) }}" alt="{{ $img->file_name }}" loading="lazy">
-                                            <span><i class="fi fi-rr-expand" aria-hidden="true"></i> Xem ảnh</span>
-                                        </a>
+                                        <div class="col">
+                                            <a href="{{ Storage::url($img->file_path) }}" target="_blank" rel="noopener" class="d-block position-relative border rounded-3 overflow-hidden bg-light shadow-sm text-decoration-none">
+                                                <img src="{{ Storage::url($img->file_path) }}" alt="{{ $img->file_name }}" class="w-100 object-fit-cover" style="aspect-ratio: 4/3;" loading="lazy">
+                                                <span class="position-absolute bottom-0 end-0 m-2 px-2 py-1 bg-dark bg-opacity-75 text-white rounded small">
+                                                    <i class="fi fi-rr-expand me-1"></i> Xem ảnh
+                                                </span>
+                                            </a>
+                                        </div>
                                     @endforeach
                                 </div>
                             </section>
                         @endif
 
                         @if ($selectedPlan->notes)
-                            <section class="bg-warning-subtle border border-warning-subtle rounded-3 p-3 mt-3">
-                                <div class="d-flex align-items-center gap-2 mb-3">
-                                    <span class="marketing-detail-section-icon" aria-hidden="true"><i class="fi fi-rr-notebook"></i></span>
+                            <section class="bg-warning-subtle border border-warning-subtle rounded-3 p-4 shadow-sm">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="d-inline-flex align-items-center justify-content-center bg-warning text-dark rounded-2 p-2">
+                                        <i class="fi fi-rr-notebook"></i>
+                                    </div>
                                     <div>
-                                        <span class="d-block text-warning-emphasis text-uppercase fw-bold text-xs">Nội bộ</span>
+                                        <span class="d-block text-warning-emphasis text-uppercase fw-bold small">Ghi chú nội bộ</span>
                                         <h3 class="h6 fw-bold text-dark mb-0">Ghi chú cho đội ngũ</h3>
                                     </div>
                                 </div>
-                                <p class="marketing-notes-content mb-0">{{ $selectedPlan->notes }}</p>
+                                <p class="mb-0 text-dark small">{{ $selectedPlan->notes }}</p>
                             </section>
                         @endif
                     </div>
@@ -574,12 +613,14 @@
     {{-- ── Modal Reject Reason ─────────────────────────────────────────────── --}}
     <div class="modal fade" id="modalRejectReason" tabindex="-1" aria-labelledby="modalRejectReasonLabel" aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 overflow-hidden">
+            <div class="modal-content border-0 rounded-4 overflow-hidden shadow">
                 <div class="modal-header bg-white border-bottom p-3">
                     <div class="d-flex align-items-center gap-3">
-                        <span class="marketing-modal-icon marketing-modal-icon-danger" aria-hidden="true"><i class="fi fi-rr-cross-circle"></i></span>
+                        <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-3 p-3">
+                            <i class="fi fi-rr-cross-circle fs-4"></i>
+                        </div>
                         <div>
-                            <span class="d-block text-danger text-uppercase fw-bold text-xs mb-1">Yêu cầu chỉnh sửa</span>
+                            <span class="d-block text-danger text-uppercase fw-bold small mb-1">Yêu cầu chỉnh sửa</span>
                             <h2 class="modal-title h5 fw-bold text-dark mb-0" id="modalRejectReasonLabel">Từ chối phê duyệt</h2>
                         </div>
                     </div>
@@ -606,7 +647,6 @@
 </div>
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/marketing-plan.css') }}?v=2.0.0">
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
 @endpush
 
@@ -655,240 +695,186 @@
             }
         }
 
-        function showBootstrapModal(modalId) {
-            const modalEl = document.getElementById(modalId);
-            if (!modalEl || typeof bootstrap === 'undefined') return;
-            bootstrap.Modal.getOrCreateInstance(modalEl).show();
-        }
-
-        function hideBootstrapModal(modalId) {
-            const modalEl = document.getElementById(modalId);
-            if (!modalEl || typeof bootstrap === 'undefined') return;
-            bootstrap.Modal.getOrCreateInstance(modalEl).hide();
-        }
-
         function initMarketingCalendar() {
             const calendarEl = document.getElementById('marketingCalendar');
             if (!calendarEl) return;
 
-            if (typeof Livewire === 'undefined') {
-                document.addEventListener('livewire:init', initMarketingCalendar, { once: true });
-                return;
-            }
-
-            const componentEl = calendarEl.closest('[wire\\:id]');
-            if (!componentEl) return;
-            const currentWireId = componentEl.getAttribute('wire:id');
-            const wire = Livewire.find(currentWireId);
-            if (!wire) return;
-
-            if (mCalendarInstance && mCalendarWireId === currentWireId && mCalendarElement === calendarEl) {
-                mCalendarInstance.refetchEvents();
-                return;
-            }
-
             if (mCalendarInstance) {
                 mCalendarInstance.destroy();
+                mCalendarInstance = null;
             }
 
-            mCalendarWireId = currentWireId;
             mCalendarElement = calendarEl;
 
             mCalendarInstance = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                fixedWeekCount: false,
                 locale: 'vi',
-                firstDay: 1,
-                height: 'auto',
-                dayMaxEvents: 3,
-                displayEventTime: false,
-                moreLinkText: function(count) {
-                    return `+${count} nội dung`;
-                },
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth'
+                    right: 'dayGridMonth,timeGridWeek'
                 },
                 buttonText: {
                     today: 'Hôm nay',
-                    month: 'Tháng'
+                    month: 'Tháng',
+                    week: 'Tuần'
                 },
-                editable: false,
+                height: 'auto',
                 selectable: true,
-                dayCellContent: function(arg) {
-                    const numberEl = document.createElement('span');
-                    const cleanNum = arg.dayNumberText.replace('thg', '').replace('tháng', '').replace(/[a-zA-Z]/g, '').trim();
-                    numberEl.className = arg.isToday ? 'day-cell-today-number' : 'day-cell-number';
-                    numberEl.innerText = cleanNum;
-
-                    const rightContainer = document.createElement('div');
-                    rightContainer.className = 'day-cell-actions';
-
-                    @can('create', App\Models\MarketingPlan::class)
-                        const plusBtn = document.createElement('button');
-                        plusBtn.type = 'button';
-                        plusBtn.className = 'btn-plus-day';
-                        plusBtn.setAttribute('aria-label', `Tạo kế hoạch ngày ${arg.date.toLocaleDateString('vi-VN')}`);
-
-                        const plusIcon = document.createElement('i');
-                        plusIcon.className = 'fi fi-rr-plus';
-                        plusIcon.setAttribute('aria-hidden', 'true');
-                        plusBtn.appendChild(plusIcon);
-
-                        plusBtn.onclick = function(e) {
-                            e.stopPropagation();
-                            const year = arg.date.getFullYear();
-                            const month = String(arg.date.getMonth() + 1).padStart(2, '0');
-                            const day = String(arg.date.getDate()).padStart(2, '0');
-                            wire.openCreate(`${year}-${month}-${day}`);
-                        };
-                        rightContainer.appendChild(plusBtn);
-                    @endcan
-
-                    return { domNodes: [numberEl, rightContainer] };
-                },
-                eventContent: function(arg) {
-                    const props = arg.event.extendedProps;
-                    const allowedStatuses = ['draft', 'pending_approval', 'approved', 'rejected'];
-                    const status = allowedStatuses.includes(props.status) ? props.status : 'draft';
-                    const card = document.createElement('div');
-                    card.className = `marketing-calendar-event status-${status}`;
-
-                    const top = document.createElement('div');
-                    top.className = 'marketing-calendar-event-top';
-
-                    const statusEl = document.createElement('span');
-                    statusEl.className = 'marketing-calendar-event-status';
-                    const statusDot = document.createElement('span');
-                    statusDot.className = 'marketing-calendar-event-dot';
-                    statusDot.setAttribute('aria-hidden', 'true');
-                    const statusText = document.createElement('span');
-                    statusText.textContent = props.status_label || '';
-                    statusEl.append(statusDot, statusText);
-
-                    const categoryEl = document.createElement('span');
-                    categoryEl.className = 'marketing-calendar-event-category';
-                    categoryEl.textContent = props.category_label || '';
-                    top.append(statusEl, categoryEl);
-
-                    const titleRow = document.createElement('div');
-                    titleRow.className = 'marketing-calendar-event-title';
-
-                    if (props.thumbnail_url) {
-                        const image = document.createElement('img');
-                        image.src = props.thumbnail_url;
-                        image.alt = '';
-                        image.loading = 'lazy';
-                        titleRow.appendChild(image);
+                editable: false,
+                dayMaxEvents: 3,
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    if (window.Livewire) {
+                        const component = window.Livewire.find(mCalendarWireId);
+                        if (component) {
+                            component.getCalendarEvents(fetchInfo.startStr, fetchInfo.endStr)
+                                .then(events => successCallback(events))
+                                .catch(err => failureCallback(err));
+                        } else {
+                            successCallback([]);
+                        }
                     } else {
-                        const placeholder = document.createElement('span');
-                        placeholder.className = 'marketing-calendar-event-placeholder';
-                        placeholder.setAttribute('aria-hidden', 'true');
-                        const documentIcon = document.createElement('i');
-                        documentIcon.className = 'fi fi-rr-document';
-                        placeholder.appendChild(documentIcon);
-                        titleRow.appendChild(placeholder);
+                        successCallback([]);
                     }
-
-                    const titleText = document.createElement('span');
-                    titleText.textContent = props.raw_title || '';
-                    titleRow.appendChild(titleText);
-                    card.append(top, titleRow);
-
-                    return { domNodes: [card] };
-                },
-                eventDidMount: function(info) {
-                    const props = info.event.extendedProps;
-                    info.el.setAttribute('title', `${props.raw_title || ''} · ${props.status_label || ''}`);
-                },
-                events: function(info, successCallback, failureCallback) {
-                    wire.getEvents(info.startStr, info.endStr)
-                        .then(events => successCallback(events))
-                        .catch(err => failureCallback(err));
                 },
                 dateClick: function(info) {
-                    @can('create', App\Models\MarketingPlan::class)
-                        wire.openCreate(info.dateStr);
-                    @endcan
+                    if (window.Livewire) {
+                        const component = window.Livewire.find(mCalendarWireId);
+                        if (component) {
+                            component.openCreate(info.dateStr);
+                        }
+                    }
                 },
                 eventClick: function(info) {
-                    const dbId = info.event.extendedProps.db_id;
-                    if (dbId) {
-                        wire.openDetail(dbId);
+                    if (window.Livewire && info.event.id) {
+                        const component = window.Livewire.find(mCalendarWireId);
+                        if (component) {
+                            component.openDetail(info.event.id);
+                        }
                     }
+                },
+                dayCellContent: function(arg) {
+                    return {
+                        html: `<div class="d-flex align-items-center justify-content-between w-100 pe-1">
+                                <span class="${arg.isToday ? 'badge bg-primary rounded-circle px-2 py-1' : 'fw-bold text-secondary small'}">${arg.dayNumberText.replace('Ngày ', '')}</span>
+                                <button type="button" class="btn btn-sm btn-light border p-0 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Tạo kế hoạch ngày này" onclick="event.stopPropagation(); window.Livewire.find('${mCalendarWireId}').openCreate('${arg.date.toISOString().split('T')[0]}')">
+                                    <i class="fi fi-rr-plus extra-small text-muted"></i>
+                                </button>
+                               </div>`
+                    };
+                },
+                eventContent: function(arg) {
+                    const st = arg.event.extendedProps.status || 'draft';
+                    const catLabel = arg.event.extendedProps.category_label || '';
+                    const hasImg = arg.event.extendedProps.has_image;
+                    const imgUrl = arg.event.extendedProps.image_url;
+
+                    let bgBadge = 'bg-secondary';
+                    if (st === 'pending_approval') bgBadge = 'bg-warning text-dark';
+                    if (st === 'approved') bgBadge = 'bg-success';
+                    if (st === 'rejected') bgBadge = 'bg-danger';
+
+                    let mediaHtml = '';
+                    if (hasImg && imgUrl) {
+                        mediaHtml = `<img src="${imgUrl}" class="rounded-1 me-1 object-fit-cover" width="18" height="18" alt="">`;
+                    } else {
+                        mediaHtml = `<i class="fi fi-rr-document me-1 text-muted"></i>`;
+                    }
+
+                    return {
+                        html: `<div class="p-1 rounded-2 bg-white border shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between mb-1 gap-1">
+                                    <span class="badge ${bgBadge} extra-small">${arg.event.extendedProps.status_label || ''}</span>
+                                    <small class="text-muted text-truncate" style="font-size: 0.65rem;">${catLabel}</small>
+                                </div>
+                                <div class="d-flex align-items-center fw-semibold text-dark text-truncate small">
+                                    ${mediaHtml}
+                                    <span class="text-truncate">${arg.event.title}</span>
+                                </div>
+                               </div>`
+                    };
                 }
             });
 
             mCalendarInstance.render();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initMarketingCalendar();
-            setTimeout(initQuillEditor, 300);
+        document.addEventListener('livewire:initialized', () => {
+            const rootEl = document.querySelector('[wire\\:id]');
+            if (rootEl) {
+                mCalendarWireId = rootEl.getAttribute('wire:id');
+            }
 
-            Livewire.on('marketing:open-create', (eventData) => {
-                setQuillContent(eventData?.content || '');
-                showBootstrapModal('modalPlanForm');
-            });
+            Livewire.on('open-modal-form', (data) => {
+                const modalEl = document.getElementById('modalPlanForm');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
 
-            Livewire.on('marketing:open-edit', (eventData) => {
-                setQuillContent(eventData?.content || '');
-                showBootstrapModal('modalPlanForm');
-            });
-
-            Livewire.on('marketing:open-detail', () => {
-                showBootstrapModal('modalPlanDetail');
-            });
-
-            Livewire.on('marketing:close-detail', () => {
-                hideBootstrapModal('modalPlanDetail');
-            });
-
-            Livewire.on('marketing:open-reject-modal', () => {
-                showBootstrapModal('modalRejectReason');
-            });
-
-            Livewire.on('marketing:close-reject-modal', () => {
-                hideBootstrapModal('modalRejectReason');
-            });
-
-            Livewire.on('marketing:saved', (data) => {
-                hideBootstrapModal('modalPlanForm');
-                if (mCalendarInstance) mCalendarInstance.refetchEvents();
-                if (window.Swal) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công!',
-                        text: data.message || 'Kế hoạch Marketing đã được lưu thành công.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    setTimeout(() => {
+                        initQuillEditor();
+                        if (data && typeof data[0] !== 'undefined') {
+                            setQuillContent(data[0].content || '');
+                        }
+                    }, 200);
                 }
             });
 
-            Livewire.on('marketing:filter-changed', () => {
-                if (mCalendarInstance) mCalendarInstance.refetchEvents();
-            });
-
-            Livewire.on('swal:alert', (data) => {
-                if (window.Swal) {
-                    Swal.fire({
-                        icon: data.icon || 'info',
-                        title: data.title || '',
-                        text: data.text || '',
-                    });
+            Livewire.on('close-modal-form', () => {
+                const modalEl = document.getElementById('modalPlanForm');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
                 }
             });
 
-            Livewire.hook('morph.updated', () => {
-                window.requestAnimationFrame(initMarketingCalendar);
+            Livewire.on('open-modal-detail', () => {
+                const modalEl = document.getElementById('modalPlanDetail');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                }
             });
+
+            Livewire.on('close-modal-detail', () => {
+                const modalEl = document.getElementById('modalPlanDetail');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+            });
+
+            Livewire.on('open-modal-reject', () => {
+                const modalEl = document.getElementById('modalRejectReason');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                }
+            });
+
+            Livewire.on('close-modal-reject', () => {
+                const modalEl = document.getElementById('modalRejectReason');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+            });
+
+            Livewire.on('refresh-calendar', () => {
+                if (mCalendarInstance) {
+                    mCalendarInstance.refetchEvents();
+                }
+            });
+
+            if (document.getElementById('marketingCalendar')) {
+                initMarketingCalendar();
+            }
         });
 
         document.addEventListener('livewire:navigated', () => {
-            initMarketingCalendar();
-            setTimeout(initQuillEditor, 300);
+            if (document.getElementById('marketingCalendar')) {
+                setTimeout(initMarketingCalendar, 100);
+            }
         });
     </script>
 @endpush
