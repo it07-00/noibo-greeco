@@ -289,23 +289,13 @@
                                     @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <div class="col-lg-4">
-                                    <label for="marketing-plan-category" class="form-label small fw-semibold">Danh mục kế hoạch <span class="text-danger">*</span></label>
-                                    <select id="marketing-plan-category" wire:model="category" class="form-select @error('category') is-invalid @enderror">
-                                        @foreach ($categoriesEnum as $cat)
-                                            <option value="{{ $cat->value }}">{{ $cat->label() }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('category') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <div class="col-lg-4">
+                                <div class="col-lg-6">
                                     <label for="marketing-plan-scheduled-at" class="form-label small fw-semibold">Thời gian dự kiến xuất bản <span class="text-danger">*</span></label>
                                     <input id="marketing-plan-scheduled-at" type="datetime-local" wire:model="scheduled_at" class="form-control @error('scheduled_at') is-invalid @enderror" />
                                     @error('scheduled_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <div class="col-lg-4">
+                                <div class="col-lg-6">
                                     <label for="marketing-plan-status" class="form-label small fw-semibold">Trạng thái gửi duyệt</label>
                                     <select id="marketing-plan-status" wire:model="status" class="form-select @error('status') is-invalid @enderror">
                                         <option value="draft">Bản nháp (Lưu tạm)</option>
