@@ -28,8 +28,8 @@ final class MarketingPlanIndex extends Component
 
     private MarketingPlanService $planService;
 
-    // View state
-    public string $viewMode = 'calendar'; // 'calendar' or 'list'
+    // View state ('calendar' or 'list')
+    public string $viewMode = 'calendar';
 
     // Filters
     public string $filterCategory = 'all';
@@ -199,6 +199,11 @@ final class MarketingPlanIndex extends Component
         return $result;
     }
 
+    public function getCalendarEvents(string $start, string $end): array
+    {
+        return $this->getEvents($start, $end);
+    }
+
     public function openCreate(?string $dateStr = null): void
     {
         Gate::authorize('create', MarketingPlan::class);
@@ -294,7 +299,14 @@ final class MarketingPlanIndex extends Component
             $message = 'Tạo mới kế hoạch Marketing thành công!';
         }
 
-        $this->dispatch('marketing:saved', message: $message);
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Thành công!',
+            'text' => $message,
+        ]);
+
+        $this->dispatch('marketing:close-modal-form');
+        $this->dispatch('marketing:filter-changed');
         $this->resetForm();
     }
 
@@ -311,6 +323,7 @@ final class MarketingPlanIndex extends Component
             'text' => 'Kế hoạch đã được chuyển sang trạng thái Chờ duyệt.',
         ]);
 
+        $this->dispatch('marketing:close-detail');
         $this->dispatch('marketing:filter-changed');
     }
 
@@ -327,6 +340,7 @@ final class MarketingPlanIndex extends Component
             'text' => 'Bài viết Marketing đã được phê duyệt.',
         ]);
 
+        $this->dispatch('marketing:close-detail');
         $this->dispatch('marketing:filter-changed');
     }
 
@@ -360,6 +374,7 @@ final class MarketingPlanIndex extends Component
             ]);
 
             $this->dispatch('marketing:close-reject-modal');
+            $this->dispatch('marketing:close-detail');
             $this->dispatch('marketing:filter-changed');
         }
     }
@@ -377,8 +392,8 @@ final class MarketingPlanIndex extends Component
             'text' => 'Kế hoạch Marketing đã được xóa thành công.',
         ]);
 
-        $this->dispatch('marketing:filter-changed');
         $this->dispatch('marketing:close-detail');
+        $this->dispatch('marketing:filter-changed');
         $this->resetForm();
     }
 

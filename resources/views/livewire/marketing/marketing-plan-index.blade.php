@@ -40,7 +40,7 @@
             </div>
             @can('create', App\Models\MarketingPlan::class)
                 <button type="button" class="btn btn-primary px-3 waves-effect waves-light"
-                    wire:click="openCreate('{{ date('Y-m-d') }}')" wire:loading.attr="disabled">
+                    wire:click="openCreate()" wire:loading.attr="disabled">
                     <span wire:loading.remove wire:target="openCreate">
                         <i class="fi fi-rr-plus me-2" aria-hidden="true"></i>Tạo kế hoạch
                     </span>
@@ -123,8 +123,8 @@
                 </div>
                 <div class="d-flex flex-wrap align-items-center gap-3 small text-muted" aria-label="Chú thích trạng thái">
                     @foreach ($statusesEnum as $st)
-                        <span class="d-inline-flex align-items-center gap-1 small fw-semibold">
-                            <span class="badge rounded-pill {{ $st->badgeClass() }} p-1 me-1"></span>{{ $st->label() }}
+                        <span class="d-inline-flex align-items-center gap-1 small fw-semibold me-2">
+                            <span class="badge rounded-pill {{ $st->badgeClass() }} me-1">{{ $st->label() }}</span>
                         </span>
                     @endforeach
                 </div>
@@ -240,7 +240,7 @@
                                             <h3 class="h6 fw-bold text-dark">Chưa tìm thấy kế hoạch phù hợp</h3>
                                             <p class="text-muted small mb-3">Thử thay đổi từ khóa hoặc bộ lọc để xem thêm nội dung.</p>
                                             @can('create', App\Models\MarketingPlan::class)
-                                                <button type="button" class="btn btn-outline-primary" wire:click="openCreate('{{ date('Y-m-d') }}')">
+                                                <button type="button" class="btn btn-outline-primary" wire:click="openCreate()">
                                                     <i class="fi fi-rr-plus me-2" aria-hidden="true"></i>Tạo kế hoạch mới
                                                 </button>
                                             @endcan
@@ -281,7 +281,7 @@
                 </div>
                 <form wire:submit.prevent="save" class="d-flex flex-column flex-grow-1 overflow-hidden">
                     <div class="modal-body bg-light p-4">
-                        <div class="bg-white border rounded-3 p-4 mb-3">
+                        <div class="bg-white border rounded-3 p-4 mb-3 shadow-sm">
                             <div class="d-flex align-items-start gap-3 mb-3">
                                 <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">01</span>
                                 <div>
@@ -313,7 +313,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-white border rounded-3 p-4 mb-3">
+                        <div class="bg-white border rounded-3 p-4 mb-3 shadow-sm">
                             <div class="d-flex align-items-start gap-3 mb-3">
                                 <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">02</span>
                                 <div>
@@ -329,7 +329,7 @@
                             @error('content') <div class="text-danger small mt-2" role="alert">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="bg-white border rounded-3 p-4">
+                        <div class="bg-white border rounded-3 p-4 shadow-sm">
                             <div class="d-flex align-items-start gap-3 mb-3">
                                 <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">03</span>
                                 <div>
@@ -724,7 +724,7 @@
                 editable: false,
                 dayMaxEvents: 3,
                 events: function(fetchInfo, successCallback, failureCallback) {
-                    if (window.Livewire) {
+                    if (window.Livewire && mCalendarWireId) {
                         const component = window.Livewire.find(mCalendarWireId);
                         if (component) {
                             component.getCalendarEvents(fetchInfo.startStr, fetchInfo.endStr)
@@ -738,7 +738,7 @@
                     }
                 },
                 dateClick: function(info) {
-                    if (window.Livewire) {
+                    if (window.Livewire && mCalendarWireId) {
                         const component = window.Livewire.find(mCalendarWireId);
                         if (component) {
                             component.openCreate(info.dateStr);
@@ -746,7 +746,7 @@
                     }
                 },
                 eventClick: function(info) {
-                    if (window.Livewire && info.event.id) {
+                    if (window.Livewire && mCalendarWireId && info.event.id) {
                         const component = window.Livewire.find(mCalendarWireId);
                         if (component) {
                             component.openDetail(info.event.id);
@@ -766,8 +766,8 @@
                 eventContent: function(arg) {
                     const st = arg.event.extendedProps.status || 'draft';
                     const catLabel = arg.event.extendedProps.category_label || '';
-                    const hasImg = arg.event.extendedProps.has_image;
-                    const imgUrl = arg.event.extendedProps.image_url;
+                    const hasImg = arg.event.extendedProps.thumbnail_url;
+                    const imgUrl = arg.event.extendedProps.thumbnail_url;
 
                     let bgBadge = 'bg-secondary';
                     if (st === 'pending_approval') bgBadge = 'bg-warning text-dark';
@@ -805,22 +805,35 @@
                 mCalendarWireId = rootEl.getAttribute('wire:id');
             }
 
-            Livewire.on('open-modal-form', (data) => {
+            Livewire.on('marketing:open-create', (data) => {
                 const modalEl = document.getElementById('modalPlanForm');
                 if (modalEl) {
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     modal.show();
-
                     setTimeout(() => {
                         initQuillEditor();
-                        if (data && typeof data[0] !== 'undefined') {
-                            setQuillContent(data[0].content || '');
-                        }
-                    }, 200);
+                        setQuillContent('');
+                    }, 150);
                 }
             });
 
-            Livewire.on('close-modal-form', () => {
+            Livewire.on('marketing:open-edit', (data) => {
+                const modalEl = document.getElementById('modalPlanForm');
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.show();
+                    setTimeout(() => {
+                        initQuillEditor();
+                        if (data && typeof data.content !== 'undefined') {
+                            setQuillContent(data.content);
+                        } else if (data && typeof data[0] !== 'undefined' && data[0].content) {
+                            setQuillContent(data[0].content);
+                        }
+                    }, 150);
+                }
+            });
+
+            Livewire.on('marketing:close-modal-form', () => {
                 const modalEl = document.getElementById('modalPlanForm');
                 if (modalEl) {
                     const modal = bootstrap.Modal.getInstance(modalEl);
@@ -828,7 +841,7 @@
                 }
             });
 
-            Livewire.on('open-modal-detail', () => {
+            Livewire.on('marketing:open-detail', () => {
                 const modalEl = document.getElementById('modalPlanDetail');
                 if (modalEl) {
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -836,7 +849,7 @@
                 }
             });
 
-            Livewire.on('close-modal-detail', () => {
+            Livewire.on('marketing:close-detail', () => {
                 const modalEl = document.getElementById('modalPlanDetail');
                 if (modalEl) {
                     const modal = bootstrap.Modal.getInstance(modalEl);
@@ -844,7 +857,7 @@
                 }
             });
 
-            Livewire.on('open-modal-reject', () => {
+            Livewire.on('marketing:open-reject-modal', () => {
                 const modalEl = document.getElementById('modalRejectReason');
                 if (modalEl) {
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -852,7 +865,7 @@
                 }
             });
 
-            Livewire.on('close-modal-reject', () => {
+            Livewire.on('marketing:close-reject-modal', () => {
                 const modalEl = document.getElementById('modalRejectReason');
                 if (modalEl) {
                     const modal = bootstrap.Modal.getInstance(modalEl);
@@ -860,7 +873,7 @@
                 }
             });
 
-            Livewire.on('refresh-calendar', () => {
+            Livewire.on('marketing:filter-changed', () => {
                 if (mCalendarInstance) {
                     mCalendarInstance.refetchEvents();
                 }
