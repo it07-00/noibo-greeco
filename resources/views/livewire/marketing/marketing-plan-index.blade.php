@@ -727,9 +727,22 @@
                     if (window.Livewire && mCalendarWireId) {
                         const component = window.Livewire.find(mCalendarWireId);
                         if (component) {
-                            component.getCalendarEvents(fetchInfo.startStr, fetchInfo.endStr)
-                                .then(events => successCallback(events))
-                                .catch(err => failureCallback(err));
+                            const fetchFn = component.fetchCalendarEvents || component.getCalendarEvents || component.getEvents;
+                            if (typeof fetchFn === 'function') {
+                                fetchFn.call(component, fetchInfo.startStr, fetchInfo.endStr)
+                                    .then(events => successCallback(events))
+                                    .catch(err => failureCallback(err));
+                            } else if (typeof component.call === 'function') {
+                                component.call('fetchCalendarEvents', fetchInfo.startStr, fetchInfo.endStr)
+                                    .then(events => successCallback(events))
+                                    .catch(() => {
+                                        component.call('getEvents', fetchInfo.startStr, fetchInfo.endStr)
+                                            .then(events => successCallback(events))
+                                            .catch(err => failureCallback(err));
+                                    });
+                            } else {
+                                successCallback([]);
+                            }
                         } else {
                             successCallback([]);
                         }

@@ -204,6 +204,11 @@ final class MarketingPlanIndex extends Component
         return $this->getEvents($start, $end);
     }
 
+    public function fetchCalendarEvents(string $start = '', string $end = ''): array
+    {
+        return $this->getEvents($start, $end);
+    }
+
     public function openCreate(?string $dateStr = null): void
     {
         Gate::authorize('create', MarketingPlan::class);
