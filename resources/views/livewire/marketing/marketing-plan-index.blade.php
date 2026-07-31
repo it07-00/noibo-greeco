@@ -272,7 +272,7 @@
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng" wire:click="resetForm"></button>
                 </div>
-                <form wire:submit.prevent="save">
+                <form wire:submit.prevent="save" class="d-flex flex-column flex-grow-1 overflow-hidden">
                     <div class="modal-body bg-light p-3">
                         <div class="bg-white border rounded-3 p-3">
                             <div class="d-flex align-items-start gap-2 mb-3">
