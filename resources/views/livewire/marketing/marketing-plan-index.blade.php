@@ -129,8 +129,8 @@
                     @endforeach
                 </div>
             </header>
-            <div class="marketing-calendar-viewport p-3 overflow-auto">
-                <div id="marketingCalendar" wire:ignore></div>
+            <div class="p-4 calendar-scroll-wrapper overflow-auto">
+                <div id="calendar" wire:ignore></div>
             </div>
         </section>
     @else
@@ -282,11 +282,11 @@
                 <form wire:submit.prevent="save" class="d-flex flex-column flex-grow-1 overflow-hidden">
                     <div class="modal-body bg-light p-4">
                         <div class="bg-white border rounded-3 p-4 mb-3 shadow-sm">
-                            <div class="d-flex align-items-start gap-3 mb-3">
-                                <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">01</span>
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <span class="badge bg-primary rounded-pill px-3 py-2 fs-6 fw-bold d-inline-flex align-items-center justify-content-center shadow-sm" style="min-width: 50px; height: 34px;">01</span>
                                 <div>
-                                    <h3 class="h6 fw-bold text-dark mb-1">Thông tin xuất bản</h3>
-                                    <p class="text-muted small mb-0">Thông tin chính để hiển thị trên lịch và danh sách.</p>
+                                    <h3 class="h5 fw-bold text-dark mb-1">Thông tin xuất bản</h3>
+                                    <p class="text-secondary mb-0">Thông tin chính để hiển thị trên lịch và danh sách.</p>
                                 </div>
                             </div>
                             <div class="row g-3">
@@ -314,11 +314,11 @@
                         </div>
 
                         <div class="bg-white border rounded-3 p-4 mb-3 shadow-sm">
-                            <div class="d-flex align-items-start gap-3 mb-3">
-                                <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">02</span>
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <span class="badge bg-primary rounded-pill px-3 py-2 fs-6 fw-bold d-inline-flex align-items-center justify-content-center shadow-sm" style="min-width: 50px; height: 34px;">02</span>
                                 <div>
-                                    <h3 class="h6 fw-bold text-dark mb-1">Nội dung bài viết</h3>
-                                    <p class="text-muted small mb-0">Soạn nội dung cần xuất bản hoặc gửi người quản lý phê duyệt.</p>
+                                    <h3 class="h5 fw-bold text-dark mb-1">Nội dung bài viết</h3>
+                                    <p class="text-secondary mb-0">Soạn nội dung cần xuất bản hoặc gửi người quản lý phê duyệt.</p>
                                 </div>
                             </div>
                             <div wire:ignore>
@@ -330,11 +330,11 @@
                         </div>
 
                         <div class="bg-white border rounded-3 p-4 shadow-sm">
-                            <div class="d-flex align-items-start gap-3 mb-3">
-                                <span class="badge bg-primary rounded-3 px-3 py-2 fw-bold">03</span>
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <span class="badge bg-primary rounded-pill px-3 py-2 fs-6 fw-bold d-inline-flex align-items-center justify-content-center shadow-sm" style="min-width: 50px; height: 34px;">03</span>
                                 <div>
-                                    <h3 class="h6 fw-bold text-dark mb-1">Tài liệu & ghi chú</h3>
-                                    <p class="text-muted small mb-0">Đính kèm hình ảnh minh họa và ghi chú cho đội ngũ.</p>
+                                    <h3 class="h5 fw-bold text-dark mb-1">Tài liệu & ghi chú</h3>
+                                    <p class="text-secondary mb-0">Đính kèm hình ảnh minh họa và ghi chú cho đội ngũ.</p>
                                 </div>
                             </div>
 
@@ -648,7 +648,7 @@
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/marketing-plan.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/duty-schedule.css') }}?v=1.2.0">
 @endpush
 
 @push('scripts')
@@ -697,7 +697,7 @@
         }
 
         function initMarketingCalendar() {
-            const calendarEl = document.getElementById('marketingCalendar');
+            const calendarEl = document.getElementById('calendar');
             if (!calendarEl) return;
 
             if (mCalendarInstance) {
@@ -709,24 +709,24 @@
 
             mCalendarInstance = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
+                fixedWeekCount: false,
                 locale: 'vi',
+                firstDay: 1,
                 headerToolbar: {
-                    left: 'title',
-                    center: '',
-                    right: 'prev,next today dayGridMonth,timeGridWeek'
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth'
                 },
                 buttonText: {
                     today: 'Hôm nay',
-                    month: 'Tháng',
-                    week: 'Tuần'
+                    month: 'Tháng'
                 },
-                height: 'auto',
-                fixedWeekCount: false,
-                navLinks: true,
+                buttonHints: {
+                    prev: '$one trước',
+                    next: '$one sau'
+                },
                 selectable: true,
                 editable: false,
-                dayMaxEvents: 2,
-                moreLinkClick: 'popover',
                 events: function(fetchInfo, successCallback, failureCallback) {
                     if (window.Livewire && mCalendarWireId) {
                         const component = window.Livewire.find(mCalendarWireId);
@@ -765,50 +765,88 @@
                     info.el.setAttribute('title', title);
                     info.el.setAttribute('aria-label', `Xem kế hoạch: ${title}`);
                 },
-                dayCellDidMount: function(arg) {
-                    const dateStr = arg.date.toISOString().split('T')[0];
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'mk-day-add-btn';
-                    btn.title = 'Tạo kế hoạch';
-                    btn.innerHTML = '<i class="fi fi-rr-plus"></i>';
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        if (window.Livewire && mCalendarWireId) {
-                            window.Livewire.find(mCalendarWireId).$call('openCreate', dateStr);
-                        }
-                    });
-                    arg.el.appendChild(btn);
+                dayCellContent: function(arg) {
+                    const numberEl = document.createElement('span');
+                    const cleanNum = arg.dayNumberText
+                        .replace('thg', '')
+                        .replace('tháng', '')
+                        .replace(/[a-zA-Z]/g, '')
+                        .trim();
+
+                    numberEl.className = arg.isToday ? 'day-cell-today-number' : 'day-cell-number';
+                    numberEl.textContent = cleanNum;
+
+                    const actionsEl = document.createElement('div');
+                    actionsEl.className = 'day-cell-actions';
+
+                    @can('create', App\Models\MarketingPlan::class)
+                        const plusBtn = document.createElement('button');
+                        plusBtn.type = 'button';
+                        plusBtn.className = 'btn-plus-day';
+                        plusBtn.title = 'Tạo kế hoạch';
+                        plusBtn.setAttribute('aria-label', `Tạo kế hoạch ngày ${cleanNum}`);
+                        plusBtn.innerHTML = '<i class="fi fi-rr-plus" style="font-size: 8px; line-height: 1;" aria-hidden="true"></i>';
+                        plusBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const year = arg.date.getFullYear();
+                            const month = String(arg.date.getMonth() + 1).padStart(2, '0');
+                            const day = String(arg.date.getDate()).padStart(2, '0');
+                            const dateStr = `${year}-${month}-${day}`;
+
+                            if (window.Livewire && mCalendarWireId) {
+                                window.Livewire.find(mCalendarWireId).$call('openCreate', dateStr);
+                            }
+                        });
+                        actionsEl.appendChild(plusBtn);
+                    @endcan
+
+                    return { domNodes: [numberEl, actionsEl] };
                 },
                 eventContent: function(arg) {
                     const st = arg.event.extendedProps.status || 'draft';
                     const rawTitle = arg.event.extendedProps.raw_title || arg.event.title;
-                    const hasImg = arg.event.extendedProps.thumbnail_url;
+                    const statusLabel = arg.event.extendedProps.status_label || '';
+                    const creatorName = arg.event.extendedProps.creator_name || 'Kế hoạch Marketing';
+                    const themeClasses = {
+                        draft: 'warning',
+                        pending_approval: 'info',
+                        approved: 'success',
+                        rejected: 'danger'
+                    };
+
                     const eventEl = document.createElement('div');
-                    const iconEl = hasImg ? document.createElement('img') : document.createElement('span');
+                    const contextEl = document.createElement('span');
+                    const ownerEl = document.createElement('span');
+                    const timeEl = document.createElement('span');
                     const titleEl = document.createElement('span');
+                    const metaEl = document.createElement('span');
 
-                    eventEl.className = 'mk-cal-event';
-                    eventEl.dataset.status = st;
+                    eventEl.className = `greeco-event-card event-theme-${themeClasses[st] || 'primary'}`;
+                    eventEl.title = [rawTitle, creatorName, statusLabel].filter(Boolean).join(' · ');
 
-                    if (hasImg) {
-                        iconEl.src = arg.event.extendedProps.thumbnail_url;
-                        iconEl.alt = '';
-                    } else {
-                        const icons = { draft: 'fi-rr-edit', pending_approval: 'fi-rr-time-check', approved: 'fi-rr-check', rejected: 'fi-rr-cross-circle' };
-                        const glyphEl = document.createElement('i');
-                        glyphEl.className = `fi ${icons[st] || 'fi-rr-document'}`;
-                        glyphEl.setAttribute('aria-hidden', 'true');
-                        iconEl.appendChild(glyphEl);
+                    contextEl.className = 'greeco-event-context';
+
+                    ownerEl.className = 'greeco-event-owner';
+                    ownerEl.textContent = creatorName;
+                    contextEl.appendChild(ownerEl);
+
+                    if (arg.event.start) {
+                        timeEl.className = 'greeco-event-time';
+                        timeEl.textContent = arg.event.start.toLocaleTimeString('vi-VN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        });
+                        contextEl.appendChild(timeEl);
                     }
 
-                    iconEl.className = 'mk-event-icon';
-                    iconEl.setAttribute('aria-hidden', 'true');
-
-                    titleEl.className = 'mk-event-title';
+                    titleEl.className = 'greeco-event-title';
                     titleEl.textContent = rawTitle;
 
-                    eventEl.append(iconEl, titleEl);
+                    metaEl.className = 'greeco-event-meta';
+                    metaEl.textContent = statusLabel;
+
+                    eventEl.append(contextEl, titleEl, metaEl);
 
                     return { domNodes: [eventEl] };
                 }
@@ -892,13 +930,13 @@
                 }
             });
 
-            if (document.getElementById('marketingCalendar')) {
+            if (document.getElementById('calendar')) {
                 initMarketingCalendar();
             }
         });
 
         document.addEventListener('livewire:navigated', () => {
-            if (document.getElementById('marketingCalendar')) {
+            if (document.getElementById('calendar')) {
                 setTimeout(initMarketingCalendar, 100);
             }
         });
