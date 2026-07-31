@@ -199,13 +199,14 @@ final class MarketingPlanIndex extends Component
         return $result;
     }
 
-    public function openCreate(string $dateStr): void
+    public function openCreate(?string $dateStr = null): void
     {
         Gate::authorize('create', MarketingPlan::class);
 
         $this->resetErrorBag();
         $this->resetForm();
 
+        $dateStr = $dateStr ?: date('Y-m-d');
         $date = date('Y-m-d', strtotime($dateStr));
         $time = date('H:i');
         $this->scheduled_at = "{$date}T{$time}";
