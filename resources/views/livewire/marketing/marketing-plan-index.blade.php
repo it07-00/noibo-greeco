@@ -655,7 +655,7 @@
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <script>
         let mCalendarInstance = null;
-        let mCalendarWireId = null;
+        let mCalendarWireId = '{{ $this->getId() }}';
         let mCalendarElement = null;
         let quillInstance = null;
 
@@ -727,22 +727,12 @@
                     if (window.Livewire && mCalendarWireId) {
                         const component = window.Livewire.find(mCalendarWireId);
                         if (component) {
-                            const fetchFn = component.fetchCalendarEvents || component.getCalendarEvents || component.getEvents;
-                            if (typeof fetchFn === 'function') {
-                                fetchFn.call(component, fetchInfo.startStr, fetchInfo.endStr)
-                                    .then(events => successCallback(events))
-                                    .catch(err => failureCallback(err));
-                            } else if (typeof component.call === 'function') {
-                                component.call('fetchCalendarEvents', fetchInfo.startStr, fetchInfo.endStr)
-                                    .then(events => successCallback(events))
-                                    .catch(() => {
-                                        component.call('getEvents', fetchInfo.startStr, fetchInfo.endStr)
-                                            .then(events => successCallback(events))
-                                            .catch(err => failureCallback(err));
-                                    });
-                            } else {
-                                successCallback([]);
-                            }
+                            component.$call('getCalendarEvents', fetchInfo.startStr, fetchInfo.endStr)
+                                .then(events => successCallback(events))
+                                .catch(err => {
+                                    console.warn('FullCalendar fetch error:', err);
+                                    failureCallback(err);
+                                });
                         } else {
                             successCallback([]);
                         }
@@ -754,7 +744,7 @@
                     if (window.Livewire && mCalendarWireId) {
                         const component = window.Livewire.find(mCalendarWireId);
                         if (component) {
-                            component.openCreate(info.dateStr);
+                            component.$call('openCreate', info.dateStr);
                         }
                     }
                 },
@@ -762,7 +752,7 @@
                     if (window.Livewire && mCalendarWireId && info.event.id) {
                         const component = window.Livewire.find(mCalendarWireId);
                         if (component) {
-                            component.openDetail(info.event.id);
+                            component.$call('openDetail', info.event.id);
                         }
                     }
                 },
@@ -770,7 +760,7 @@
                     return {
                         html: `<div class="d-flex align-items-center justify-content-between w-100 pe-1">
                                 <span class="${arg.isToday ? 'badge bg-primary rounded-circle px-2 py-1' : 'fw-bold text-secondary small'}">${arg.dayNumberText.replace('Ngày ', '')}</span>
-                                <button type="button" class="btn btn-sm btn-light border p-0 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Tạo kế hoạch ngày này" onclick="event.stopPropagation(); window.Livewire.find('${mCalendarWireId}').openCreate('${arg.date.toISOString().split('T')[0]}')">
+                                <button type="button" class="btn btn-sm btn-light border p-0 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Tạo kế hoạch ngày này" onclick="event.stopPropagation(); window.Livewire.find('${mCalendarWireId}').$call('openCreate', '${arg.date.toISOString().split('T')[0]}')">
                                     <i class="fi fi-rr-plus extra-small text-muted"></i>
                                 </button>
                                </div>`
@@ -813,11 +803,6 @@
         }
 
         document.addEventListener('livewire:initialized', () => {
-            const rootEl = document.querySelector('[wire\\:id]');
-            if (rootEl) {
-                mCalendarWireId = rootEl.getAttribute('wire:id');
-            }
-
             Livewire.on('marketing:open-create', (data) => {
                 const modalEl = document.getElementById('modalPlanForm');
                 if (modalEl) {
