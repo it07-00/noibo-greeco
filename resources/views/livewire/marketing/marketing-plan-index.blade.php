@@ -129,7 +129,7 @@
                     @endforeach
                 </div>
             </header>
-            <div class="p-3 overflow-auto">
+            <div class="marketing-calendar-viewport p-3 overflow-auto">
                 <div id="marketingCalendar" wire:ignore></div>
             </div>
         </section>
@@ -711,9 +711,9 @@
                 initialView: 'dayGridMonth',
                 locale: 'vi',
                 headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
+                    left: 'title',
+                    center: '',
+                    right: 'prev,next today dayGridMonth,timeGridWeek'
                 },
                 buttonText: {
                     today: 'Hôm nay',
@@ -721,9 +721,12 @@
                     week: 'Tuần'
                 },
                 height: 'auto',
+                fixedWeekCount: false,
+                navLinks: true,
                 selectable: true,
                 editable: false,
-                dayMaxEvents: 3,
+                dayMaxEvents: 2,
+                moreLinkClick: 'popover',
                 events: function(fetchInfo, successCallback, failureCallback) {
                     if (window.Livewire && mCalendarWireId) {
                         const component = window.Livewire.find(mCalendarWireId);
@@ -757,6 +760,11 @@
                         }
                     }
                 },
+                eventDidMount: function(info) {
+                    const title = info.event.extendedProps.raw_title || info.event.title;
+                    info.el.setAttribute('title', title);
+                    info.el.setAttribute('aria-label', `Xem kế hoạch: ${title}`);
+                },
                 dayCellDidMount: function(arg) {
                     const dateStr = arg.date.toISOString().split('T')[0];
                     const btn = document.createElement('button');
@@ -776,21 +784,33 @@
                     const st = arg.event.extendedProps.status || 'draft';
                     const rawTitle = arg.event.extendedProps.raw_title || arg.event.title;
                     const hasImg = arg.event.extendedProps.thumbnail_url;
+                    const eventEl = document.createElement('div');
+                    const iconEl = hasImg ? document.createElement('img') : document.createElement('span');
+                    const titleEl = document.createElement('span');
 
-                    let iconHtml = '';
+                    eventEl.className = 'mk-cal-event';
+                    eventEl.dataset.status = st;
+
                     if (hasImg) {
-                        iconHtml = `<img src="${arg.event.extendedProps.thumbnail_url}" class="mk-event-icon" style="object-fit:cover;" alt="">`;
+                        iconEl.src = arg.event.extendedProps.thumbnail_url;
+                        iconEl.alt = '';
                     } else {
                         const icons = { draft: 'fi-rr-edit', pending_approval: 'fi-rr-time-check', approved: 'fi-rr-check', rejected: 'fi-rr-cross-circle' };
-                        iconHtml = `<span class="mk-event-icon"><i class="fi ${icons[st] || 'fi-rr-document'}"></i></span>`;
+                        const glyphEl = document.createElement('i');
+                        glyphEl.className = `fi ${icons[st] || 'fi-rr-document'}`;
+                        glyphEl.setAttribute('aria-hidden', 'true');
+                        iconEl.appendChild(glyphEl);
                     }
 
-                    return {
-                        html: `<div class="mk-cal-event" data-status="${st}">
-                                    ${iconHtml}
-                                    <span class="mk-event-title">${rawTitle}</span>
-                               </div>`
-                    };
+                    iconEl.className = 'mk-event-icon';
+                    iconEl.setAttribute('aria-hidden', 'true');
+
+                    titleEl.className = 'mk-event-title';
+                    titleEl.textContent = rawTitle;
+
+                    eventEl.append(iconEl, titleEl);
+
+                    return { domNodes: [eventEl] };
                 }
             });
 

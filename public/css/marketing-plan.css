@@ -1,151 +1,150 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   Marketing Plan – FullCalendar Overrides
-   Follows GREECO theme conventions (styles.css).  No inline styles.
-   ═══════════════════════════════════════════════════════════════════════ */
+/* Marketing Plan – FullCalendar overrides.
+   Bootstrap remains the primary UI layer; these rules only adapt FullCalendar. */
 
-/* ── Calendar container ─────────────────────────────────────────────── */
+.marketing-calendar-viewport {
+    scrollbar-width: thin;
+}
+
 #marketingCalendar {
     --fc-border-color: var(--bs-border-color);
-    --fc-today-bg-color: rgba(var(--bs-primary-rgb), .04);
-    --fc-neutral-bg-color: var(--bs-body-bg);
+    --fc-today-bg-color: rgba(var(--bs-primary-rgb), .06);
+    --fc-neutral-bg-color: var(--bs-light);
+    min-width: 720px;
+    color: var(--bs-body-color);
 }
 
+/* Toolbar */
 #marketingCalendar .fc-toolbar.fc-header-toolbar {
-    margin-bottom: 1.25rem;
-}
-
-#marketingCalendar .fc-toolbar-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    text-transform: capitalize;
-}
-
-#marketingCalendar .fc-button {
-    font-size: 0.8rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: var(--bs-border-radius) !important;
-    text-transform: capitalize;
-}
-
-#marketingCalendar .fc-button-primary {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
-}
-
-#marketingCalendar .fc-button-primary:not(.fc-button-active):not(:disabled):hover {
-    background-color: var(--bs-primary);
-    opacity: .85;
-}
-
-#marketingCalendar .fc-button-primary.fc-button-active {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
-    box-shadow: none;
-}
-
-/* ── Day cells ──────────────────────────────────────────────────────── */
-#marketingCalendar .fc-daygrid-day-number {
-    padding: 6px 10px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--bs-body-color);
-}
-
-#marketingCalendar .fc-day-today .fc-daygrid-day-number {
-    background: var(--bs-primary);
-    color: #fff;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    margin: 4px 6px;
-}
-
-#marketingCalendar .fc-col-header-cell {
-    padding: 10px 0;
-    font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: capitalize;
-    color: var(--bs-body-color);
+    gap: .75rem;
+    margin-bottom: .75rem;
+    padding: .75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
     background: var(--bs-light);
 }
 
-/* ── Event cards (custom render) ────────────────────────────────────── */
-.mk-cal-event {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 4px 6px;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    line-height: 1.3;
-    cursor: pointer;
-    transition: box-shadow .15s ease, transform .15s ease;
-    border-left: 3px solid var(--mk-event-color, var(--bs-secondary));
-    background: var(--mk-event-bg, var(--bs-light));
+#marketingCalendar .fc-toolbar-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: capitalize;
 }
 
-.mk-cal-event:hover {
-    box-shadow: 0 2px 6px rgba(0,0,0,.1);
-    transform: translateY(-1px);
+#marketingCalendar .fc-button-group {
+    gap: .25rem;
 }
 
-.mk-cal-event .mk-event-title {
-    font-weight: 600;
+#marketingCalendar .fc-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: .5rem .75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius) !important;
+    background: var(--bs-body-bg);
     color: var(--bs-body-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
+    box-shadow: none !important;
+    font-size: .8125rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 }
 
-.mk-cal-event .mk-event-icon {
-    flex-shrink: 0;
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
+#marketingCalendar .fc-button:hover:not(:disabled),
+#marketingCalendar .fc-button:focus-visible {
+    border-color: rgba(var(--bs-primary-rgb), .45);
+    background: rgba(var(--bs-primary-rgb), .08);
+    color: var(--bs-primary);
+}
+
+#marketingCalendar .fc-button:focus-visible {
+    outline: 3px solid rgba(var(--bs-primary-rgb), .22);
+    outline-offset: 2px;
+}
+
+#marketingCalendar .fc-button-primary.fc-button-active {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+#marketingCalendar .fc-today-button {
+    min-width: auto;
+}
+
+/* Calendar grid */
+#marketingCalendar .fc-scrollgrid {
+    overflow: hidden;
+    border-radius: var(--bs-border-radius-lg);
+}
+
+#marketingCalendar .fc-col-header-cell {
+    padding: .65rem 0;
+    background: var(--bs-light);
+    color: var(--bs-secondary-color);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+#marketingCalendar .fc-daygrid-day {
+    position: relative;
+    background: var(--bs-body-bg);
+    transition: background-color .15s ease;
+}
+
+#marketingCalendar .fc-daygrid-day:hover {
+    background: rgba(var(--bs-primary-rgb), .025);
+}
+
+#marketingCalendar .fc-day-other {
+    background: rgba(var(--bs-secondary-rgb), .025);
+}
+
+#marketingCalendar .fc-day-other .fc-daygrid-day-number {
+    color: var(--bs-secondary-color);
+    opacity: .55;
+}
+
+#marketingCalendar .fc-daygrid-day-frame {
+    min-height: 88px;
+}
+
+#marketingCalendar .fc-daygrid-day-top {
+    min-height: 36px;
+}
+
+#marketingCalendar .fc-daygrid-day-number {
+    margin: 4px 6px 0 0;
+    padding: 4px 7px;
+    border-radius: 999px;
+    color: var(--bs-body-color);
+    font-size: .75rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+#marketingCalendar .fc-day-today .fc-daygrid-day-number {
+    min-width: 28px;
+    min-height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.55rem;
-    color: #fff;
-    background: var(--mk-event-color, var(--bs-secondary));
-    margin-top: 1px;
-}
-
-/* Status color variants */
-.mk-cal-event[data-status="draft"] {
-    --mk-event-color: var(--bs-secondary);
-    --mk-event-bg: rgba(var(--bs-secondary-rgb), .08);
-}
-
-.mk-cal-event[data-status="pending_approval"] {
-    --mk-event-color: var(--bs-warning);
-    --mk-event-bg: rgba(var(--bs-warning-rgb), .08);
-}
-
-.mk-cal-event[data-status="approved"] {
-    --mk-event-color: var(--bs-success);
-    --mk-event-bg: rgba(var(--bs-success-rgb), .08);
-}
-
-.mk-cal-event[data-status="rejected"] {
-    --mk-event-color: var(--bs-danger);
-    --mk-event-bg: rgba(var(--bs-danger-rgb), .08);
-}
-
-/* ── FullCalendar default event overrides ──────────────────────────── */
-#marketingCalendar .fc-event {
-    border: none;
-    background: transparent;
+    margin: 4px 6px 0 0;
     padding: 0;
-    margin: 1px 2px;
+    background: var(--bs-primary);
+    color: #fff;
 }
 
-#marketingCalendar .fc-event .fc-event-main {
+/* Event cards */
+#marketingCalendar .fc-event {
+    margin: 1px 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+#marketingCalendar .fc-event-main {
     padding: 0;
 }
 
@@ -153,45 +152,151 @@
     margin-bottom: 2px;
 }
 
-/* ── +more link ─────────────────────────────────────────────────────── */
-#marketingCalendar .fc-daygrid-more-link {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--bs-primary);
-    padding: 2px 6px;
+.mk-cal-event {
+    --mk-event-color: var(--bs-secondary);
+    --mk-event-bg: rgba(var(--bs-secondary-rgb), .09);
+    display: flex;
+    min-width: 0;
+    min-height: 30px;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 7px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mk-event-color) 22%, transparent);
+    border-left: 3px solid var(--mk-event-color);
+    border-radius: var(--bs-border-radius);
+    background: var(--mk-event-bg);
+    cursor: pointer;
+    font-size: .72rem;
+    line-height: 1.2;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-/* ── Day cell hover add button ──────────────────────────────────────── */
-#marketingCalendar .fc-daygrid-day:hover .mk-day-add-btn {
+.mk-cal-event:hover,
+.fc-event:focus-visible .mk-cal-event {
+    border-color: color-mix(in srgb, var(--mk-event-color) 55%, transparent);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
+}
+
+.fc-event:focus-visible {
+    outline: 3px solid rgba(var(--bs-primary-rgb), .22);
+    outline-offset: 1px;
+}
+
+.mk-event-icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 5px;
+    background: var(--mk-event-color);
+    color: #fff;
+    font-size: .6rem;
+}
+
+img.mk-event-icon {
+    object-fit: cover;
+}
+
+.mk-event-title {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    color: var(--bs-body-color);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mk-cal-event[data-status="draft"] {
+    --mk-event-color: var(--bs-secondary);
+    --mk-event-bg: rgba(var(--bs-secondary-rgb), .09);
+}
+
+.mk-cal-event[data-status="pending_approval"] {
+    --mk-event-color: var(--bs-warning);
+    --mk-event-bg: rgba(var(--bs-warning-rgb), .11);
+}
+
+.mk-cal-event[data-status="approved"] {
+    --mk-event-color: var(--bs-success);
+    --mk-event-bg: rgba(var(--bs-success-rgb), .09);
+}
+
+.mk-cal-event[data-status="rejected"] {
+    --mk-event-color: var(--bs-danger);
+    --mk-event-bg: rgba(var(--bs-danger-rgb), .09);
+}
+
+#marketingCalendar .fc-daygrid-more-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    margin: 1px 5px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(var(--bs-primary-rgb), .08);
+    color: var(--bs-primary);
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+/* Create shortcut inside a day cell */
+#marketingCalendar .fc-daygrid-day:hover .mk-day-add-btn,
+.mk-day-add-btn:focus-visible {
     opacity: 1;
 }
 
 .mk-day-add-btn {
-    opacity: 0;
-    transition: opacity .15s ease;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 1px solid var(--bs-border-color);
-    background: var(--bs-body-bg);
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    top: 4px;
+    left: 5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 50%;
+    background: var(--bs-body-bg);
+    color: var(--bs-secondary-color);
     cursor: pointer;
-    font-size: 0.55rem;
-    color: var(--bs-body-color);
-    position: absolute;
-    top: 4px;
-    right: 4px;
+    font-size: .65rem;
+    opacity: 0;
+    transition: opacity .15s ease, background-color .15s ease, color .15s ease;
 }
 
-.mk-day-add-btn:hover {
-    background: var(--bs-primary);
+.mk-day-add-btn:hover,
+.mk-day-add-btn:focus-visible {
     border-color: var(--bs-primary);
+    background: var(--bs-primary);
     color: #fff;
+    outline: 0;
 }
 
-/* ── Make day cells relative for absolute positioning of add button ── */
-#marketingCalendar .fc-daygrid-day {
-    position: relative;
+@media (max-width: 767.98px) {
+    #marketingCalendar .fc-toolbar.fc-header-toolbar {
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    #marketingCalendar .fc-toolbar-chunk:first-child {
+        width: 100%;
+    }
+
+    #marketingCalendar .fc-toolbar-title {
+        font-size: .9375rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #marketingCalendar *,
+    #marketingCalendar *::before,
+    #marketingCalendar *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+    }
 }
