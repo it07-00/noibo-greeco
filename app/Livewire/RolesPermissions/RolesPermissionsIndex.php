@@ -301,6 +301,13 @@ final class RolesPermissionsIndex extends Component
                 PermissionEnum::CommissionApprove->value => 'Duyệt yêu cầu chi hoa hồng',
                 PermissionEnum::CommissionPay->value => 'Xác nhận đã chi hoa hồng',
             ],
+            'Kế hoạch Marketing' => [
+                PermissionEnum::MarketingPlanView->value => 'Xem kế hoạch Marketing',
+                PermissionEnum::MarketingPlanCreate->value => 'Tạo kế hoạch Marketing',
+                PermissionEnum::MarketingPlanUpdate->value => 'Cập nhật kế hoạch Marketing',
+                PermissionEnum::MarketingPlanDelete->value => 'Xóa kế hoạch Marketing',
+                PermissionEnum::MarketingPlanApprove->value => 'Phê duyệt kế hoạch Marketing',
+            ],
         ];
 
         $activeRolePermissions = $activeRole ? $activeRole->permissions->pluck('name')->toArray() : [];
