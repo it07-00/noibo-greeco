@@ -178,4 +178,38 @@ final class MarketingPlanTest extends TestCase
 
         $this->assertSame(MarketingPlanStatus::Approved, $plan->fresh()->status);
     }
+
+    public function test_marketing_role_user_can_upload_images_to_marketing_plan(): void
+    {
+        Storage::fake('public');
+        $this->seed(PermissionSeeder::class);
+
+        $marketingUser = User::factory()->create();
+        $marketingUser->assignRole(RoleEnum::Marketing->value);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->actingAs($marketingUser);
+
+        $image = UploadedFile::fake()->image('poster_campaign.png', 1200, 800);
+
+        Livewire::test(\App\Livewire\Marketing\MarketingPlanIndex::class)
+            ->set('title', 'Kế hoạch truyền thông sản phẩm mới với Banner')
+            ->set('category', 'website')
+            ->set('content', '<p>Soạn thảo nội dung có kèm <strong>Banner Quảng Cáo</strong></p>')
+            ->set('scheduled_at', '2026-08-20T10:00')
+            ->set('status', 'draft')
+            ->set('newImages', [$image])
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertDispatched('marketing:saved');
+
+        $plan = MarketingPlan::where('title', 'Kế hoạch truyền thông sản phẩm mới với Banner')->first();
+        $this->assertNotNull($plan);
+        $this->assertSame($marketingUser->id, $plan->created_by);
+        $this->assertCount(1, $plan->images);
+        $uploadedImage = $plan->images->first();
+        $this->assertSame('poster_campaign.png', $uploadedImage->file_name);
+        Storage::disk('public')->assertExists($uploadedImage->file_path);
+    }
 }
+

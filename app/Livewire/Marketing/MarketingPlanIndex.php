@@ -128,7 +128,7 @@ final class MarketingPlanIndex extends Component
         ];
 
         if (! empty($this->newImages)) {
-            $rules['newImages.*'] = ['nullable', 'image', 'max:10240'];
+            $rules['newImages.*'] = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'];
         }
 
         return $rules;

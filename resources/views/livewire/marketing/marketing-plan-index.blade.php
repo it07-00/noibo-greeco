@@ -674,7 +674,7 @@
                         [{ 'color': [] }, { 'background': [] }],
                         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                         ['blockquote', 'code-block'],
-                        ['link', 'clean']
+                        ['link', 'image', 'clean']
                     ]
                 }
             });
