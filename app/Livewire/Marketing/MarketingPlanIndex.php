@@ -61,6 +61,8 @@ final class MarketingPlanIndex extends Component
 
     public $deleteImageIds = [];
 
+    public $uploadDetailImages = [];
+
     // Rejection reason modal property
     public ?int $rejectPlanId = null;
 
@@ -276,6 +278,67 @@ final class MarketingPlanIndex extends Component
     {
         unset($this->newImages[$index]);
         $this->newImages = array_values($this->newImages);
+    }
+
+    public function updatedUploadDetailImages(): void
+    {
+        if (empty($this->uploadDetailImages) || ! $this->selectedPlanId) {
+            return;
+        }
+
+        $this->validate([
+            'uploadDetailImages.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:10240'],
+        ], [], [
+            'uploadDetailImages.*' => 'hình ảnh đính kèm',
+        ]);
+
+        $plan = MarketingPlan::findOrFail($this->selectedPlanId);
+        Gate::authorize('view', $plan);
+
+        $dto = MarketingPlanDTO::fromArray([
+            'title' => $plan->title,
+            'category' => $plan->category->value ?? (string) $plan->category,
+            'content' => $plan->content,
+            'scheduled_at' => $plan->scheduled_at->format('Y-m-d H:i:s'),
+            'status' => $plan->status->value ?? (string) $plan->status,
+            'notes' => $plan->notes,
+        ]);
+
+        $this->planService->update($plan, $dto, $this->uploadDetailImages, []);
+
+        $this->uploadDetailImages = [];
+
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Thành công!',
+            'text' => 'Đã tải thêm hình ảnh vào bài viết!',
+            'toast' => true,
+            'position' => 'top-end',
+            'timer' => 3000,
+        ]);
+        $this->dispatch('marketing:filter-changed');
+    }
+
+    public function deleteSingleImage(int $imageId): void
+    {
+        $image = \App\Models\MarketingPlanImage::findOrFail($imageId);
+        $plan = $image->marketingPlan;
+        Gate::authorize('view', $plan);
+
+        if (Storage::disk('public')->exists($image->file_path)) {
+            Storage::disk('public')->delete($image->file_path);
+        }
+        $image->delete();
+
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Đã xóa!',
+            'text' => 'Đã xóa hình ảnh khỏi bài viết.',
+            'toast' => true,
+            'position' => 'top-end',
+            'timer' => 3000,
+        ]);
+        $this->dispatch('marketing:filter-changed');
     }
 
     public function save(): void

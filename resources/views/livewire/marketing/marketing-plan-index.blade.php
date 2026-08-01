@@ -525,32 +525,57 @@
                             </div>
                         </section>
 
-                        {{-- Images Gallery --}}
-                        @if ($selectedPlan->images->count() > 0)
-                            <section class="bg-white border rounded-3 p-4 mb-4 shadow-sm">
-                                <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+                        {{-- Images Gallery & Management --}}
+                        <section class="bg-white border rounded-3 p-4 mb-4 shadow-sm">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+                                <div class="d-flex align-items-center gap-2">
                                     <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-2 p-2">
                                         <i class="fi fi-rr-picture"></i>
                                     </div>
                                     <div>
-                                        <span class="d-block text-primary text-uppercase fw-bold small">Tài liệu</span>
-                                        <h3 class="h6 fw-bold text-dark mb-0">Hình ảnh đính kèm <small class="text-muted">({{ $selectedPlan->images->count() }} ảnh)</small></h3>
+                                        <span class="d-block text-primary text-uppercase fw-bold small">Tài liệu & Hình ảnh</span>
+                                        <h3 class="h6 fw-bold text-dark mb-0">Hình ảnh bài viết <small class="text-muted">({{ $selectedPlan->images->count() }} ảnh)</small></h3>
                                     </div>
                                 </div>
+                                <div>
+                                    <label for="detail-upload-input" class="btn btn-sm btn-primary waves-effect waves-light cursor-pointer mb-0">
+                                        <i class="fi fi-rr-cloud-upload-alt me-1"></i> Tải thêm ảnh
+                                    </label>
+                                    <input id="detail-upload-input" type="file" wire:model.live="uploadDetailImages" multiple accept="image/*" class="d-none">
+                                </div>
+                            </div>
+                            @error('uploadDetailImages.*')
+                                <div class="alert alert-danger small p-2 mb-3">{{ $message }}</div>
+                            @enderror
+                            <div wire:loading wire:target="uploadDetailImages" class="text-primary small mb-3">
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Đang tải ảnh lên bài viết...
+                            </div>
+
+                            @if ($selectedPlan->images->count() > 0)
                                 <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-4">
                                     @foreach ($selectedPlan->images as $img)
-                                        <div class="col">
-                                            <a href="{{ Storage::url($img->file_path) }}" target="_blank" rel="noopener" class="d-block position-relative border rounded-3 overflow-hidden bg-light shadow-sm text-decoration-none">
-                                                <img src="{{ Storage::url($img->file_path) }}" alt="{{ $img->file_name }}" class="w-100 object-fit-cover" style="aspect-ratio: 4/3;" loading="lazy">
-                                                <span class="position-absolute bottom-0 end-0 m-2 px-2 py-1 bg-dark bg-opacity-75 text-white rounded small">
-                                                    <i class="fi fi-rr-expand me-1"></i> Xem ảnh
-                                                </span>
-                                            </a>
+                                        <div class="col" wire:key="detail-img-{{ $img->id }}">
+                                            <div class="position-relative border rounded-3 overflow-hidden bg-light shadow-sm">
+                                                <a href="{{ Storage::url($img->file_path) }}" target="_blank" rel="noopener" class="d-block text-decoration-none">
+                                                    <img src="{{ Storage::url($img->file_path) }}" alt="{{ $img->file_name }}" class="w-100 object-fit-cover" style="aspect-ratio: 4/3;" loading="lazy">
+                                                    <span class="position-absolute bottom-0 start-0 m-2 px-2 py-1 bg-dark bg-opacity-75 text-white rounded small">
+                                                        <i class="fi fi-rr-expand me-1"></i> Xem
+                                                    </span>
+                                                </a>
+                                                <button type="button" class="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 m-2 rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 28px; height: 28px;" title="Xóa ảnh này khỏi bài viết" aria-label="Xóa ảnh này" wire:click="deleteSingleImage({{ $img->id }})" wire:confirm="Bạn có chắc chắn muốn xóa ảnh này khỏi bài viết?">
+                                                    <i class="fi fi-rr-trash small" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
-                            </section>
-                        @endif
+                            @else
+                                <div class="text-center py-4 bg-light rounded-3 border border-dashed">
+                                    <i class="fi fi-rr-picture text-muted fs-3 mb-2 d-block"></i>
+                                    <p class="text-muted small mb-0">Bài viết này chưa có hình ảnh đính kèm. Bấm nút <strong>"Tải thêm ảnh"</strong> để chọn hình ảnh.</p>
+                                </div>
+                            @endif
+                        </section>
 
                         @if ($selectedPlan->notes)
                             <section class="bg-warning-subtle border border-warning-subtle rounded-3 p-4 shadow-sm">

@@ -211,5 +211,46 @@ final class MarketingPlanTest extends TestCase
         $this->assertSame('poster_campaign.png', $uploadedImage->file_name);
         Storage::disk('public')->assertExists($uploadedImage->file_path);
     }
+
+    public function test_user_can_upload_and_delete_single_image_in_detail_view(): void
+    {
+        Storage::fake('public');
+        $this->seed(PermissionSeeder::class);
+
+        $user = User::factory()->create();
+        $user->givePermissionTo(PermissionEnum::MarketingPlanView->value);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $plan = MarketingPlan::create([
+            'title' => 'Bài viết truyền thông mẫu',
+            'category' => 'website',
+            'scheduled_at' => now(),
+            'status' => 'draft',
+            'created_by' => $user->id,
+        ]);
+
+        $this->actingAs($user);
+
+        $image = UploadedFile::fake()->image('detail_banner.jpg', 600, 400);
+
+        // Test uploading image directly in detail view
+        Livewire::test(\App\Livewire\Marketing\MarketingPlanIndex::class)
+            ->set('selectedPlanId', $plan->id)
+            ->set('uploadDetailImages', [$image]);
+
+        $plan->refresh();
+        $this->assertCount(1, $plan->images);
+        $img = $plan->images->first();
+        Storage::disk('public')->assertExists($img->file_path);
+
+        // Test deleting single image
+        Livewire::test(\App\Livewire\Marketing\MarketingPlanIndex::class)
+            ->set('selectedPlanId', $plan->id)
+            ->call('deleteSingleImage', $img->id);
+
+        $this->assertCount(0, $plan->fresh()->images);
+        Storage::disk('public')->assertMissing($img->file_path);
+    }
 }
+
 
