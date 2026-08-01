@@ -33,30 +33,12 @@ final class MarketingPlanPolicy
 
     public function update(User $user, MarketingPlan $plan): bool
     {
-        if (! $user->hasPermissionTo(PermissionEnum::MarketingPlanUpdate->value)) {
-            return false;
-        }
-
-        // If user has approve permission, they can edit anytime
-        if ($user->hasPermissionTo(PermissionEnum::MarketingPlanApprove->value)) {
-            return true;
-        }
-
-        // Creators can edit if draft or rejected or pending
-        return (int) $plan->created_by === (int) $user->id;
+        return $user->hasPermissionTo(PermissionEnum::MarketingPlanUpdate->value);
     }
 
     public function delete(User $user, MarketingPlan $plan): bool
     {
-        if (! $user->hasPermissionTo(PermissionEnum::MarketingPlanDelete->value)) {
-            return false;
-        }
-
-        if ($user->hasPermissionTo(PermissionEnum::MarketingPlanApprove->value)) {
-            return true;
-        }
-
-        return (int) $plan->created_by === (int) $user->id;
+        return $user->hasPermissionTo(PermissionEnum::MarketingPlanDelete->value);
     }
 
     public function approve(User $user): bool
