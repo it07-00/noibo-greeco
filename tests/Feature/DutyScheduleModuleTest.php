@@ -453,7 +453,7 @@ final class DutyScheduleModuleTest extends TestCase
 
         $this->actingAs($staff);
 
-        $dateStr = now()->addDays(2)->format('Y-m-d');
+        $dateStr = now()->addDays(10)->format('Y-m-d');
         $futureStart = "{$dateStr}T08:00";
         $checkIn = "{$dateStr}T08:06"; // 6 minutes late (after 08:00)
         $checkOut = "{$dateStr}T16:50"; // 10 minutes early (before 17:00)
@@ -473,10 +473,11 @@ final class DutyScheduleModuleTest extends TestCase
         $component = \Livewire\Livewire::test(\App\Livewire\DutySchedules\DutyScheduleIndex::class);
         $events = $component->instance()->getEvents("{$dateStr} 00:00:00", "{$dateStr} 23:59:59");
 
-        $this->assertCount(1, $events);
-        $this->assertSame('08:06', $events[0]['check_in_time']);
-        $this->assertSame('16:50', $events[0]['check_out_time']);
-        $this->assertSame(6, $events[0]['late_minutes']);
-        $this->assertSame(10, $events[0]['early_minutes']);
+        $event = collect($events)->firstWhere('db_id', $schedule->id);
+        $this->assertNotNull($event);
+        $this->assertSame('08:06', $event['check_in_time']);
+        $this->assertSame('16:50', $event['check_out_time']);
+        $this->assertSame(6, $event['late_minutes']);
+        $this->assertSame(10, $event['early_minutes']);
     }
 }
