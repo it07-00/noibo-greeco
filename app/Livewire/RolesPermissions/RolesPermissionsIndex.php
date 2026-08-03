@@ -40,6 +40,8 @@ final class RolesPermissionsIndex extends Component
 
     public ?string $errorMessage = null;
 
+    public string $permissionSearch = '';
+
     protected array $rules = [
         'newRoleName' => ['required', 'string', 'max:255', 'unique:roles,name'],
         'newRoleDescription' => ['nullable', 'string', 'max:500'],
@@ -87,6 +89,43 @@ final class RolesPermissionsIndex extends Component
             'icon' => 'success',
             'title' => 'Cập nhật thành công!',
             'text' => 'Đã cập nhật quyền '.$permissionName.' cho vai trò '.$role->name,
+            'toast' => true,
+            'position' => 'top-end',
+            'timer' => 3000,
+        ]);
+    }
+
+    public function toggleGroupPermissions(RolePermissionService $service, array $permissionKeys, bool $enable): void
+    {
+        Gate::authorize('manage', Role::class);
+
+        $role = Role::findOrFail($this->activeRoleId);
+
+        if ($role->name === RoleEnum::SuperAdmin->value) {
+            $this->dispatch('swal:alert', [
+                'icon' => 'error',
+                'title' => 'Không thể chỉnh sửa!',
+                'text' => 'Vai trò Super Admin luôn có tất cả các quyền hạn.',
+            ]);
+
+            return;
+        }
+
+        $activePerms = $role->permissions->pluck('name')->toArray();
+
+        foreach ($permissionKeys as $permKey) {
+            $hasPerm = in_array($permKey, $activePerms, true);
+            if ($enable && ! $hasPerm) {
+                $service->togglePermission($role, $permKey);
+            } elseif (! $enable && $hasPerm) {
+                $service->togglePermission($role, $permKey);
+            }
+        }
+
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Cập nhật thành công!',
+            'text' => ($enable ? 'Đã cấp tất cả quyền trong nhóm' : 'Đã thu hồi tất cả quyền trong nhóm').' cho vai trò '.$role->name,
             'toast' => true,
             'position' => 'top-end',
             'timer' => 3000,
@@ -313,12 +352,46 @@ final class RolesPermissionsIndex extends Component
         $activeRolePermissions = $activeRole ? $activeRole->permissions->pluck('name')->toArray() : [];
         $availableDepartments = Department::orderBy('name')->get();
 
+        $totalPermissionsCount = 0;
+        foreach ($permissionsGrouped as $group) {
+            $totalPermissionsCount += count($group);
+        }
+
+        $activeRolePermissionCount = ($activeRole && $activeRole->name === RoleEnum::SuperAdmin->value)
+            ? $totalPermissionsCount
+            : count($activeRolePermissions);
+
+        // Filter permissions if search term is active
+        if (trim($this->permissionSearch) !== '') {
+            $query = mb_strtolower(trim($this->permissionSearch));
+            $filteredGroups = [];
+
+            foreach ($permissionsGrouped as $groupName => $permissions) {
+                $groupNameMatch = mb_strpos(mb_strtolower($groupName), $query) !== false;
+                $matchingPermissions = [];
+
+                foreach ($permissions as $permValue => $permLabel) {
+                    if ($groupNameMatch || mb_strpos(mb_strtolower($permLabel), $query) !== false || mb_strpos(mb_strtolower($permValue), $query) !== false) {
+                        $matchingPermissions[$permValue] = $permLabel;
+                    }
+                }
+
+                if (! empty($matchingPermissions)) {
+                    $filteredGroups[$groupName] = $matchingPermissions;
+                }
+            }
+
+            $permissionsGrouped = $filteredGroups;
+        }
+
         return view('livewire.roles-permissions.roles-permissions-index', [
             'roles' => $roles,
             'activeRole' => $activeRole,
             'permissionsGrouped' => $permissionsGrouped,
             'activeRolePermissions' => $activeRolePermissions,
             'availableDepartments' => $availableDepartments,
+            'totalPermissionsCount' => $totalPermissionsCount,
+            'activeRolePermissionCount' => $activeRolePermissionCount,
         ]);
     }
 }

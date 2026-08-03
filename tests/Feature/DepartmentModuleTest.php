@@ -52,24 +52,24 @@ final class DepartmentModuleTest extends TestCase
 
         // 1. Create Department
         Livewire::test(\App\Livewire\Departments\DepartmentIndex::class)
-            ->set('code', 'MKT')
-            ->set('name', 'Marketing Department')
+            ->set('code', 'MKT_TEST')
+            ->set('name', 'Marketing Test Department')
             ->set('description', 'Marketing and communications')
             ->call('save')
             ->assertHasNoErrors()
             ->assertDispatched('department:saved');
 
         $this->assertDatabaseHas('departments', [
-            'code' => 'MKT',
-            'name' => 'Marketing Department',
+            'code' => 'MKT_TEST',
+            'name' => 'Marketing Test Department',
         ]);
 
-        $dept = Department::where('code', 'MKT')->firstOrFail();
+        $dept = Department::where('code', 'MKT_TEST')->firstOrFail();
 
         // 2. Update Department
         Livewire::test(\App\Livewire\Departments\DepartmentIndex::class)
             ->call('openEdit', $dept->id)
-            ->assertSet('code', 'MKT')
+            ->assertSet('code', 'MKT_TEST')
             ->set('name', 'Marketing Updated')
             ->call('save')
             ->assertHasNoErrors();
