@@ -28,35 +28,93 @@
         </div>
     @endif
 
-    {{-- ── Filter Bar ───────────────────────────────────────────────────────── --}}
-    <div class="card mb-3">
-        <div class="card-body py-2">
-            <div class="row g-2 align-items-center">
-                <div class="col-sm-auto">
-                    <label class="form-label mb-0 text-muted small">Người tạo / Người tham gia</label>
-                    <select class="form-select form-select-sm" wire:model.live="filterUserId" id="filterParticipant"
-                        style="min-width: 220px;">
-                        <option value="0">Tất cả thành viên</option>
-                        @foreach ($users as $u)
-                            <option value="{{ $u->id }}">{{ $u->name }}</option>
-                        @endforeach
-                    </select>
+    {{-- ── Filter & Action Toolbar ────────────────────────────────────────────── --}}
+    <div class="card border-0 shadow-sm mb-3" style="overflow: visible; position: relative; z-index: 20;">
+        <div class="card-body py-2 px-3" style="overflow: visible;">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="overflow: visible;">
+                
+                {{-- Left: Filters --}}
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-1">
+                        <label class="form-label mb-0 fw-semibold text-dark text-sm me-1" for="filterParticipant">Thành viên:</label>
+                        <select class="form-select form-select-sm shadow-none" wire:model.live="filterUserId" id="filterParticipant"
+                            style="min-width: 180px; border-color: #cbd5e1;">
+                            <option value="0">Tất cả nhân viên</option>
+                            @foreach ($users as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-1">
+                        <label class="form-label mb-0 fw-semibold text-dark text-sm me-1" for="filterMonth">Tháng:</label>
+                        <input type="month" id="filterMonth" class="form-control form-control-sm shadow-none"
+                            style="min-width: 160px; border-color: #cbd5e1;" />
+                    </div>
                 </div>
-                <div class="col-sm-auto">
-                    <label class="form-label mb-0 text-muted small">Chọn tháng</label>
-                    <input type="month" id="filterMonth" class="form-control form-control-sm" style="min-width: 160px;" />
-                </div>
-                @if ($canViewNoibo)
-                    <div class="col-sm-auto ms-sm-auto">
-                        <div class="form-check form-switch mb-0">
+
+                {{-- Right: Actions & Toggle --}}
+                <div class="d-flex flex-wrap align-items-center gap-2 ms-auto" style="overflow: visible; position: relative;">
+                    @if ($canViewNoibo)
+                        <div class="form-check form-switch mb-0 me-2">
                             <input type="checkbox" class="form-check-input" id="toggleNoiboSchedules"
                                 wire:model.live="showNoiboSchedules" />
                             <label class="form-check-label fw-semibold small" for="toggleNoiboSchedules">
                                 <span class="noibo-badge me-1">Bảo Châu</span> Hiển thị lịch Bảo Châu
                             </label>
                         </div>
+                    @endif
+
+                    {{-- Nút Xuất Excel (Dropdown không bị che) --}}
+                    <div class="dropdown" style="position: relative; z-index: 30;">
+                        <button class="btn btn-success btn-sm waves-effect waves-light dropdown-toggle d-inline-flex align-items-center gap-1 fw-semibold px-3 shadow-sm"
+                            type="button" id="dropdownExportExcel" data-bs-toggle="dropdown" aria-expanded="false"
+                            style="background-color: #10b981; border-color: #10b981;">
+                            <i class="fi fi-rr-file-excel"></i>
+                            <span>Xuất Excel</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border" aria-labelledby="dropdownExportExcel"
+                            style="position: absolute; z-index: 1050; min-width: 210px; margin-top: 4px; border-color: #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 small py-2 fw-medium" href="#"
+                                    onclick="alert('Đang tạo file Xuất tổng hợp Excel...'); return false;">
+                                    <i class="fi fi-rr-file-spreadsheet text-success"></i>
+                                    <span>Xuất tổng hợp</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 small py-2 fw-medium" href="#"
+                                    onclick="alert('Đang tạo file Xuất chi tiết chấm công...'); return false;">
+                                    <i class="fi fi-rr-time-check text-primary"></i>
+                                    <span>Xuất chi tiết chấm công</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 small py-2 fw-medium" href="#"
+                                    onclick="alert('Đang tạo file Báo cáo đi trễ / về sớm...'); return false;">
+                                    <i class="fi fi-rr-exclamation text-warning"></i>
+                                    <span>Xuất trễ / về sớm</span>
+                                </a>
+                            </li>
+                        </ul>
                     </div>
-                @endif
+
+                    {{-- Nút Import dữ liệu --}}
+                    <button type="button" class="btn btn-primary btn-sm waves-effect waves-light d-inline-flex align-items-center gap-1 fw-semibold px-3 shadow-sm"
+                        style="background-color: #3b82f6; border-color: #3b82f6;"
+                        onclick="alert('Chức năng Import dữ liệu đang được chuẩn bị...')">
+                        <i class="fi fi-rr-file-import"></i>
+                        <span>Import dữ liệu</span>
+                    </button>
+
+                    {{-- Nút Nhân viên --}}
+                    <button type="button" class="btn btn-outline-warning btn-sm waves-effect d-inline-flex align-items-center gap-1 fw-semibold px-3"
+                        style="color: #ea580c; border-color: #f97316;"
+                        wire:click="$set('filterUserId', 0)">
+                        <i class="fi fi-rr-users-alt"></i>
+                        <span>Nhân viên</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
