@@ -53,6 +53,14 @@ final class DutyScheduleIndex extends Component
 
     public ?string $end_at = null;
 
+    public ?string $check_in_at = null;
+
+    public ?string $check_out_at = null;
+
+    public int $late_minutes = 0;
+
+    public int $early_minutes = 0;
+
     public string $label_color = 'primary';
 
     public bool $is_private = false;
@@ -80,6 +88,32 @@ final class DutyScheduleIndex extends Component
         $this->dispatch('schedule:filter-changed');
     }
 
+    public function updatedCheckInAt($value): void
+    {
+        if ($value) {
+            $checkIn = Carbon::parse($value);
+            $standardStart = $checkIn->copy()->setTime(8, 0, 0);
+            if ($checkIn->gt($standardStart)) {
+                $this->late_minutes = (int) $standardStart->diffInMinutes($checkIn);
+            } else {
+                $this->late_minutes = 0;
+            }
+        }
+    }
+
+    public function updatedCheckOutAt($value): void
+    {
+        if ($value) {
+            $checkOut = Carbon::parse($value);
+            $standardEnd = $checkOut->copy()->setTime(17, 0, 0);
+            if ($checkOut->lt($standardEnd)) {
+                $this->early_minutes = (int) $checkOut->diffInMinutes($standardEnd);
+            } else {
+                $this->early_minutes = 0;
+            }
+        }
+    }
+
     protected function rules(): array
     {
         $startRules = ['required', 'date'];
@@ -93,6 +127,10 @@ final class DutyScheduleIndex extends Component
             'location' => ['nullable', 'string', 'max:255'],
             'start_at' => $startRules,
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
+            'check_in_at' => ['nullable', 'date'],
+            'check_out_at' => ['nullable', 'date'],
+            'late_minutes' => ['nullable', 'integer', 'min:0'],
+            'early_minutes' => ['nullable', 'integer', 'min:0'],
             'label_color' => ['required', 'string', 'in:primary,success,warning,danger,info,purple'],
             'is_private' => ['nullable', 'boolean'],
             'user_ids' => ['nullable', 'array'],
@@ -171,6 +209,12 @@ final class DutyScheduleIndex extends Component
                         'end' => $occEnd->toIso8601String(),
                         'description' => $description,
                         'location' => $location,
+                        'check_in_at' => $event->check_in_at?->format('H:i d/m/Y'),
+                        'check_out_at' => $event->check_out_at?->format('H:i d/m/Y'),
+                        'check_in_time' => $event->check_in_at?->format('H:i'),
+                        'check_out_time' => $event->check_out_at?->format('H:i'),
+                        'late_minutes' => (int) ($event->late_minutes ?? 0),
+                        'early_minutes' => (int) ($event->early_minutes ?? 0),
                         'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
                         'label_color' => $event->label_color,
                         'creator_name' => $event->creator?->name ?? 'N/A',
@@ -192,6 +236,12 @@ final class DutyScheduleIndex extends Component
                     'end' => $endCal?->toIso8601String(),
                     'description' => $description,
                     'location' => $location,
+                    'check_in_at' => $event->check_in_at?->format('H:i d/m/Y'),
+                    'check_out_at' => $event->check_out_at?->format('H:i d/m/Y'),
+                    'check_in_time' => $event->check_in_at?->format('H:i'),
+                    'check_out_time' => $event->check_out_at?->format('H:i'),
+                    'late_minutes' => (int) ($event->late_minutes ?? 0),
+                    'early_minutes' => (int) ($event->early_minutes ?? 0),
                     'classNames' => $this->getEventClasses($isPrivate && ! $canSeeDetails ? 'private' : $event->label_color),
                     'label_color' => $event->label_color,
                     'creator_name' => $event->creator?->name ?? 'N/A',
@@ -324,6 +374,10 @@ final class DutyScheduleIndex extends Component
         $time = date('H:i');
         $this->start_at = "{$date}T{$time}";
         $this->end_at = null;
+        $this->check_in_at = null;
+        $this->check_out_at = null;
+        $this->late_minutes = 0;
+        $this->early_minutes = 0;
         $this->label_color = 'primary';
         $this->is_private = false;
         $this->user_ids = [];
@@ -359,6 +413,10 @@ final class DutyScheduleIndex extends Component
             'location' => $this->location,
             'start_at' => $this->start_at,
             'end_at' => $this->end_at,
+            'check_in_at' => $this->check_in_at,
+            'check_out_at' => $this->check_out_at,
+            'late_minutes' => $this->late_minutes,
+            'early_minutes' => $this->early_minutes,
             'label_color' => $this->label_color,
             'is_private' => $this->is_private,
             'user_ids' => $localUserIds,
@@ -428,6 +486,10 @@ final class DutyScheduleIndex extends Component
         $this->location = $schedule->location;
         $this->start_at = $schedule->start_at->format('Y-m-d\TH:i');
         $this->end_at = $schedule->end_at?->format('Y-m-d\TH:i');
+        $this->check_in_at = $schedule->check_in_at?->format('Y-m-d\TH:i');
+        $this->check_out_at = $schedule->check_out_at?->format('Y-m-d\TH:i');
+        $this->late_minutes = (int) ($schedule->late_minutes ?? 0);
+        $this->early_minutes = (int) ($schedule->early_minutes ?? 0);
         $this->label_color = $schedule->label_color;
         $this->is_private = (bool) $schedule->is_private;
         $baochauParticipants = DB::table('duty_schedule_user')
@@ -464,6 +526,10 @@ final class DutyScheduleIndex extends Component
         $this->location = null;
         $this->start_at = '';
         $this->end_at = null;
+        $this->check_in_at = null;
+        $this->check_out_at = null;
+        $this->late_minutes = 0;
+        $this->early_minutes = 0;
         $this->label_color = 'primary';
         $this->is_private = false;
         $this->user_ids = [];
@@ -499,6 +565,12 @@ final class DutyScheduleIndex extends Component
                 'title' => $title,
                 'start_formatted' => $event->start_at->format('H:i d/m/Y'),
                 'end_formatted' => $event->end_at?->format('H:i d/m/Y'),
+                'check_in_formatted' => $event->check_in_at?->format('H:i d/m/Y'),
+                'check_out_formatted' => $event->check_out_at?->format('H:i d/m/Y'),
+                'check_in_time' => $event->check_in_at?->format('H:i'),
+                'check_out_time' => $event->check_out_at?->format('H:i'),
+                'late_minutes' => (int) ($event->late_minutes ?? 0),
+                'early_minutes' => (int) ($event->early_minutes ?? 0),
                 'description' => $description,
                 'location' => $location,
                 'label_color' => $isPrivate && ! $canSeeDetails ? 'private' : $event->label_color,

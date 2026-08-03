@@ -443,4 +443,40 @@ final class DutyScheduleModuleTest extends TestCase
         $this->assertContains($s2->id, $eventIds);
         $this->assertNotContains($s3->id, $eventIds);
     }
+
+    public function test_user_can_save_and_auto_calculate_late_and_early_minutes(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $staff = User::factory()->create();
+        $staff->assignRole(RoleEnum::IT->value);
+
+        $this->actingAs($staff);
+
+        $dateStr = now()->addDays(2)->format('Y-m-d');
+        $futureStart = "{$dateStr}T08:00";
+        $checkIn = "{$dateStr}T08:06"; // 6 minutes late (after 08:00)
+        $checkOut = "{$dateStr}T16:50"; // 10 minutes early (before 17:00)
+
+        \Livewire\Livewire::test(\App\Livewire\DutySchedules\DutyScheduleIndex::class)
+            ->set('title', 'Attendance Auto Calc Test')
+            ->set('start_at', $futureStart)
+            ->set('check_in_at', $checkIn)
+            ->set('check_out_at', $checkOut)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $schedule = DutySchedule::where('title', 'Attendance Auto Calc Test')->firstOrFail();
+        $this->assertSame(6, $schedule->late_minutes);
+        $this->assertSame(10, $schedule->early_minutes);
+
+        $component = \Livewire\Livewire::test(\App\Livewire\DutySchedules\DutyScheduleIndex::class);
+        $events = $component->instance()->getEvents("{$dateStr} 00:00:00", "{$dateStr} 23:59:59");
+
+        $this->assertCount(1, $events);
+        $this->assertSame('08:06', $events[0]['check_in_time']);
+        $this->assertSame('16:50', $events[0]['check_out_time']);
+        $this->assertSame(6, $events[0]['late_minutes']);
+        $this->assertSame(10, $events[0]['early_minutes']);
+    }
 }

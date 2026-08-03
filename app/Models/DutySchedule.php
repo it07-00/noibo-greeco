@@ -22,6 +22,10 @@ final class DutySchedule extends Model
         'location',
         'start_at',
         'end_at',
+        'check_in_at',
+        'check_out_at',
+        'late_minutes',
+        'early_minutes',
         'label_color',
         'is_private',
         'created_by',
@@ -32,6 +36,10 @@ final class DutySchedule extends Model
         return [
             'start_at' => 'datetime',
             'end_at' => 'datetime',
+            'check_in_at' => 'datetime',
+            'check_out_at' => 'datetime',
+            'late_minutes' => 'integer',
+            'early_minutes' => 'integer',
             'is_private' => 'boolean',
             'created_by' => 'integer',
         ];
