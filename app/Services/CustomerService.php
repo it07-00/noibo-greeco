@@ -7,28 +7,59 @@ namespace App\Services;
 use App\Enums\CustomerType;
 use App\Models\Customer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 final class CustomerService
 {
     /**
      * @return LengthAwarePaginator<Customer>
      */
-    public function paginate(string $search = '', string $type = '', int $perPage = 15): LengthAwarePaginator
-    {
+    public function paginate(
+        string $search = '',
+        string $type = '',
+        string $source = '',
+        string $regulatory = '',
+        string $caretakerId = '',
+        int $perPage = 15
+    ): LengthAwarePaginator {
         return Customer::query()
-            ->with(['courses' => fn ($query) => $query->orderBy('starts_at')->orderBy('name')])
+            ->with([
+                'caretaker:id,name,email,phone',
+                'courses' => fn ($query) => $query->orderBy('starts_at')->orderBy('name'),
+            ])
             ->withCount(['quotations', 'contracts'])
             ->when(in_array($type, CustomerType::values(), true), fn ($query) => $query->where('type', $type))
+            ->when($source !== '', fn (Builder $query) => $query->where('system_source', $source))
+            ->when($caretakerId !== '', function (Builder $query) use ($caretakerId): void {
+                if ($caretakerId === 'unassigned') {
+                    $query->whereNull('caretaker_id');
+                } else {
+                    $query->where('caretaker_id', (int) $caretakerId);
+                }
+            })
+            ->when($regulatory !== '', function (Builder $query) use ($regulatory): void {
+                if ($regulatory === 'ghg_inventory') {
+                    $query->where('is_ghg_inventory', true);
+                } elseif ($regulatory === 'energy_audit') {
+                    $query->where('is_energy_audit', true);
+                } elseif ($regulatory === 'regular') {
+                    $query->where('is_ghg_inventory', false)->where('is_energy_audit', false);
+                }
+            })
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($nested) use ($search): void {
                     $nested
                         ->where('name', 'like', "%{$search}%")
                         ->orWhere('tax_code', 'like', "%{$search}%")
                         ->orWhere('contact_name', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('province', 'like', "%{$search}%")
+                        ->orWhere('industry', 'like', "%{$search}%")
+                        ->orWhereHas('caretaker', fn ($q) => $q->where('name', 'like', "%{$search}%"));
                 });
             })
-            ->orderBy('name')
+            ->latest('id')
             ->paginate($perPage);
     }
 

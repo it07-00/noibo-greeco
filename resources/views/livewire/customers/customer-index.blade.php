@@ -20,9 +20,9 @@
 
     <div class="card border-0 shadow-sm">
         <div class="card-body border-bottom">
-            <label class="form-label visually-hidden" for="customerSearch">Tìm kiếm khách hàng</label>
-            <div class="row g-2">
-                <div class="col-12 col-md">
+            <div class="row g-2 align-items-center">
+                {{-- Search --}}
+                <div class="col-12 col-lg-4">
                     <div class="input-group sales-search">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="fi fi-rr-search sales-supporting-text" aria-hidden="true"></i>
@@ -31,17 +31,48 @@
                             id="customerSearch"
                             type="search"
                             class="form-control border-start-0 ps-0"
-                            placeholder="Tìm theo tên, mã số thuế, liên hệ hoặc số điện thoại..."
+                            placeholder="Tìm theo tên, MST, LH, SĐT, NVCS..."
                             wire:model.live.debounce.350ms="search"
                         >
                     </div>
                 </div>
-                <div class="col-12 col-md-auto">
-                    <label class="visually-hidden" for="customerTypeFilter">Loại khách hàng</label>
-                    <select id="customerTypeFilter" class="form-select" wire:model.live="typeFilter">
-                        <option value="">Tất cả khách hàng</option>
+
+                {{-- Source Filter (Bảo Châu / Greeco) --}}
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select class="form-select" wire:model.live="sourceFilter">
+                        <option value="">Tất cả hệ thống</option>
+                        <option value="greeco">🌿 Greeco</option>
+                        <option value="baochau">🛡️ Bảo Châu</option>
+                    </select>
+                </div>
+
+                {{-- Type Filter --}}
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select class="form-select" wire:model.live="typeFilter">
+                        <option value="">Tất cả loại KH</option>
                         @foreach ($customerTypes as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Regulatory Filter (KKKNK / KTNL) --}}
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select class="form-select" wire:model.live="regulatoryFilter">
+                        <option value="">Tất cả phân loại</option>
+                        <option value="ghg_inventory">☁️ KKKNK</option>
+                        <option value="energy_audit">⚡ KTNL</option>
+                        <option value="regular">🏢 KH thường</option>
+                    </select>
+                </div>
+
+                {{-- Caretaker Filter --}}
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select class="form-select" wire:model.live="caretakerFilter">
+                        <option value="">Tất cả người CS</option>
+                        <option value="unassigned">Chưa phân công</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}">{{ $user->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -52,9 +83,10 @@
             <table class="table align-middle mb-0 sales-table">
                 <thead>
                     <tr>
-                        <th>Khách hàng</th>
-                        <th class="d-none d-lg-table-cell">Liên hệ</th>
-                        <th class="d-none d-xl-table-cell">Khu vực / ngành</th>
+                        <th style="min-width: 280px;">Khách hàng</th>
+                        <th class="d-none d-lg-table-cell" style="min-width: 170px;">Liên hệ</th>
+                        <th class="d-none d-xl-table-cell" style="min-width: 150px;">Khu vực / ngành</th>
+                        <th style="min-width: 160px;">Người chăm sóc (NVCS)</th>
                         <th>Khóa học</th>
                         <th class="text-center">Báo giá</th>
                         <th class="text-center">Hợp đồng</th>
@@ -65,9 +97,39 @@
                     @forelse ($customers as $customer)
                         <tr wire:key="customer-{{ $customer->id }}">
                             <td>
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                                     <span class="fw-semibold text-body">{{ $customer->name }}</span>
                                     <span class="badge rounded-pill {{ $customer->type->badgeClass() }}">{{ $customer->type->label() }}</span>
+                                </div>
+                                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                                    @if(($customer->system_source ?? 'greeco') === 'baochau')
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                              style="font-size: 0.72rem;"
+                                              title="Nguồn: Hệ thống Bảo Châu">
+                                            <i class="fi fi-rr-shield-check me-1"></i>Bảo Châu
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                              style="font-size: 0.72rem;"
+                                              title="Nguồn: Hệ thống Greeco">
+                                            <i class="fi fi-rr-leaf me-1"></i>Greeco
+                                        </span>
+                                    @endif
+
+                                    @if($customer->is_ghg_inventory)
+                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                              style="font-size: 0.72rem;"
+                                              title="Thuộc danh mục Kiểm kê khí nhà kính">
+                                            <i class="fi fi-rr-cloud me-1"></i>KKKNK
+                                        </span>
+                                    @endif
+                                    @if($customer->is_energy_audit)
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                              style="font-size: 0.72rem;"
+                                              title="Thuộc danh mục Kiểm toán năng lượng">
+                                            <i class="fi fi-rr-bolt me-1"></i>KTNL
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="small sales-supporting-text">
                                     @if ($customer->type === \App\Enums\CustomerType::Organization)
@@ -85,7 +147,25 @@
                                 <div>{{ $customer->province ?: '—' }}</div>
                                 <div class="small sales-supporting-text">{{ $customer->industry ?: 'Chưa phân ngành' }}</div>
                             </td>
-                            <td style="min-width: 170px;">
+                            <td>
+                                @if($customer->caretaker)
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <div class="rounded-circle bg-primary-subtle text-primary fw-semibold d-inline-flex align-items-center justify-content-center"
+                                             style="width: 26px; height: 26px; font-size: 0.75rem;">
+                                            {{ mb_substr($customer->caretaker->name, 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <div class="small fw-semibold text-body">{{ $customer->caretaker->name }}</div>
+                                            @if($customer->care_status)
+                                                <div class="small text-muted" style="font-size: 0.7rem;">{{ $customer->care_status }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="text-muted small fst-italic">Chưa phân công</span>
+                                @endif
+                            </td>
+                            <td style="min-width: 150px;">
                                 @if ($customer->type === \App\Enums\CustomerType::Individual)
                                     @forelse ($customer->courses as $course)
                                         <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle me-1 mb-1">
@@ -120,10 +200,10 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <i class="fi fi-rr-users-alt d-block fs-2 sales-supporting-text mb-2" aria-hidden="true"></i>
                                 <div class="fw-semibold">Chưa có khách hàng phù hợp</div>
-                                <div class="small sales-supporting-text">Thử đổi từ khóa hoặc thêm khách hàng mới.</div>
+                                <div class="small sales-supporting-text">Thử đổi từ khóa hoặc điều kiện lọc.</div>
                             </td>
                         </tr>
                     @endforelse
@@ -153,7 +233,7 @@
 
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-12">
+                        <div class="col-12 col-md-6">
                             <label for="customerType" class="form-label">Loại khách hàng <span class="text-danger">*</span></label>
                             <select id="customerType" class="form-select @error('customerType') is-invalid @enderror" wire:model.live="customerType">
                                 @foreach ($customerTypes as $value => $label)
@@ -161,10 +241,18 @@
                                 @endforeach
                             </select>
                             @error('customerType') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            @if ($customerType === \App\Enums\CustomerType::Individual->value)
-                                <div class="form-text">Dùng cho học viên đăng ký khóa học riêng lẻ, không cần mã số thuế hoặc người liên hệ.</div>
-                            @endif
                         </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="customerCaretaker" class="form-label">Người chăm sóc (NVCS)</label>
+                            <select id="customerCaretaker" class="form-select" wire:model="caretakerId">
+                                <option value="">-- Chưa phân công --</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="col-12 {{ $customerType === \App\Enums\CustomerType::Organization->value ? 'col-md-8' : '' }}">
                             <label for="customerName" class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
                             <input id="customerName" class="form-control @error('name') is-invalid @enderror" wire:model="name">
@@ -198,6 +286,26 @@
                             <input id="customerEmail" type="email" class="form-control @error('email') is-invalid @enderror" wire:model="email">
                             @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
+
+                        {{-- Classifications --}}
+                        <div class="col-12">
+                            <label class="form-label d-block fw-semibold mb-2">Phân loại khách hàng danh mục</label>
+                            <div class="d-flex flex-wrap gap-4 p-2.5 bg-light-subtle rounded border border-light-subtle">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="checkGhg" wire:model="isGhgInventory">
+                                    <label class="form-check-label" for="checkGhg">
+                                        ☁️ Kiểm kê khí nhà kính (KKKNK)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="checkEnergy" wire:model="isEnergyAudit">
+                                    <label class="form-check-label" for="checkEnergy">
+                                        ⚡ Kiểm toán năng lượng (KTNL)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12 col-md-6">
                             <label for="customerProvince" class="form-label">Tỉnh/thành</label>
                             <input id="customerProvince" class="form-control" wire:model="province">

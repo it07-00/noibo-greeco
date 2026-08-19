@@ -27,6 +27,7 @@ final class Customer extends Model
         'is_ghg_inventory',
         'is_energy_audit',
         'appendix',
+        'system_source',
         'email',
         'phone',
         'billing_address',

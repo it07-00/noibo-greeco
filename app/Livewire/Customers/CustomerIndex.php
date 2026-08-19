@@ -6,6 +6,7 @@ namespace App\Livewire\Customers;
 
 use App\Enums\CustomerType;
 use App\Models\Customer;
+use App\Models\User;
 use App\Services\CustomerService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +28,12 @@ final class CustomerIndex extends Component
     public string $search = '';
 
     public string $typeFilter = '';
+
+    public string $sourceFilter = '';
+
+    public string $regulatoryFilter = '';
+
+    public string $caretakerFilter = '';
 
     public int $editingId = 0;
 
@@ -52,6 +59,16 @@ final class CustomerIndex extends Component
 
     public string $notes = '';
 
+    public string $caretakerId = '';
+
+    public string $careStatus = '';
+
+    public bool $isGhgInventory = false;
+
+    public bool $isEnergyAudit = false;
+
+    public string $systemSource = 'greeco';
+
     public function mount(): void
     {
         Gate::authorize('viewAny', Customer::class);
@@ -63,6 +80,21 @@ final class CustomerIndex extends Component
     }
 
     public function updatedTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSourceFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedRegulatoryFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedCaretakerFilter(): void
     {
         $this->resetPage();
     }
@@ -91,6 +123,11 @@ final class CustomerIndex extends Component
         $this->province = $customer->province ?? '';
         $this->industry = $customer->industry ?? '';
         $this->notes = $customer->notes ?? '';
+        $this->caretakerId = $customer->caretaker_id ? (string) $customer->caretaker_id : '';
+        $this->careStatus = (string) ($customer->care_status ?? '');
+        $this->isGhgInventory = (bool) $customer->is_ghg_inventory;
+        $this->isEnergyAudit = (bool) $customer->is_energy_audit;
+        $this->systemSource = (string) ($customer->system_source ?? 'greeco');
         $this->resetValidation();
         $this->dispatch('customer-form:show');
     }
@@ -119,7 +156,6 @@ final class CustomerIndex extends Component
                 $this->name = $company['name'] ?? $this->name;
                 $this->billingAddress = $company['address'] ?? $this->billingAddress;
 
-                // Extract province/city dynamically from the address (last segment, ignoring "Việt Nam")
                 $address = $company['address'] ?? '';
                 if ($address !== '') {
                     $parts = array_map('trim', explode(',', $address));
@@ -172,6 +208,11 @@ final class CustomerIndex extends Component
             'province' => ['nullable', 'string', 'max:191'],
             'industry' => ['nullable', 'string', 'max:191'],
             'notes' => ['nullable', 'string', 'max:3000'],
+            'caretakerId' => ['nullable', 'string'],
+            'careStatus' => ['nullable', 'string', 'max:50'],
+            'isGhgInventory' => ['boolean'],
+            'isEnergyAudit' => ['boolean'],
+            'systemSource' => ['nullable', 'string', 'max:50'],
         ], [
             'name.required' => 'Vui lòng nhập tên khách hàng.',
             'taxCode.unique' => 'Mã số thuế đã tồn tại.',
@@ -194,6 +235,11 @@ final class CustomerIndex extends Component
             'province' => $validated['province'] ?: null,
             'industry' => $validated['industry'] ?: null,
             'notes' => $validated['notes'] ?: null,
+            'caretaker_id' => filled($validated['caretakerId'] ?? null) ? (int) $validated['caretakerId'] : null,
+            'care_status' => $validated['careStatus'] ?: null,
+            'is_ghg_inventory' => (bool) ($validated['isGhgInventory'] ?? false),
+            'is_energy_audit' => (bool) ($validated['isEnergyAudit'] ?? false),
+            'system_source' => $validated['systemSource'] ?: 'greeco',
         ], $customer);
 
         $this->dispatch('customer-form:hide');
@@ -210,8 +256,15 @@ final class CustomerIndex extends Component
     public function render(CustomerService $service): View
     {
         return view('livewire.customers.customer-index', [
-            'customers' => $service->paginate(trim($this->search), $this->typeFilter),
+            'customers' => $service->paginate(
+                trim($this->search),
+                $this->typeFilter,
+                $this->sourceFilter,
+                $this->regulatoryFilter,
+                $this->caretakerFilter
+            ),
             'customerTypes' => CustomerType::options(),
+            'users' => User::query()->select('id', 'name', 'email')->orderBy('name')->get(),
         ]);
     }
 
@@ -230,8 +283,13 @@ final class CustomerIndex extends Component
             'province',
             'industry',
             'notes',
+            'caretakerId',
+            'careStatus',
+            'isGhgInventory',
+            'isEnergyAudit',
         ]);
         $this->customerType = CustomerType::Organization->value;
+        $this->systemSource = 'greeco';
         $this->resetValidation();
     }
 }
