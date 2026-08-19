@@ -182,13 +182,13 @@ final class CustomerApiController extends Controller
             ];
 
             if ($request->has('is_ghg_inventory')) {
-                $attributes['is_ghg_inventory'] = $request->boolean('is_ghg_inventory');
+                $attributes['is_ghg_inventory'] = (bool) ($customer?->is_ghg_inventory || $request->boolean('is_ghg_inventory'));
             }
             if ($request->has('is_energy_audit')) {
-                $attributes['is_energy_audit'] = $request->boolean('is_energy_audit');
+                $attributes['is_energy_audit'] = (bool) ($customer?->is_energy_audit || $request->boolean('is_energy_audit'));
             }
             if ($request->has('appendix')) {
-                $attributes['appendix'] = $request->input('appendix');
+                $attributes['appendix'] = $request->input('appendix') ?: $customer?->appendix;
             }
 
             if ($caretakerId) {

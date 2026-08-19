@@ -177,13 +177,13 @@ final class BaoChauCustomerSyncService
                     ];
 
                     if (isset($item['is_ghg_inventory'])) {
-                        $data['is_ghg_inventory'] = (bool) $item['is_ghg_inventory'];
+                        $data['is_ghg_inventory'] = (bool) (($customer?->is_ghg_inventory) || $item['is_ghg_inventory']);
                     }
                     if (isset($item['is_energy_audit'])) {
-                        $data['is_energy_audit'] = (bool) $item['is_energy_audit'];
+                        $data['is_energy_audit'] = (bool) (($customer?->is_energy_audit) || $item['is_energy_audit']);
                     }
                     if (isset($item['appendix'])) {
-                        $data['appendix'] = $item['appendix'];
+                        $data['appendix'] = $item['appendix'] ?: $customer?->appendix;
                     }
 
                     if ($caretakerId) {
