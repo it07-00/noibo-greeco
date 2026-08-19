@@ -167,7 +167,11 @@
                                         <div>
                                             <div class="small fw-semibold text-body">{{ $caretakerName }}</div>
                                             @if($customer->care_status)
-                                                <div class="small text-muted" style="font-size: 0.7rem;">{{ $customer->care_status }}</div>
+                                                <div class="mt-0.5">
+                                                    <span class="badge {{ $customer->careStatusBadgeClass() }} px-1.5 py-0.5 rounded-pill" style="font-size: 0.68rem;">
+                                                        {{ $customer->careStatusLabel() }}
+                                                    </span>
+                                                </div>
                                             @endif
                                         </div>
                                     </div>
@@ -243,7 +247,7 @@
 
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <label for="customerType" class="form-label">Loại khách hàng <span class="text-danger">*</span></label>
                             <select id="customerType" class="form-select @error('customerType') is-invalid @enderror" wire:model.live="customerType">
                                 @foreach ($customerTypes as $value => $label)
@@ -253,7 +257,7 @@
                             @error('customerType') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <label for="customerSystemSource" class="form-label">Nguồn hệ thống</label>
                             <select id="customerSystemSource" class="form-select" wire:model="systemSource">
                                 <option value="greeco">🌿 Greeco</option>
@@ -261,12 +265,22 @@
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <label for="customerCaretaker" class="form-label">Người chăm sóc (NVCS)</label>
                             <select id="customerCaretaker" class="form-select" wire:model="caretakerId">
                                 <option value="">-- Chưa phân công --</option>
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label for="customerCareStatus" class="form-label">Trạng thái chăm sóc</label>
+                            <select id="customerCareStatus" class="form-select" wire:model="careStatus">
+                                <option value="">-- Chọn trạng thái --</option>
+                                @foreach(\App\Enums\CustomerCareStatus::options() as $opt)
+                                    <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>

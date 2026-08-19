@@ -47,6 +47,16 @@ final class Customer extends Model
         ];
     }
 
+    public function careStatusLabel(): string
+    {
+        return \App\Enums\CustomerCareStatus::labelFor($this->care_status);
+    }
+
+    public function careStatusBadgeClass(): string
+    {
+        return \App\Enums\CustomerCareStatus::badgeClassFor($this->care_status);
+    }
+
     public function caretaker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'caretaker_id');
