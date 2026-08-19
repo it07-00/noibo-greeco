@@ -62,7 +62,7 @@ final class BaoChauCustomerSyncService
                 'is_energy_audit' => (bool) $customer->is_energy_audit,
                 'appendix' => $customer->appendix,
                 'system_source' => $customer->system_source ?? 'greeco',
-                'caretaker_name' => $customer->caretaker?->name,
+                'caretaker_name' => $customer->caretaker?->name ?: $customer->caretaker_name,
                 'caretaker_email' => $customer->caretaker?->email,
                 'caretaker_phone' => null,
                 'care_status' => $customer->care_status,
@@ -146,11 +146,14 @@ final class BaoChauCustomerSyncService
                     }
 
                     $caretakerId = null;
-                    if (! empty($item['caretaker_email'])) {
-                        $caretakerId = User::where('email', $item['caretaker_email'])->value('id');
+                    $caretakerEmail = trim((string) ($item['caretaker_email'] ?? ''));
+                    $caretakerName = trim((string) ($item['caretaker_name'] ?? ''));
+
+                    if (! empty($caretakerEmail)) {
+                        $caretakerId = User::where('email', $caretakerEmail)->value('id');
                     }
-                    if (! $caretakerId && ! empty($item['caretaker_name'])) {
-                        $caretakerId = User::where('name', $item['caretaker_name'])->value('id');
+                    if (! $caretakerId && ! empty($caretakerName)) {
+                        $caretakerId = User::where('name', $caretakerName)->value('id');
                     }
 
                     $address = $item['address'] ?? $item['billing_address'] ?? $item['work_address'] ?? $customer?->billing_address;
@@ -168,6 +171,8 @@ final class BaoChauCustomerSyncService
                         'contact_name' => $contactName,
                         'province' => $item['province'] ?? $customer?->province,
                         'industry' => $industry,
+                        'caretaker_id' => $caretakerId ?: $customer?->caretaker_id,
+                        'caretaker_name' => $caretakerName ?: ($customer?->caretaker_name ?: ($caretakerId ? User::find($caretakerId)?->name : null)),
                         'system_source' => $customer?->system_source ?: ($item['system_source'] ?? 'baochau'),
                     ];
 

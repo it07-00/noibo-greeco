@@ -67,6 +67,8 @@ final class CustomerIndex extends Component
 
     public bool $isEnergyAudit = false;
 
+    public string $appendix = '';
+
     public string $systemSource = 'greeco';
 
     public function mount(): void
@@ -127,6 +129,7 @@ final class CustomerIndex extends Component
         $this->careStatus = (string) ($customer->care_status ?? '');
         $this->isGhgInventory = (bool) $customer->is_ghg_inventory;
         $this->isEnergyAudit = (bool) $customer->is_energy_audit;
+        $this->appendix = (string) ($customer->appendix ?? '');
         $this->systemSource = (string) ($customer->system_source ?? 'greeco');
         $this->resetValidation();
         $this->dispatch('customer-form:show');
@@ -212,6 +215,7 @@ final class CustomerIndex extends Component
             'careStatus' => ['nullable', 'string', 'max:50'],
             'isGhgInventory' => ['boolean'],
             'isEnergyAudit' => ['boolean'],
+            'appendix' => ['nullable', 'string', 'max:191'],
             'systemSource' => ['nullable', 'string', 'max:50'],
         ], [
             'name.required' => 'Vui lòng nhập tên khách hàng.',
@@ -236,9 +240,11 @@ final class CustomerIndex extends Component
             'industry' => $validated['industry'] ?: null,
             'notes' => $validated['notes'] ?: null,
             'caretaker_id' => filled($validated['caretakerId'] ?? null) ? (int) $validated['caretakerId'] : null,
+            'caretaker_name' => filled($validated['caretakerId'] ?? null) ? User::find($validated['caretakerId'])?->name : ($customer?->caretaker_name),
             'care_status' => $validated['careStatus'] ?: null,
             'is_ghg_inventory' => (bool) ($validated['isGhgInventory'] ?? false),
             'is_energy_audit' => (bool) ($validated['isEnergyAudit'] ?? false),
+            'appendix' => $validated['appendix'] ?: null,
             'system_source' => $validated['systemSource'] ?: 'greeco',
         ], $customer);
 
@@ -287,6 +293,7 @@ final class CustomerIndex extends Component
             'careStatus',
             'isGhgInventory',
             'isEnergyAudit',
+            'appendix',
         ]);
         $this->customerType = CustomerType::Organization->value;
         $this->systemSource = 'greeco';

@@ -75,7 +75,7 @@ final class CustomerApiController extends Controller
                 'appendix' => $c->appendix,
                 'system_source' => $c->system_source ?? 'greeco',
                 'caretaker_id' => $c->caretaker_id,
-                'caretaker_name' => $c->caretaker?->name,
+                'caretaker_name' => $c->caretaker?->name ?: $c->caretaker_name,
                 'caretaker_email' => $c->caretaker?->email,
                 'caretaker_phone' => null,
                 'care_status' => $c->care_status,
@@ -153,11 +153,14 @@ final class CustomerApiController extends Controller
                 ?: $request->input('sector');
 
             $caretakerId = null;
-            if ($request->filled('caretaker_email')) {
-                $caretakerId = User::where('email', $request->input('caretaker_email'))->value('id');
+            $caretakerEmail = trim((string) $request->input('caretaker_email', ''));
+            $caretakerName = trim((string) $request->input('caretaker_name', ''));
+
+            if (! empty($caretakerEmail)) {
+                $caretakerId = User::where('email', $caretakerEmail)->value('id');
             }
-            if (! $caretakerId && $request->filled('caretaker_name')) {
-                $caretakerId = User::where('name', $request->input('caretaker_name'))->value('id');
+            if (! $caretakerId && ! empty($caretakerName)) {
+                $caretakerId = User::where('name', $caretakerName)->value('id');
             }
 
             $systemSource = $request->input('system_source') ?: 'baochau';
@@ -173,6 +176,8 @@ final class CustomerApiController extends Controller
                 'contact_name' => $contactName ?: $customer?->contact_name,
                 'province' => $request->input('province') ?: $customer?->province,
                 'industry' => $industry ?: $customer?->industry,
+                'caretaker_id' => $caretakerId ?: $customer?->caretaker_id,
+                'caretaker_name' => $caretakerName ?: ($customer?->caretaker_name ?: ($caretakerId ? User::find($caretakerId)?->name : null)),
                 'system_source' => $customer?->system_source ?: $systemSource,
             ];
 

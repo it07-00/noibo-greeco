@@ -56,6 +56,7 @@ final class CustomerService
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhere('province', 'like', "%{$search}%")
                         ->orWhere('industry', 'like', "%{$search}%")
+                        ->orWhere('caretaker_name', 'like', "%{$search}%")
                         ->orWhereHas('caretaker', fn ($q) => $q->where('name', 'like', "%{$search}%"));
                 });
             })

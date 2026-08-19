@@ -23,6 +23,7 @@ final class Customer extends Model
         'tax_code',
         'contact_name',
         'caretaker_id',
+        'caretaker_name',
         'care_status',
         'is_ghg_inventory',
         'is_energy_audit',

@@ -130,6 +130,13 @@
                                             <i class="fi fi-rr-bolt me-1"></i>KTNL
                                         </span>
                                     @endif
+                                    @if($customer->appendix)
+                                        <span class="badge bg-body-secondary text-body border px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                              style="font-size: 0.72rem;"
+                                              title="Phụ lục: {{ $customer->appendix }}">
+                                            {{ $customer->appendix }}
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="small sales-supporting-text">
                                     @if ($customer->type === \App\Enums\CustomerType::Organization)
@@ -148,14 +155,17 @@
                                 <div class="small sales-supporting-text">{{ $customer->industry ?: 'Chưa phân ngành' }}</div>
                             </td>
                             <td>
-                                @if($customer->caretaker)
+                                @php
+                                    $caretakerName = $customer->caretaker?->name ?: $customer->caretaker_name;
+                                @endphp
+                                @if($caretakerName)
                                     <div class="d-flex align-items-center gap-1.5">
                                         <div class="rounded-circle bg-primary-subtle text-primary fw-semibold d-inline-flex align-items-center justify-content-center"
                                              style="width: 26px; height: 26px; font-size: 0.75rem;">
-                                            {{ mb_substr($customer->caretaker->name, 0, 1) }}
+                                            {{ mb_substr($caretakerName, 0, 1) }}
                                         </div>
                                         <div>
-                                            <div class="small fw-semibold text-body">{{ $customer->caretaker->name }}</div>
+                                            <div class="small fw-semibold text-body">{{ $caretakerName }}</div>
                                             @if($customer->care_status)
                                                 <div class="small text-muted" style="font-size: 0.7rem;">{{ $customer->care_status }}</div>
                                             @endif
@@ -314,13 +324,17 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-4">
                             <label for="customerProvince" class="form-label">Tỉnh/thành</label>
                             <input id="customerProvince" class="form-control" wire:model="province">
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label for="customerIndustry" class="form-label">{{ $customerType === \App\Enums\CustomerType::Organization->value ? 'Ngành nghề' : 'Nghề nghiệp / đơn vị công tác' }}</label>
+                        <div class="col-12 col-md-4">
+                            <label for="customerIndustry" class="form-label">{{ $customerType === \App\Enums\CustomerType::Organization->value ? 'Ngành nghề' : 'Nghề nghiệp / đơn vị' }}</label>
                             <input id="customerIndustry" class="form-control" wire:model="industry">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="customerAppendix" class="form-label">Phụ lục áp dụng</label>
+                            <input id="customerAppendix" class="form-control" wire:model="appendix" placeholder="Ví dụ: Phụ lục IV">
                         </div>
                         <div class="col-12">
                             <label for="customerBillingAddress" class="form-label">Địa chỉ xuất hóa đơn</label>
