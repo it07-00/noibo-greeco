@@ -58,6 +58,13 @@ final class BaoChauCustomerSyncService
                 'province' => $customer->province,
                 'industry' => $customer->industry,
                 'sector' => $customer->industry,
+                'is_ghg_inventory' => (bool) $customer->is_ghg_inventory,
+                'is_energy_audit' => (bool) $customer->is_energy_audit,
+                'appendix' => $customer->appendix,
+                'caretaker_name' => $customer->caretaker?->name,
+                'caretaker_email' => $customer->caretaker?->email,
+                'caretaker_phone' => $customer->caretaker?->phone,
+                'care_status' => $customer->care_status,
             ];
 
             $response = Http::timeout(5)
@@ -137,6 +144,14 @@ final class BaoChauCustomerSyncService
                         $customer = Customer::where('name', $name)->first();
                     }
 
+                    $caretakerId = null;
+                    if (! empty($item['caretaker_email'])) {
+                        $caretakerId = User::where('email', $item['caretaker_email'])->value('id');
+                    }
+                    if (! $caretakerId && ! empty($item['caretaker_name'])) {
+                        $caretakerId = User::where('name', $item['caretaker_name'])->value('id');
+                    }
+
                     $address = $item['address'] ?? $item['billing_address'] ?? $item['work_address'] ?? $customer?->billing_address;
                     $contactName = $item['contact_person'] ?? $item['contact_name'] ?? $customer?->contact_name;
                     $industry = $item['sector'] ?? $item['industry'] ?? $customer?->industry;
@@ -153,6 +168,23 @@ final class BaoChauCustomerSyncService
                         'province' => $item['province'] ?? $customer?->province,
                         'industry' => $industry,
                     ];
+
+                    if (isset($item['is_ghg_inventory'])) {
+                        $data['is_ghg_inventory'] = (bool) $item['is_ghg_inventory'];
+                    }
+                    if (isset($item['is_energy_audit'])) {
+                        $data['is_energy_audit'] = (bool) $item['is_energy_audit'];
+                    }
+                    if (isset($item['appendix'])) {
+                        $data['appendix'] = $item['appendix'];
+                    }
+
+                    if ($caretakerId) {
+                        $data['caretaker_id'] = $caretakerId;
+                    }
+                    if (! empty($item['care_status'])) {
+                        $data['care_status'] = $item['care_status'];
+                    }
 
                     if ($customer) {
                         $customer->update($data);

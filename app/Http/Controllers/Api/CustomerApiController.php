@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\CustomerType;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\User;
 use App\Services\BaoChauCustomerSyncService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ final class CustomerApiController extends Controller
         }
 
         $customers = Customer::query()
+            ->with('caretaker:id,name,email,phone')
             ->select([
                 'id',
                 'name',
@@ -44,6 +46,11 @@ final class CustomerApiController extends Controller
                 'contact_name',
                 'province',
                 'industry',
+                'caretaker_id',
+                'care_status',
+                'is_ghg_inventory',
+                'is_energy_audit',
+                'appendix',
                 'updated_at',
             ])
             ->latest('updated_at')
@@ -62,6 +69,14 @@ final class CustomerApiController extends Controller
                 'province' => $c->province,
                 'sector' => $c->industry,
                 'industry' => $c->industry,
+                'is_ghg_inventory' => (bool) $c->is_ghg_inventory,
+                'is_energy_audit' => (bool) $c->is_energy_audit,
+                'appendix' => $c->appendix,
+                'caretaker_id' => $c->caretaker_id,
+                'caretaker_name' => $c->caretaker?->name,
+                'caretaker_email' => $c->caretaker?->email,
+                'caretaker_phone' => $c->caretaker?->phone,
+                'care_status' => $c->care_status,
                 'updated_at' => $c->updated_at?->toIso8601String(),
             ]);
 
@@ -93,6 +108,9 @@ final class CustomerApiController extends Controller
             'province' => ['nullable', 'string', 'max:100'],
             'industry' => ['nullable', 'string', 'max:255'],
             'sector' => ['nullable', 'string', 'max:255'],
+            'is_ghg_inventory' => ['nullable', 'boolean'],
+            'is_energy_audit' => ['nullable', 'boolean'],
+            'appendix' => ['nullable', 'string', 'max:255'],
             'caretaker_name' => ['nullable', 'string', 'max:255'],
             'caretaker_email' => ['nullable', 'string', 'max:100'],
             'caretaker_phone' => ['nullable', 'string', 'max:50'],
@@ -131,6 +149,14 @@ final class CustomerApiController extends Controller
             $industry = $request->input('industry')
                 ?: $request->input('sector');
 
+            $caretakerId = null;
+            if ($request->filled('caretaker_email')) {
+                $caretakerId = User::where('email', $request->input('caretaker_email'))->value('id');
+            }
+            if (! $caretakerId && $request->filled('caretaker_name')) {
+                $caretakerId = User::where('name', $request->input('caretaker_name'))->value('id');
+            }
+
             $attributes = [
                 'name' => $name,
                 'type' => CustomerType::Organization,
@@ -143,6 +169,24 @@ final class CustomerApiController extends Controller
                 'province' => $request->input('province') ?: $customer?->province,
                 'industry' => $industry ?: $customer?->industry,
             ];
+
+            if ($request->has('is_ghg_inventory')) {
+                $attributes['is_ghg_inventory'] = $request->boolean('is_ghg_inventory');
+            }
+            if ($request->has('is_energy_audit')) {
+                $attributes['is_energy_audit'] = $request->boolean('is_energy_audit');
+            }
+            if ($request->has('appendix')) {
+                $attributes['appendix'] = $request->input('appendix');
+            }
+
+            if ($caretakerId) {
+                $attributes['caretaker_id'] = $caretakerId;
+            }
+
+            if ($request->filled('care_status')) {
+                $attributes['care_status'] = $request->input('care_status');
+            }
 
             if ($customer) {
                 $customer->update($attributes);

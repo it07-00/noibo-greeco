@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Enums\CustomerType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,6 +22,11 @@ final class Customer extends Model
         'type',
         'tax_code',
         'contact_name',
+        'caretaker_id',
+        'care_status',
+        'is_ghg_inventory',
+        'is_energy_audit',
+        'appendix',
         'email',
         'phone',
         'billing_address',
@@ -34,7 +40,14 @@ final class Customer extends Model
     {
         return [
             'type' => CustomerType::class,
+            'is_ghg_inventory' => 'boolean',
+            'is_energy_audit' => 'boolean',
         ];
+    }
+
+    public function caretaker(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'caretaker_id');
     }
 
     public function quotations(): HasMany
