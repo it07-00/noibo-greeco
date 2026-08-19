@@ -64,7 +64,7 @@ final class BaoChauCustomerSyncService
                 'system_source' => $customer->system_source ?? 'greeco',
                 'caretaker_name' => $customer->caretaker?->name,
                 'caretaker_email' => $customer->caretaker?->email,
-                'caretaker_phone' => $customer->caretaker?->phone,
+                'caretaker_phone' => null,
                 'care_status' => $customer->care_status,
             ];
 

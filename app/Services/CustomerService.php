@@ -24,7 +24,7 @@ final class CustomerService
     ): LengthAwarePaginator {
         return Customer::query()
             ->with([
-                'caretaker:id,name,email,phone',
+                'caretaker:id,name,email',
                 'courses' => fn ($query) => $query->orderBy('starts_at')->orderBy('name'),
             ])
             ->withCount(['quotations', 'contracts'])

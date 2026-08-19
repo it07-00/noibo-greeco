@@ -34,7 +34,7 @@ final class CustomerApiController extends Controller
         }
 
         $customers = Customer::query()
-            ->with('caretaker:id,name,email,phone')
+            ->with('caretaker:id,name,email')
             ->select([
                 'id',
                 'name',
@@ -77,7 +77,7 @@ final class CustomerApiController extends Controller
                 'caretaker_id' => $c->caretaker_id,
                 'caretaker_name' => $c->caretaker?->name,
                 'caretaker_email' => $c->caretaker?->email,
-                'caretaker_phone' => $c->caretaker?->phone,
+                'caretaker_phone' => null,
                 'care_status' => $c->care_status,
                 'updated_at' => $c->updated_at?->toIso8601String(),
             ]);
