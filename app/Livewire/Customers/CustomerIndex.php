@@ -105,6 +105,8 @@ final class CustomerIndex extends Component
     {
         Gate::authorize('create', Customer::class);
         $this->resetForm();
+        $this->caretakerId = (string) (auth()->id() ?? '');
+        $this->careStatus = \App\Enums\CustomerCareStatus::NOT_CONTACTED->value;
         $this->dispatch('customer-form:show');
     }
 
@@ -223,6 +225,17 @@ final class CustomerIndex extends Component
             'email.email' => 'Email không đúng định dạng.',
         ]);
 
+        $caretakerId = filled($validated['caretakerId'] ?? null)
+            ? (int) $validated['caretakerId']
+            : ($this->editingId === 0 ? auth()->id() : ($customer?->caretaker_id));
+
+        $caretakerName = $caretakerId
+            ? User::where('id', $caretakerId)->value('name')
+            : ($customer?->caretaker_name);
+
+        $careStatus = $validated['careStatus']
+            ?: ($this->editingId === 0 ? \App\Enums\CustomerCareStatus::NOT_CONTACTED->value : ($customer?->care_status));
+
         $service->save([
             'name' => trim($validated['name']),
             'type' => $validated['customerType'],
@@ -239,9 +252,9 @@ final class CustomerIndex extends Component
             'province' => $validated['province'] ?: null,
             'industry' => $validated['industry'] ?: null,
             'notes' => $validated['notes'] ?: null,
-            'caretaker_id' => filled($validated['caretakerId'] ?? null) ? (int) $validated['caretakerId'] : null,
-            'caretaker_name' => filled($validated['caretakerId'] ?? null) ? User::find($validated['caretakerId'])?->name : ($customer?->caretaker_name),
-            'care_status' => $validated['careStatus'] ?: null,
+            'caretaker_id' => $caretakerId,
+            'caretaker_name' => $caretakerName,
+            'care_status' => $careStatus,
             'is_ghg_inventory' => (bool) ($validated['isGhgInventory'] ?? false),
             'is_energy_audit' => (bool) ($validated['isEnergyAudit'] ?? false),
             'appendix' => $validated['appendix'] ?: null,

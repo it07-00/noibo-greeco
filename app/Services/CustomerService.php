@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\CustomerType;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -87,6 +88,14 @@ final class CustomerService
     public function save(array $data, ?Customer $customer = null): Customer
     {
         if ($customer === null) {
+            if (empty($data['caretaker_id']) && empty($data['caretaker_name']) && auth()->check()) {
+                $data['caretaker_id'] = auth()->id();
+                $data['caretaker_name'] = auth()->user()?->name;
+            }
+            if (empty($data['care_status'])) {
+                $data['care_status'] = \App\Enums\CustomerCareStatus::NOT_CONTACTED->value;
+            }
+
             return Customer::query()->create($data);
         }
 
