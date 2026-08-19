@@ -32,9 +32,26 @@ final class CustomerService
             ->when($source !== '', fn (Builder $query) => $query->where('system_source', $source))
             ->when($caretakerId !== '', function (Builder $query) use ($caretakerId): void {
                 if ($caretakerId === 'unassigned') {
-                    $query->whereNull('caretaker_id');
-                } else {
-                    $query->where('caretaker_id', (int) $caretakerId);
+                    $query->whereNull('caretaker_id')
+                        ->where(function (Builder $q): void {
+                            $q->whereNull('caretaker_name')
+                                ->orWhere('caretaker_name', '');
+                        });
+                } elseif (str_starts_with($caretakerId, 'name:')) {
+                    $name = substr($caretakerId, 5);
+                    $query->where(function (Builder $q) use ($name): void {
+                        $q->where('caretaker_name', $name)
+                            ->orWhereHas('caretaker', fn ($uq) => $uq->where('name', $name));
+                    });
+                } elseif (is_numeric($caretakerId)) {
+                    $id = (int) $caretakerId;
+                    $userName = User::where('id', $id)->value('name');
+                    $query->where(function (Builder $q) use ($id, $userName): void {
+                        $q->where('caretaker_id', $id);
+                        if ($userName) {
+                            $q->orWhere('caretaker_name', $userName);
+                        }
+                    });
                 }
             })
             ->when($regulatory !== '', function (Builder $query) use ($regulatory): void {

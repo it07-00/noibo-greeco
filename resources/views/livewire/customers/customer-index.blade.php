@@ -37,17 +37,8 @@
                     </div>
                 </div>
 
-                {{-- Source Filter (Bảo Châu / Greeco) --}}
-                <div class="col-6 col-md-3 col-lg-2">
-                    <select class="form-select" wire:model.live="sourceFilter">
-                        <option value="">Tất cả hệ thống</option>
-                        <option value="greeco">🌿 Greeco</option>
-                        <option value="baochau">🛡️ Bảo Châu</option>
-                    </select>
-                </div>
-
                 {{-- Type Filter --}}
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-4 col-lg-3">
                     <select class="form-select" wire:model.live="typeFilter">
                         <option value="">Tất cả loại KH</option>
                         @foreach ($customerTypes as $value => $label)
@@ -57,7 +48,7 @@
                 </div>
 
                 {{-- Regulatory Filter (KKKNK / KTNL) --}}
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-4 col-lg-2">
                     <select class="form-select" wire:model.live="regulatoryFilter">
                         <option value="">Tất cả phân loại</option>
                         <option value="ghg_inventory">☁️ KKKNK</option>
@@ -67,12 +58,12 @@
                 </div>
 
                 {{-- Caretaker Filter --}}
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-12 col-md-4 col-lg-3">
                     <select class="form-select" wire:model.live="caretakerFilter">
                         <option value="">Tất cả người CS</option>
                         <option value="unassigned">Chưa phân công</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        @foreach ($caretakerFilterOptions as $opt)
+                            <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -101,43 +92,31 @@
                                     <span class="fw-semibold text-body">{{ $customer->name }}</span>
                                     <span class="badge rounded-pill {{ $customer->type->badgeClass() }}">{{ $customer->type->label() }}</span>
                                 </div>
-                                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
-                                    @if(($customer->system_source ?? 'greeco') === 'baochau')
-                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
-                                              style="font-size: 0.72rem;"
-                                              title="Nguồn: Hệ thống Bảo Châu">
-                                            <i class="fi fi-rr-shield-check me-1"></i>Bảo Châu
-                                        </span>
-                                    @else
-                                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
-                                              style="font-size: 0.72rem;"
-                                              title="Nguồn: Hệ thống Greeco">
-                                            <i class="fi fi-rr-leaf me-1"></i>Greeco
-                                        </span>
-                                    @endif
-
-                                    @if($customer->is_ghg_inventory)
-                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
-                                              style="font-size: 0.72rem;"
-                                              title="Thuộc danh mục Kiểm kê khí nhà kính">
-                                            <i class="fi fi-rr-cloud me-1"></i>KKKNK
-                                        </span>
-                                    @endif
-                                    @if($customer->is_energy_audit)
-                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
-                                              style="font-size: 0.72rem;"
-                                              title="Thuộc danh mục Kiểm toán năng lượng">
-                                            <i class="fi fi-rr-bolt me-1"></i>KTNL
-                                        </span>
-                                    @endif
-                                    @if($customer->appendix)
-                                        <span class="badge bg-body-secondary text-body border px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
-                                              style="font-size: 0.72rem;"
-                                              title="Phụ lục: {{ $customer->appendix }}">
-                                            {{ $customer->appendix }}
-                                        </span>
-                                    @endif
-                                </div>
+                                @if($customer->is_ghg_inventory || $customer->is_energy_audit || $customer->appendix)
+                                    <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                                        @if($customer->is_ghg_inventory)
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                                  style="font-size: 0.72rem;"
+                                                  title="Thuộc danh mục Kiểm kê khí nhà kính">
+                                                <i class="fi fi-rr-cloud me-1"></i>KKKNK
+                                            </span>
+                                        @endif
+                                        @if($customer->is_energy_audit)
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                                  style="font-size: 0.72rem;"
+                                                  title="Thuộc danh mục Kiểm toán năng lượng">
+                                                <i class="fi fi-rr-bolt me-1"></i>KTNL
+                                            </span>
+                                        @endif
+                                        @if($customer->appendix)
+                                            <span class="badge bg-body-secondary text-body border px-2 py-0.5 rounded-pill d-inline-flex align-items-center"
+                                                  style="font-size: 0.72rem;"
+                                                  title="Phụ lục: {{ $customer->appendix }}">
+                                                {{ $customer->appendix }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
                                 <div class="small sales-supporting-text">
                                     @if ($customer->type === \App\Enums\CustomerType::Organization)
                                         MST: {{ $customer->tax_code ?: 'Chưa cập nhật' }}
@@ -247,7 +226,7 @@
 
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label for="customerType" class="form-label">Loại khách hàng <span class="text-danger">*</span></label>
                             <select id="customerType" class="form-select @error('customerType') is-invalid @enderror" wire:model.live="customerType">
                                 @foreach ($customerTypes as $value => $label)
@@ -257,15 +236,7 @@
                             @error('customerType') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="col-12 col-md-3">
-                            <label for="customerSystemSource" class="form-label">Nguồn hệ thống</label>
-                            <select id="customerSystemSource" class="form-select" wire:model="systemSource">
-                                <option value="greeco">🌿 Greeco</option>
-                                <option value="baochau">🛡️ Bảo Châu</option>
-                            </select>
-                        </div>
-
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label for="customerCaretaker" class="form-label">Người chăm sóc (NVCS)</label>
                             <select id="customerCaretaker" class="form-select" wire:model="caretakerId">
                                 <option value="">-- Chưa phân công --</option>
@@ -275,7 +246,7 @@
                             </select>
                         </div>
 
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-4">
                             <label for="customerCareStatus" class="form-label">Trạng thái chăm sóc</label>
                             <select id="customerCareStatus" class="form-select" wire:model="careStatus">
                                 <option value="">-- Chọn trạng thái --</option>

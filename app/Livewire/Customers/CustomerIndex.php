@@ -261,6 +261,31 @@ final class CustomerIndex extends Component
 
     public function render(CustomerService $service): View
     {
+        $users = User::query()->select('id', 'name', 'email')->orderBy('name')->get();
+
+        $externalCaretakers = Customer::query()
+            ->whereNotNull('caretaker_name')
+            ->where('caretaker_name', '!=', '')
+            ->distinct()
+            ->pluck('caretaker_name')
+            ->filter(fn ($name) => ! $users->contains('name', $name))
+            ->values()
+            ->all();
+
+        $caretakerFilterOptions = [];
+        foreach ($users as $user) {
+            $caretakerFilterOptions[] = [
+                'value' => (string) $user->id,
+                'label' => $user->name,
+            ];
+        }
+        foreach ($externalCaretakers as $name) {
+            $caretakerFilterOptions[] = [
+                'value' => 'name:' . $name,
+                'label' => $name,
+            ];
+        }
+
         return view('livewire.customers.customer-index', [
             'customers' => $service->paginate(
                 trim($this->search),
@@ -270,7 +295,8 @@ final class CustomerIndex extends Component
                 $this->caretakerFilter
             ),
             'customerTypes' => CustomerType::options(),
-            'users' => User::query()->select('id', 'name', 'email')->orderBy('name')->get(),
+            'users' => $users,
+            'caretakerFilterOptions' => $caretakerFilterOptions,
         ]);
     }
 
