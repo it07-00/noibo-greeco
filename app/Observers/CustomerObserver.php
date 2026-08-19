@@ -18,10 +18,25 @@ final class CustomerObserver
      */
     public function saved(Customer $customer): void
     {
+        \Illuminate\Support\Facades\Cache::forget('customers.filter_provinces');
+        \Illuminate\Support\Facades\Cache::forget('customers.filter_caretakers');
+        \Illuminate\Support\Facades\Cache::forget('customers.filter_users');
+
         if (BaoChauCustomerSyncService::$isSyncing) {
             return;
         }
 
-        $this->syncService->syncCustomerToBaoChau($customer);
+        dispatch(function () use ($customer): void {
+            $this->syncService->syncCustomerToBaoChau($customer);
+        })->afterResponse();
+    }
+
+    /**
+     * Handle the Customer "deleted" event.
+     */
+    public function deleted(Customer $customer): void
+    {
+        \Illuminate\Support\Facades\Cache::forget('customers.filter_provinces');
+        \Illuminate\Support\Facades\Cache::forget('customers.filter_caretakers');
     }
 }

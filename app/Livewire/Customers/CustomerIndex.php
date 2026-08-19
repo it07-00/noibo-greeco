@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\User;
 use App\Services\CustomerService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
@@ -281,38 +282,46 @@ final class CustomerIndex extends Component
 
     public function render(CustomerService $service): View
     {
-        $users = User::query()->select('id', 'name', 'email')->orderBy('name')->get();
+        $users = Cache::remember('customers.filter_users', 600, fn () => 
+            User::query()->select('id', 'name', 'email')->orderBy('name')->get()
+        );
 
-        $externalCaretakers = Customer::query()
-            ->whereNotNull('caretaker_name')
-            ->where('caretaker_name', '!=', '')
-            ->distinct()
-            ->pluck('caretaker_name')
-            ->filter(fn ($name) => ! $users->contains('name', $name))
-            ->values()
-            ->all();
+        $caretakerFilterOptions = Cache::remember('customers.filter_caretakers', 600, function () use ($users) {
+            $externalCaretakers = Customer::query()
+                ->whereNotNull('caretaker_name')
+                ->where('caretaker_name', '!=', '')
+                ->distinct()
+                ->pluck('caretaker_name')
+                ->filter(fn ($name) => ! $users->contains('name', $name))
+                ->values()
+                ->all();
 
-        $caretakerFilterOptions = [];
-        foreach ($users as $user) {
-            $caretakerFilterOptions[] = [
-                'value' => (string) $user->id,
-                'label' => $user->name,
-            ];
-        }
-        foreach ($externalCaretakers as $name) {
-            $caretakerFilterOptions[] = [
-                'value' => 'name:' . $name,
-                'label' => $name,
-            ];
-        }
+            $options = [];
+            foreach ($users as $user) {
+                $options[] = [
+                    'value' => (string) $user->id,
+                    'label' => $user->name,
+                ];
+            }
+            foreach ($externalCaretakers as $name) {
+                $options[] = [
+                    'value' => 'name:' . $name,
+                    'label' => $name,
+                ];
+            }
 
-        $provinces = Customer::query()
-            ->whereNotNull('province')
-            ->where('province', '!=', '')
-            ->distinct()
-            ->orderBy('province')
-            ->pluck('province')
-            ->all();
+            return $options;
+        });
+
+        $provinces = Cache::remember('customers.filter_provinces', 600, fn () => 
+            Customer::query()
+                ->whereNotNull('province')
+                ->where('province', '!=', '')
+                ->distinct()
+                ->orderBy('province')
+                ->pluck('province')
+                ->all()
+        );
 
         return view('livewire.customers.customer-index', [
             'customers' => $service->paginate(
