@@ -22,7 +22,7 @@
         <div class="card-body border-bottom">
             <div class="row g-2 align-items-center">
                 {{-- Search --}}
-                <div class="col-12 col-lg-4">
+                <div class="col-12 col-md-6 col-lg-3">
                     <div class="input-group sales-search">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="fi fi-rr-search sales-supporting-text" aria-hidden="true"></i>
@@ -38,7 +38,7 @@
                 </div>
 
                 {{-- Type Filter --}}
-                <div class="col-6 col-md-4 col-lg-3">
+                <div class="col-6 col-md-3 col-lg-2">
                     <select class="form-select" wire:model.live="typeFilter">
                         <option value="">Tất cả loại KH</option>
                         @foreach ($customerTypes as $value => $label)
@@ -48,7 +48,7 @@
                 </div>
 
                 {{-- Regulatory Filter (KKKNK / KTNL) --}}
-                <div class="col-6 col-md-4 col-lg-2">
+                <div class="col-6 col-md-3 col-lg-2">
                     <select class="form-select" wire:model.live="regulatoryFilter">
                         <option value="">Tất cả phân loại</option>
                         <option value="ghg_inventory">☁️ KKKNK</option>
@@ -57,8 +57,18 @@
                     </select>
                 </div>
 
+                {{-- Province / Area Filter --}}
+                <div class="col-6 col-md-6 col-lg-2">
+                    <select class="form-select" wire:model.live="provinceFilter">
+                        <option value="">Tất cả khu vực</option>
+                        @foreach ($provinces as $prov)
+                            <option value="{{ $prov }}">{{ $prov }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 {{-- Caretaker Filter --}}
-                <div class="col-12 col-md-4 col-lg-3">
+                <div class="col-6 col-md-6 col-lg-3">
                     <select class="form-select" wire:model.live="caretakerFilter">
                         <option value="">Tất cả người CS</option>
                         <option value="unassigned">Chưa phân công</option>

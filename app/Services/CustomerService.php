@@ -21,6 +21,7 @@ final class CustomerService
         string $source = '',
         string $regulatory = '',
         string $caretakerId = '',
+        string $province = '',
         int $perPage = 15
     ): LengthAwarePaginator {
         return Customer::query()
@@ -31,6 +32,7 @@ final class CustomerService
             ->withCount(['quotations', 'contracts'])
             ->when(in_array($type, CustomerType::values(), true), fn ($query) => $query->where('type', $type))
             ->when($source !== '', fn (Builder $query) => $query->where('system_source', $source))
+            ->when($province !== '', fn (Builder $query) => $query->where('province', $province))
             ->when($caretakerId !== '', function (Builder $query) use ($caretakerId): void {
                 if ($caretakerId === 'unassigned') {
                     $query->whereNull('caretaker_id')

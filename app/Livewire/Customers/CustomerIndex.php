@@ -35,6 +35,8 @@ final class CustomerIndex extends Component
 
     public string $caretakerFilter = '';
 
+    public string $provinceFilter = '';
+
     public int $editingId = 0;
 
     public string $name = '';
@@ -97,6 +99,11 @@ final class CustomerIndex extends Component
     }
 
     public function updatedCaretakerFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedProvinceFilter(): void
     {
         $this->resetPage();
     }
@@ -299,15 +306,25 @@ final class CustomerIndex extends Component
             ];
         }
 
+        $provinces = Customer::query()
+            ->whereNotNull('province')
+            ->where('province', '!=', '')
+            ->distinct()
+            ->orderBy('province')
+            ->pluck('province')
+            ->all();
+
         return view('livewire.customers.customer-index', [
             'customers' => $service->paginate(
                 trim($this->search),
                 $this->typeFilter,
                 $this->sourceFilter,
                 $this->regulatoryFilter,
-                $this->caretakerFilter
+                $this->caretakerFilter,
+                $this->provinceFilter
             ),
             'customerTypes' => CustomerType::options(),
+            'provinces' => $provinces,
             'users' => $users,
             'caretakerFilterOptions' => $caretakerFilterOptions,
         ]);
