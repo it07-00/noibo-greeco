@@ -51,6 +51,7 @@ final class CustomerApiController extends Controller
                 'is_ghg_inventory',
                 'is_energy_audit',
                 'appendix',
+                'system_source',
                 'updated_at',
             ])
             ->latest('updated_at')
@@ -72,6 +73,7 @@ final class CustomerApiController extends Controller
                 'is_ghg_inventory' => (bool) $c->is_ghg_inventory,
                 'is_energy_audit' => (bool) $c->is_energy_audit,
                 'appendix' => $c->appendix,
+                'system_source' => $c->system_source ?? 'greeco',
                 'caretaker_id' => $c->caretaker_id,
                 'caretaker_name' => $c->caretaker?->name,
                 'caretaker_email' => $c->caretaker?->email,
@@ -111,6 +113,7 @@ final class CustomerApiController extends Controller
             'is_ghg_inventory' => ['nullable', 'boolean'],
             'is_energy_audit' => ['nullable', 'boolean'],
             'appendix' => ['nullable', 'string', 'max:255'],
+            'system_source' => ['nullable', 'string', 'max:50'],
             'caretaker_name' => ['nullable', 'string', 'max:255'],
             'caretaker_email' => ['nullable', 'string', 'max:100'],
             'caretaker_phone' => ['nullable', 'string', 'max:50'],
@@ -157,6 +160,8 @@ final class CustomerApiController extends Controller
                 $caretakerId = User::where('name', $request->input('caretaker_name'))->value('id');
             }
 
+            $systemSource = $request->input('system_source') ?: 'baochau';
+
             $attributes = [
                 'name' => $name,
                 'type' => CustomerType::Organization,
@@ -168,6 +173,7 @@ final class CustomerApiController extends Controller
                 'contact_name' => $contactName ?: $customer?->contact_name,
                 'province' => $request->input('province') ?: $customer?->province,
                 'industry' => $industry ?: $customer?->industry,
+                'system_source' => $customer?->system_source ?: $systemSource,
             ];
 
             if ($request->has('is_ghg_inventory')) {

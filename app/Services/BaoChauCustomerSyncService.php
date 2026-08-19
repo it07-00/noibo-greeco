@@ -61,6 +61,7 @@ final class BaoChauCustomerSyncService
                 'is_ghg_inventory' => (bool) $customer->is_ghg_inventory,
                 'is_energy_audit' => (bool) $customer->is_energy_audit,
                 'appendix' => $customer->appendix,
+                'system_source' => $customer->system_source ?? 'greeco',
                 'caretaker_name' => $customer->caretaker?->name,
                 'caretaker_email' => $customer->caretaker?->email,
                 'caretaker_phone' => $customer->caretaker?->phone,
@@ -167,6 +168,7 @@ final class BaoChauCustomerSyncService
                         'contact_name' => $contactName,
                         'province' => $item['province'] ?? $customer?->province,
                         'industry' => $industry,
+                        'system_source' => $customer?->system_source ?: ($item['system_source'] ?? 'baochau'),
                     ];
 
                     if (isset($item['is_ghg_inventory'])) {
