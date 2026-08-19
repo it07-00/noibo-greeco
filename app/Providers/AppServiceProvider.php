@@ -74,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(DailyReport::class, DailyReportPolicy::class);
         Gate::policy(DocumentRegulation::class, DocumentRegulationPolicy::class);
         Gate::policy(Customer::class, CustomerPolicy::class);
+        Customer::observe(\App\Observers\CustomerObserver::class);
         Gate::policy(Course::class, CoursePolicy::class);
         Gate::policy(Quotation::class, QuotationPolicy::class);
         Gate::policy(Contract::class, ContractPolicy::class);

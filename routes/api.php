@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\DutyScheduleApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/duty-schedules', [DutyScheduleApiController::class, 'index']);
 Route::get('/users', [DutyScheduleApiController::class, 'users']);
 Route::post('/notify', [DutyScheduleApiController::class, 'notify']);
+
+Route::get('/customers', [CustomerApiController::class, 'index']);
+Route::post('/customers/sync', [CustomerApiController::class, 'sync']);

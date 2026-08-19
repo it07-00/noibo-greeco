@@ -22,10 +22,6 @@ final class DutySchedule extends Model
         'location',
         'start_at',
         'end_at',
-        'check_in_at',
-        'check_out_at',
-        'late_minutes',
-        'early_minutes',
         'label_color',
         'is_private',
         'created_by',
@@ -36,10 +32,6 @@ final class DutySchedule extends Model
         return [
             'start_at' => 'datetime',
             'end_at' => 'datetime',
-            'check_in_at' => 'datetime',
-            'check_out_at' => 'datetime',
-            'late_minutes' => 'integer',
-            'early_minutes' => 'integer',
             'is_private' => 'boolean',
             'created_by' => 'integer',
         ];
@@ -63,7 +55,7 @@ final class DutySchedule extends Model
 
     public function getCombinedParticipantsAttribute()
     {
-        $local = $this->users->map(fn ($u) => [
+        $local = $this->users->map(fn($u) => [
             'id' => $u->id,
             'name' => $u->name,
             'system' => 'greeco',
@@ -73,9 +65,9 @@ final class DutySchedule extends Model
             ->where('duty_schedule_id', $this->id)
             ->whereNotNull('baochau_user_id')
             ->get()
-            ->map(fn ($row) => [
+            ->map(fn($row) => [
                 'id' => $row->baochau_user_id,
-                'name' => 'Bảo Châu: '.$row->baochau_user_name,
+                'name' => 'Bảo Châu: ' . $row->baochau_user_name,
                 'system' => 'baochau',
             ]);
 

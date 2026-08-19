@@ -31,9 +31,9 @@ final class DutyScheduleService
             ->when($filterUserId, static function ($query, $userId): void {
                 $query->where(static function ($q) use ($userId): void {
                     $q->where('created_by', $userId)
-                      ->orWhereHas('users', static function ($q2) use ($userId): void {
-                          $q2->where('users.id', $userId);
-                      });
+                        ->orWhereHas('users', static function ($q2) use ($userId): void {
+                            $q2->where('users.id', $userId);
+                        });
                 });
             })
             ->get();
@@ -48,10 +48,6 @@ final class DutyScheduleService
                 'location' => $dto->location,
                 'start_at' => $dto->start_at,
                 'end_at' => $dto->end_at,
-                'check_in_at' => $dto->check_in_at,
-                'check_out_at' => $dto->check_out_at,
-                'late_minutes' => $dto->late_minutes,
-                'early_minutes' => $dto->early_minutes,
                 'label_color' => $dto->label_color,
                 'is_private' => $dto->is_private,
                 'created_by' => $dto->created_by ?? auth()->id(),
@@ -78,10 +74,6 @@ final class DutyScheduleService
                 'location' => $dto->location,
                 'start_at' => $dto->start_at,
                 'end_at' => $dto->end_at,
-                'check_in_at' => $dto->check_in_at,
-                'check_out_at' => $dto->check_out_at,
-                'late_minutes' => $dto->late_minutes,
-                'early_minutes' => $dto->early_minutes,
                 'label_color' => $dto->label_color,
                 'is_private' => $dto->is_private,
             ]);

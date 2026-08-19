@@ -28,93 +28,35 @@
         </div>
     @endif
 
-    {{-- ── Filter & Action Toolbar ────────────────────────────────────────────── --}}
-    <div class="card border-0 shadow-sm mb-3" style="overflow: visible; position: relative; z-index: 20;">
-        <div class="card-body py-2 px-3" style="overflow: visible;">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="overflow: visible;">
-                
-                {{-- Left: Filters --}}
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <div class="d-flex align-items-center gap-1">
-                        <label class="form-label mb-0 fw-semibold text-dark text-sm me-1" for="filterParticipant">Thành viên:</label>
-                        <select class="form-select form-select-sm shadow-none" wire:model.live="filterUserId" id="filterParticipant"
-                            style="min-width: 180px; border-color: #cbd5e1;">
-                            <option value="0">Tất cả nhân viên</option>
-                            @foreach ($users as $u)
-                                <option value="{{ $u->id }}">{{ $u->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="d-flex align-items-center gap-1">
-                        <label class="form-label mb-0 fw-semibold text-dark text-sm me-1" for="filterMonth">Tháng:</label>
-                        <input type="month" id="filterMonth" class="form-control form-control-sm shadow-none"
-                            style="min-width: 160px; border-color: #cbd5e1;" />
-                    </div>
+    {{-- ── Filter Bar ───────────────────────────────────────────────────────── --}}
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-sm-auto">
+                    <label class="form-label mb-0 text-muted small">Người tạo / Người tham gia</label>
+                    <select class="form-select form-select-sm" wire:model.live="filterUserId" id="filterParticipant"
+                        style="min-width: 220px;">
+                        <option value="0">Tất cả thành viên</option>
+                        @foreach ($users as $u)
+                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
-
-                {{-- Right: Actions & Toggle --}}
-                <div class="d-flex flex-wrap align-items-center gap-2 ms-auto" style="overflow: visible; position: relative;">
-                    @if ($canViewNoibo)
-                        <div class="form-check form-switch mb-0 me-2">
+                <div class="col-sm-auto">
+                    <label class="form-label mb-0 text-muted small">Chọn tháng</label>
+                    <input type="month" id="filterMonth" class="form-control form-control-sm" style="min-width: 160px;" />
+                </div>
+                @if ($canViewNoibo)
+                    <div class="col-sm-auto ms-sm-auto">
+                        <div class="form-check form-switch mb-0">
                             <input type="checkbox" class="form-check-input" id="toggleNoiboSchedules"
                                 wire:model.live="showNoiboSchedules" />
                             <label class="form-check-label fw-semibold small" for="toggleNoiboSchedules">
                                 <span class="noibo-badge me-1">Bảo Châu</span> Hiển thị lịch Bảo Châu
                             </label>
                         </div>
-                    @endif
-
-                    {{-- Nút Xuất Excel (Dropdown không bị che) --}}
-                    <div class="dropdown" style="position: relative; z-index: 30;">
-                        <button class="btn btn-success btn-sm waves-effect waves-light dropdown-toggle d-inline-flex align-items-center gap-1 fw-semibold px-3 shadow-sm"
-                            type="button" id="dropdownExportExcel" data-bs-toggle="dropdown" aria-expanded="false"
-                            style="background-color: #10b981; border-color: #10b981;">
-                            <i class="fi fi-rr-file-excel"></i>
-                            <span>Xuất Excel</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border" aria-labelledby="dropdownExportExcel"
-                            style="position: absolute; z-index: 1050; min-width: 210px; margin-top: 4px; border-color: #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;">
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 small py-2 fw-medium" href="#"
-                                    onclick="alert('Đang tạo file Xuất tổng hợp Excel...'); return false;">
-                                    <i class="fi fi-rr-file-spreadsheet text-success"></i>
-                                    <span>Xuất tổng hợp</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 small py-2 fw-medium" href="#"
-                                    onclick="alert('Đang tạo file Xuất chi tiết chấm công...'); return false;">
-                                    <i class="fi fi-rr-time-check text-primary"></i>
-                                    <span>Xuất chi tiết chấm công</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2 small py-2 fw-medium" href="#"
-                                    onclick="alert('Đang tạo file Báo cáo đi trễ / về sớm...'); return false;">
-                                    <i class="fi fi-rr-exclamation text-warning"></i>
-                                    <span>Xuất trễ / về sớm</span>
-                                </a>
-                            </li>
-                        </ul>
                     </div>
-
-                    {{-- Nút Import dữ liệu --}}
-                    <button type="button" class="btn btn-primary btn-sm waves-effect waves-light d-inline-flex align-items-center gap-1 fw-semibold px-3 shadow-sm"
-                        style="background-color: #3b82f6; border-color: #3b82f6;"
-                        onclick="alert('Chức năng Import dữ liệu đang được chuẩn bị...')">
-                        <i class="fi fi-rr-file-import"></i>
-                        <span>Import dữ liệu</span>
-                    </button>
-
-                    {{-- Nút Nhân viên --}}
-                    <button type="button" class="btn btn-outline-warning btn-sm waves-effect d-inline-flex align-items-center gap-1 fw-semibold px-3"
-                        style="color: #ea580c; border-color: #f97316;"
-                        wire:click="$set('filterUserId', 0)">
-                        <i class="fi fi-rr-users-alt"></i>
-                        <span>Nhân viên</span>
-                    </button>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -236,46 +178,6 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="col-6 col-md-3 mb-3">
-                                <label class="form-label fw-semibold text-xs">Giờ Check-in thực tế</label>
-                                <input type="datetime-local" wire:model.live="check_in_at"
-                                    class="form-control form-control-sm @error('check_in_at') is-invalid @enderror" />
-                                @error('check_in_at')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-6 col-md-3 mb-3">
-                                <label class="form-label fw-semibold text-xs">Giờ Check-out thực tế</label>
-                                <input type="datetime-local" wire:model.live="check_out_at"
-                                    class="form-control form-control-sm @error('check_out_at') is-invalid @enderror" />
-                                @error('check_out_at')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-6 col-md-3 mb-3">
-                                <label class="form-label fw-semibold text-xs">Đi trễ (sau 08:00)</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" min="0" wire:model="late_minutes"
-                                        class="form-control @error('late_minutes') is-invalid @enderror"
-                                        placeholder="0" />
-                                    <span class="input-group-text">phút</span>
-                                </div>
-                                @error('late_minutes')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-6 col-md-3 mb-3">
-                                <label class="form-label fw-semibold text-xs">Về sớm (trước 17:00)</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" min="0" wire:model="early_minutes"
-                                        class="form-control @error('early_minutes') is-invalid @enderror"
-                                        placeholder="0" />
-                                    <span class="input-group-text">phút</span>
-                                </div>
-                                @error('early_minutes')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
                             <div class="col-12 mb-3">
                                 <label class="form-label fw-semibold">Địa điểm</label>
                                 <input type="text" wire:model="location"
@@ -362,22 +264,6 @@
                         <div class="schedule-detail-item">
                             <strong class="schedule-detail-label"><i class="fi fi-rr-calendar"></i>Kết thúc:</strong>
                             <span id="detailEnd" class="schedule-detail-value"></span>
-                        </div>
-                        <div class="schedule-detail-item">
-                            <strong class="schedule-detail-label"><i class="fi fi-rr-time-check"></i>Check-in thực tế:</strong>
-                            <span id="detailCheckIn" class="schedule-detail-value"></span>
-                        </div>
-                        <div class="schedule-detail-item">
-                            <strong class="schedule-detail-label"><i class="fi fi-rr-clock-three"></i>Check-out thực tế:</strong>
-                            <span id="detailCheckOut" class="schedule-detail-value"></span>
-                        </div>
-                        <div class="schedule-detail-item">
-                            <strong class="schedule-detail-label"><i class="fi fi-rr-exclamation"></i>Trạng thái đi trễ:</strong>
-                            <span id="detailLateMinutes" class="schedule-detail-value"></span>
-                        </div>
-                        <div class="schedule-detail-item">
-                            <strong class="schedule-detail-label"><i class="fi fi-rr-sign-out-alt"></i>Trạng thái về sớm:</strong>
-                            <span id="detailEarlyMinutes" class="schedule-detail-value"></span>
                         </div>
                         <div class="schedule-detail-item">
                             <strong class="schedule-detail-label"><i class="fi fi-rr-marker"></i>Địa điểm:</strong>
@@ -517,31 +403,6 @@
                                                                 <span class="badge bg-primary-subtle text-primary border border-primary text-xs">{{ $p['name'] }}</span>
                                                             @endforeach
                                                         </span>
-                                                    @endif
-                                                </span>
-                                            </div>
-                                            <div class="report-section-title text-muted" style="font-size: 13px; font-weight: 600;">
-                                                <i class="fi fi-rr-time-check" style="color: #64748b;"></i>
-                                                <span><strong>Giờ Check-in thực tế:</strong> {{ $schedule['check_in_formatted'] ?? 'Chưa ghi nhận' }}</span>
-                                            </div>
-                                            <div class="report-section-title text-muted" style="font-size: 13px; font-weight: 600;">
-                                                <i class="fi fi-rr-clock-three" style="color: #64748b;"></i>
-                                                <span><strong>Giờ Check-out thực tế:</strong> {{ $schedule['check_out_formatted'] ?? 'Chưa ghi nhận' }}</span>
-                                            </div>
-                                            <div class="report-section-title text-muted" style="font-size: 13px; font-weight: 600;">
-                                                <i class="fi fi-rr-exclamation" style="color: #64748b;"></i>
-                                                <span>
-                                                    <strong>Đi trễ / Về sớm:</strong>
-                                                    @if (!empty($schedule['late_minutes']) && $schedule['late_minutes'] > 0)
-                                                        <span class="badge bg-danger-subtle text-danger border border-danger ms-1 fw-bold">Trễ {{ $schedule['late_minutes'] }} phút</span>
-                                                    @else
-                                                        <span class="badge bg-success-subtle text-success border border-success ms-1">Vào đúng giờ</span>
-                                                    @endif
-
-                                                    @if (!empty($schedule['early_minutes']) && $schedule['early_minutes'] > 0)
-                                                        <span class="badge bg-warning-subtle text-warning border border-warning ms-1 fw-bold">Về sớm {{ $schedule['early_minutes'] }} phút</span>
-                                                    @else
-                                                        <span class="badge bg-success-subtle text-success border border-success ms-1">Đủ giờ (17:00)</span>
                                                     @endif
                                                 </span>
                                             </div>
@@ -816,50 +677,6 @@
                     const eventTitle = props.raw_title || event.title;
                     card.title = [eventTitle, timeStr, namesStr].filter(Boolean).join(' · ');
 
-                    // Check-in (top line) & Check-out (bottom line) display
-                    const hasCheckIn = Boolean(props.check_in_time);
-                    const hasCheckOut = Boolean(props.check_out_time);
-
-                    if (hasCheckIn || hasCheckOut) {
-                        const attendanceBlock = document.createElement('div');
-                        attendanceBlock.className = 'greeco-attendance-block d-flex flex-column align-items-center justify-content-center p-1 rounded mb-1 text-center fw-bold shadow-sm';
-                        attendanceBlock.style.cssText = 'background: #f97316; color: #ffffff; line-height: 1.2; font-size: 13px; width: 100%; border-radius: 4px;';
-
-                        const inEl = document.createElement('div');
-                        inEl.style.cssText = 'font-weight: 700; letter-spacing: 0.5px;';
-                        inEl.innerText = props.check_in_time || '08:00';
-                        attendanceBlock.appendChild(inEl);
-
-                        const outEl = document.createElement('div');
-                        outEl.style.cssText = 'font-weight: 700; letter-spacing: 0.5px; border-top: 1px solid rgba(255,255,255,0.2); width: 100%; margin-top: 1px; padding-top: 1px;';
-                        outEl.innerText = props.check_out_time || '17:00';
-                        attendanceBlock.appendChild(outEl);
-
-                        card.appendChild(attendanceBlock);
-                    }
-
-                    // Warning Badges for Late (after 08:00) & Early (before 17:00)
-                    if (props.late_minutes > 0 || props.early_minutes > 0) {
-                        const badgeContainer = document.createElement('div');
-                        badgeContainer.className = 'd-flex flex-wrap gap-1 mb-1';
-
-                        if (props.late_minutes > 0) {
-                            const lateBadge = document.createElement('span');
-                            lateBadge.className = 'badge bg-danger text-white border border-white text-xs px-1';
-                            lateBadge.innerText = `Trễ ${props.late_minutes}m`;
-                            badgeContainer.appendChild(lateBadge);
-                        }
-
-                        if (props.early_minutes > 0) {
-                            const earlyBadge = document.createElement('span');
-                            earlyBadge.className = 'badge bg-warning text-dark border border-white text-xs px-1';
-                            earlyBadge.innerText = `Sớm ${props.early_minutes}m`;
-                            badgeContainer.appendChild(earlyBadge);
-                        }
-
-                        card.appendChild(badgeContainer);
-                    }
-
                     const contextEl = document.createElement('span');
                     contextEl.className = 'greeco-event-context';
 
@@ -868,7 +685,7 @@
                     ownerEl.innerText = isNoibo ? (props.creator_name && props.creator_name !== 'N/A' ? `${props.creator_name} (Bảo Châu)` : 'Bảo Châu') : (props.creator_name || namesStr || 'Lịch công tác');
                     contextEl.appendChild(ownerEl);
 
-                    if (timeStr && !hasCheckIn && !hasCheckOut) {
+                    if (timeStr) {
                         const timeEl = document.createElement('span');
                         timeEl.className = 'greeco-event-time';
                         timeEl.innerText = timeStr;
