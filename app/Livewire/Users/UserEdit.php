@@ -31,8 +31,6 @@ final class UserEdit extends Component
 
     public string $password = '';
 
-    public string $password_confirmation = '';
-
     /**
      * @var list<string>
      */
@@ -61,9 +59,8 @@ final class UserEdit extends Component
         $this->userId = $user->id;
         $this->name = $user->name;
         $this->username = $user->username;
-        $this->email = $user->email;
+        $this->email = (string) ($user->email ?? '');
         $this->password = '';
-        $this->password_confirmation = '';
         $this->roles = $user->roles->pluck('name')->values()->all();
         $this->department_id = $user->department_id;
         $this->dob = $user->dob ? $user->dob->format('Y-m-d') : '';

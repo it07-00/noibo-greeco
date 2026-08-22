@@ -12,7 +12,7 @@ final readonly class UserDTO
     public function __construct(
         public string $name,
         public string $username,
-        public string $email,
+        public ?string $email = null,
         public ?string $password = null,
         public array $roles = [],
         public ?int $departmentId = null,
@@ -21,14 +21,14 @@ final readonly class UserDTO
     ) {}
 
     /**
-     * @param  array{name?: string, username?: string, email?: string, password?: string|null, roles?: array<int, string>|null, department_id?: int|string|null, dob?: string|null, address?: string|null}  $data
+     * @param  array{name?: string, username?: string, email?: string|null, password?: string|null, roles?: array<int, string>|null, department_id?: int|string|null, dob?: string|null, address?: string|null}  $data
      */
     public static function fromArray(array $data): self
     {
         return new self(
             name: trim((string) ($data['name'] ?? '')),
             username: strtolower(trim((string) ($data['username'] ?? ''))),
-            email: strtolower(trim((string) ($data['email'] ?? ''))),
+            email: filled($data['email'] ?? null) ? strtolower(trim((string) $data['email'])) : null,
             password: filled($data['password'] ?? null) ? (string) $data['password'] : null,
             roles: array_values(array_filter(array_map(
                 static fn (mixed $role): string => trim((string) $role),

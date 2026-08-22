@@ -58,16 +58,6 @@
                                 @error('password') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label" for="create-password-confirmation">Xác nhận mật khẩu</label>
-                                <div class="input-group">
-                                    <input id="create-password-confirmation" type="password" class="form-control" wire:model.defer="password_confirmation">
-                                    <button type="button" class="btn btn-outline-secondary" data-password-toggle="#create-password-confirmation" title="Hiện mật khẩu" aria-label="Hiện mật khẩu">
-                                        <i class="fi fi-rr-eye" data-password-toggle-icon></i>
-                                    </button>
-                                </div>
-                            </div>
-
                             <div class="col-12">
                                 <div class="border rounded-3 p-3 bg-light">
                                     <div class="fw-semibold mb-3">Phân công tổ chức</div>

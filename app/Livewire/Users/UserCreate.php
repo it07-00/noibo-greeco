@@ -29,8 +29,6 @@ final class UserCreate extends Component
 
     public string $password = '';
 
-    public string $password_confirmation = '';
-
     /**
      * @var list<string>
      */
@@ -100,7 +98,6 @@ final class UserCreate extends Component
         $this->username = '';
         $this->email = '';
         $this->password = '';
-        $this->password_confirmation = '';
         $this->roles = [];
         $this->department_id = null;
         $this->dob = '';

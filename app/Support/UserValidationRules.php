@@ -17,8 +17,8 @@ final class UserValidationRules
         return [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9._-]+$/', Rule::unique(User::class, 'username')],
-            'email' => ['required', 'email:rfc', 'max:255', Rule::unique(User::class, 'email')],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'email' => ['nullable', 'email:rfc', 'max:255', Rule::unique(User::class, 'email')],
+            'password' => ['required', 'string', 'min:8'],
             'roles' => ['array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],
@@ -37,8 +37,8 @@ final class UserValidationRules
         return [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9._-]+$/', Rule::unique(User::class, 'username')->ignore($userId)],
-            'email' => ['required', 'email:rfc', 'max:255', Rule::unique(User::class, 'email')->ignore($userId)],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'email' => ['nullable', 'email:rfc', 'max:255', Rule::unique(User::class, 'email')->ignore($userId)],
+            'password' => ['nullable', 'string', 'min:8'],
             'roles' => ['array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],

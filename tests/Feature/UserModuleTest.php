@@ -113,6 +113,29 @@ final class UserModuleTest extends TestCase
             ->assertDontSee($otherRole->name);
     }
 
+    public function test_user_can_be_created_without_email_and_without_password_confirmation(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        $admin = User::factory()->create();
+        $admin->givePermissionTo(PermissionEnum::UserCreate->value);
+
+        $this->actingAs($admin);
+
+        Livewire::test(UserCreate::class)
+            ->set('name', 'Nguyễn Văn A')
+            ->set('username', 'nguyenvana')
+            ->set('email', '')
+            ->set('password', '12345678')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertDispatched('users:refresh');
+
+        $this->assertDatabaseHas('users', [
+            'username' => 'nguyenvana',
+            'email' => null,
+        ]);
+    }
+
     public function test_user_service_creates_updates_and_soft_deletes_user(): void
     {
         $this->seed(PermissionSeeder::class);
