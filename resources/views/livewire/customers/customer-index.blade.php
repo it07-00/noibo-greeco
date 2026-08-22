@@ -148,21 +148,15 @@
                                     $caretakerName = $customer->caretaker?->name ?: $customer->caretaker_name;
                                 @endphp
                                 @if($caretakerName)
-                                    <div class="d-flex align-items-center gap-1.5">
-                                        <div class="rounded-circle bg-primary-subtle text-primary fw-semibold d-inline-flex align-items-center justify-content-center"
-                                             style="width: 26px; height: 26px; font-size: 0.75rem;">
-                                            {{ mb_substr($caretakerName, 0, 1) }}
-                                        </div>
-                                        <div>
-                                            <div class="small fw-semibold text-body">{{ $caretakerName }}</div>
-                                            @if($customer->care_status)
-                                                <div class="mt-0.5">
-                                                    <span class="badge {{ $customer->careStatusBadgeClass() }} px-1.5 py-0.5 rounded-pill" style="font-size: 0.68rem;">
-                                                        {{ $customer->careStatusLabel() }}
-                                                    </span>
-                                                </div>
-                                            @endif
-                                        </div>
+                                    <div>
+                                        <div class="small fw-semibold text-body">{{ $caretakerName }}</div>
+                                        @if($customer->care_status)
+                                            <div class="mt-0.5">
+                                                <span class="badge {{ $customer->careStatusBadgeClass() }} px-1.5 py-0.5 rounded-pill" style="font-size: 0.68rem;">
+                                                    {{ $customer->careStatusLabel() }}
+                                                </span>
+                                            </div>
+                                        @endif
                                     </div>
                                 @else
                                     <span class="text-muted small fst-italic">Chưa phân công</span>
