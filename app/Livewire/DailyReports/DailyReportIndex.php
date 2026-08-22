@@ -112,12 +112,12 @@ final class DailyReportIndex extends Component
         if (! $user) {
             return false;
         }
-        // SuperAdmin → always yes
-        if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
+        // SuperAdmin or Director → always yes
+        if ($user->hasRole(RoleEnum::SuperAdmin->value) || $user->hasRole(RoleEnum::Director->value)) {
             return true;
         }
 
-        // View-only role (Director): has report.view but NOT report.create
+        // View-only role (Director/Leadership): has report.view but NOT report.create
         return $user->can(PermissionEnum::ReportView->value)
             && ! $user->can(PermissionEnum::ReportCreate->value);
     }

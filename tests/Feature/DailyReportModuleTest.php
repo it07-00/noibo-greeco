@@ -454,4 +454,32 @@ final class DailyReportModuleTest extends TestCase
 
         $this->assertSame(SupportRequestStatus::InProgress, $assignment->refresh()->status);
     }
+
+    public function test_marketing_role_can_create_and_only_view_own_reports(): void
+    {
+        $this->seed(PermissionSeeder::class);
+
+        $mktUser1 = User::factory()->create();
+        $mktUser1->assignRole(RoleEnum::Marketing->value);
+
+        $mktUser2 = User::factory()->create();
+        $mktUser2->assignRole(RoleEnum::Marketing->value);
+
+        $reportOfUser2 = DailyReport::create([
+            'user_id' => $mktUser2->id,
+            'report_date' => '2026-08-22',
+            'work_done' => 'Báo cáo công việc marketing của user 2',
+        ]);
+
+        // MKT User 1 can create daily report
+        $this->assertTrue($mktUser1->can('create', DailyReport::class));
+
+        // MKT User 1 CANNOT view MKT User 2's report
+        $this->assertFalse($mktUser1->can('view', $reportOfUser2));
+
+        // MKT User 1 mount component defaults to 'mine' and does not view all
+        $this->actingAs($mktUser1);
+        Livewire::test(DailyReportIndex::class)
+            ->assertSet('viewMode', 'mine');
+    }
 }

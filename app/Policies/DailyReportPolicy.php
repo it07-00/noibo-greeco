@@ -27,6 +27,11 @@ final class DailyReportPolicy
             return true;
         }
 
+        // Director can view all
+        if ($user->hasRole(\App\Enums\RoleEnum::Director->value)) {
+            return $user->can(PermissionEnum::ReportView->value);
+        }
+
         // Others can view only if they have report.view and are not staff (like Director)
         return $user->can(PermissionEnum::ReportView->value) && !$user->can(PermissionEnum::ReportCreate->value);
     }
