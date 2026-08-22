@@ -251,7 +251,7 @@
                             <select id="customerCaretaker" class="form-select" wire:model="caretakerId">
                                 <option value="">-- Chưa phân công --</option>
                                 @foreach ($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
                                 @endforeach
                             </select>
                         </div>

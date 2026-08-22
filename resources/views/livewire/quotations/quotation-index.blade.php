@@ -424,16 +424,121 @@
                             </div>
                         @endif
                         <div class="col-12 col-lg-6">
-                            <label for="quotationCustomer" class="form-label">Khách hàng <span class="text-danger">*</span></label>
-                            <select id="quotationCustomer" class="form-select @error('formCustomerId') is-invalid @enderror" wire:model="formCustomerId">
-                                <option value="0">Chọn khách hàng</option>
-                                @foreach ($customers as $customer)
-                                    <option value="{{ $customer->id }}">
-                                        {{ $customer->name }} — {{ $customer->type->label() }}{{ $customer->tax_code ? ' — '.$customer->tax_code : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('formCustomerId') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            <label for="quotationCustomerSearch" class="form-label">Khách hàng <span class="text-danger">*</span></label>
+                            <div
+                                class="position-relative"
+                                x-data="{
+                                    open: false,
+                                    search: '',
+                                    selectedId: @entangle('formCustomerId'),
+                                    customers: @js($customers->map(fn ($c) => [
+                                        'id' => $c->id,
+                                        'name' => $c->name,
+                                        'type' => $c->type->label(),
+                                        'tax_code' => $c->tax_code,
+                                    ])->values()->all()),
+                                    init() {
+                                        this.updateSearchFromSelected();
+                                        this.$watch('selectedId', () => {
+                                            this.updateSearchFromSelected();
+                                        });
+                                    },
+                                    updateSearchFromSelected() {
+                                        if (this.selectedId && this.selectedId != 0) {
+                                            const found = this.customers.find(c => c.id == this.selectedId);
+                                            if (found) {
+                                                this.search = found.name;
+                                                return;
+                                            }
+                                        }
+                                        this.search = '';
+                                    },
+                                    get filtered() {
+                                        if (!this.search || this.search.trim() === '') {
+                                            return this.customers;
+                                        }
+                                        const q = this.search.toLowerCase().trim();
+                                        return this.customers.filter(c => 
+                                            c.name.toLowerCase().includes(q) || 
+                                            (c.tax_code && c.tax_code.toLowerCase().includes(q)) ||
+                                            c.type.toLowerCase().includes(q)
+                                        );
+                                    },
+                                    select(c) {
+                                        this.selectedId = c.id;
+                                        this.search = c.name;
+                                        this.open = false;
+                                    },
+                                    clear() {
+                                        this.selectedId = 0;
+                                        this.search = '';
+                                        this.open = false;
+                                    }
+                                }"
+                                @click.outside="open = false"
+                            >
+                                <div class="input-group">
+                                    <input
+                                        id="quotationCustomerSearch"
+                                        type="text"
+                                        class="form-control @error('formCustomerId') is-invalid @enderror"
+                                        placeholder="Nhập tên khách hàng hoặc MST để tìm kiếm..."
+                                        autocomplete="off"
+                                        x-model="search"
+                                        @focus="open = true"
+                                        @input="open = true"
+                                        @keydown.escape="open = false"
+                                    >
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary"
+                                        x-show="selectedId && selectedId != 0"
+                                        style="display: none;"
+                                        @click="clear()"
+                                        title="Xóa lựa chọn"
+                                    >
+                                        <i class="fi fi-rr-cross-small" aria-hidden="true"></i>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary"
+                                        @click="open = !open"
+                                        title="Hiển thị danh sách khách hàng"
+                                    >
+                                        <i class="fi fi-rr-angle-small-down" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+
+                                <div
+                                    class="dropdown-menu show w-100 p-0 shadow-sm mt-1"
+                                    style="max-height: 280px; overflow-y: auto; z-index: 1060;"
+                                    x-show="open"
+                                    style="display: none;"
+                                    x-transition
+                                >
+                                    <template x-if="filtered.length === 0">
+                                        <div class="p-3 text-muted text-center small">
+                                            <i class="fi fi-rr-search me-1"></i> Không tìm thấy khách hàng phù hợp
+                                        </div>
+                                    </template>
+                                    <template x-for="c in filtered" :key="c.id">
+                                        <button
+                                            type="button"
+                                            class="dropdown-item py-2 px-3 border-bottom text-wrap d-flex justify-content-between align-items-center"
+                                            :class="{ 'active bg-primary text-white': selectedId == c.id }"
+                                            @click="select(c)"
+                                        >
+                                            <div>
+                                                <div class="fw-semibold" x-text="c.name"></div>
+                                                <small :class="selectedId == c.id ? 'text-white-50' : 'text-muted'" x-text="c.type + (c.tax_code ? ' — MST: ' + c.tax_code : '')"></small>
+                                            </div>
+                                            <i class="fi fi-rr-check ms-2" x-show="selectedId == c.id"></i>
+                                        </button>
+                                    </template>
+                                </div>
+
+                                @error('formCustomerId') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                            </div>
                         </div>
                         <div class="col-12 col-lg-6">
                             <label for="quotationContractType" class="form-label">Loại hợp đồng <span class="text-danger">*</span></label>
