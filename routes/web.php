@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ContractDocumentDownloadController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\QuotationAttachmentViewController;
 use App\Http\Controllers\QuotationFileViewController;
 use App\Livewire\Commissions\CommissionRequestForm;
 use App\Livewire\Commissions\CommissionRequestIndex;
