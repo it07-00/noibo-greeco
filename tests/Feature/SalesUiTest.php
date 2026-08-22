@@ -465,6 +465,54 @@ final class SalesUiTest extends TestCase
         Storage::disk('local')->assertMissing($oldFilePath);
     }
 
+    public function test_can_upload_and_manage_multiple_files_for_quotation(): void
+    {
+        Storage::fake('local');
+        $sales = $this->salesUser();
+        $customer = Customer::query()->create(['name' => 'Công ty Nhiều File']);
+
+        $file1 = UploadedFile::fake()->create('bao_gia_1.pdf', 100, 'application/pdf');
+        $file2 = UploadedFile::fake()->create('bang_tinh_2.xlsx', 150, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        $this->actingAs($sales);
+
+        Livewire::test(QuotationIndex::class)
+            ->set('formCustomerId', $customer->id)
+            ->set('formOwnerId', $sales->id)
+            ->set('formContractType', ContractType::Consulting->value)
+            ->set('formIssuedAt', now()->toDateString())
+            ->set('serviceRows', [
+                [
+                    'service_type' => ServiceType::EsgConsulting->value,
+                    'description' => 'Test Service Multi File',
+                    'quantity' => 1,
+                    'unit_price' => 10_000_000,
+                ],
+            ])
+            ->set('formFiles', [$file1, $file2])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $quotation = Quotation::query()->latest('id')->firstOrFail();
+        $this->assertCount(2, $quotation->files);
+
+        $savedFile1 = $quotation->files->first();
+        Storage::disk('local')->assertExists($savedFile1->file_path);
+
+        $viewResponse = $this->get(route('quotations.attachments.view', $savedFile1));
+        $viewResponse->assertOk();
+
+        // Test deleting one of the existing files
+        Livewire::test(QuotationIndex::class)
+            ->call('openEdit', $quotation->id)
+            ->assertCount('existingFiles', 2)
+            ->call('deleteExistingFile', $savedFile1->id)
+            ->assertCount('existingFiles', 1);
+
+        $this->assertDatabaseMissing('quotation_files', ['id' => $savedFile1->id]);
+        Storage::disk('local')->assertMissing($savedFile1->file_path);
+    }
+
     public function test_can_create_and_convert_quotation_over_2_billion_vnd(): void
     {
         $sales = $this->salesUser();

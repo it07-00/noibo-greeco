@@ -15,6 +15,7 @@ use App\Enums\RoleEnum;
 use App\Enums\ServiceType;
 use App\Models\Customer;
 use App\Models\Quotation;
+use App\Models\QuotationFile;
 use App\Models\User;
 use App\Services\Quotations\QuotationContractCreationService;
 use App\Services\Quotations\QuotationService;
@@ -103,7 +104,17 @@ final class QuotationIndex extends Component
 
     public $formFile;
 
+    /**
+     * @var list<\Livewire\Features\SupportFileUploads\TemporaryUploadedFile>|array
+     */
+    public array $formFiles = [];
+
     public ?string $existingFilePath = null;
+
+    /**
+     * @var list<array{id: int, file_name: string, file_size: string, file_path: string}>
+     */
+    public array $existingFiles = [];
 
     /**
      * @var list<array<string, mixed>>
@@ -155,13 +166,15 @@ final class QuotationIndex extends Component
         $this->formOwnerId = (int) Auth::id();
         $this->formStatus = QuotationStatus::Draft->value;
         $this->formIssuedAt = now()->toDateString();
+        $this->formFiles = [];
+        $this->existingFiles = [];
         $this->addServiceRow();
         $this->dispatch('quotation-form:show');
     }
 
     public function openEdit(int $quotationId): void
     {
-        $quotation = Quotation::query()->with('services')->findOrFail($quotationId);
+        $quotation = Quotation::query()->with(['services', 'files'])->findOrFail($quotationId);
         Gate::authorize('update', $quotation);
 
         $this->editingId = $quotation->id;
@@ -182,7 +195,17 @@ final class QuotationIndex extends Component
         $this->formContractValue = (string) $quotation->contract_value;
         $this->formStatus = $quotation->status->value;
         $this->existingFilePath = $quotation->file_path;
+        $this->existingFiles = $quotation->files
+            ->map(static fn (QuotationFile $f): array => [
+                'id' => $f->id,
+                'file_name' => $f->file_name,
+                'file_size' => $f->humanFileSize(),
+                'file_path' => $f->file_path,
+            ])
+            ->values()
+            ->all();
         $this->formFile = null;
+        $this->formFiles = [];
         $this->serviceRows = $quotation->services
             ->map(static fn ($service): array => [
                 'service_type' => $service->service_type->value,
@@ -259,6 +282,8 @@ final class QuotationIndex extends Component
             'formContractValue' => ['nullable', 'numeric', 'min:0'],
             'formStatus' => ['required', Rule::enum(QuotationStatus::class)],
             'formFile' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
+            'formFiles' => ['nullable', 'array'],
+            'formFiles.*' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
             'serviceRows' => ['required', 'array', 'min:1'],
             'serviceRows.*.service_type' => ['required', Rule::in($allowedServices)],
             'serviceRows.*.description' => ['nullable', 'string', 'max:2000'],
@@ -269,6 +294,8 @@ final class QuotationIndex extends Component
             'formValidUntil.after_or_equal' => 'Ngày hết hiệu lực phải sau ngày báo giá.',
             'formFile.max' => 'Dung lượng file không được vượt quá 20 MB.',
             'formFile.mimes' => 'Định dạng file không hỗ trợ.',
+            'formFiles.*.max' => 'Dung lượng file không được vượt quá 20 MB.',
+            'formFiles.*.mimes' => 'Định dạng file không hỗ trợ.',
             'formStatus.required' => 'Vui lòng chọn trạng thái báo giá.',
             'serviceRows.*.service_type.in' => 'Dịch vụ không thuộc loại hợp đồng.',
             'serviceRows.*.quantity.integer' => 'Số lượng phải là số nguyên.',
@@ -292,16 +319,43 @@ final class QuotationIndex extends Component
             ], $validated['serviceRows'], Auth::user(), $quotation);
 
             if ($this->formFile) {
-                if ($savedQuotation->file_path && Storage::disk('local')->exists($savedQuotation->file_path)) {
-                    Storage::disk('local')->delete($savedQuotation->file_path);
-                }
-
                 $path = $this->formFile->store(
                     path: 'quotations/'.$savedQuotation->id,
                     options: 'local',
                 );
 
                 $savedQuotation->update(['file_path' => $path]);
+                $savedQuotation->files()->create([
+                    'file_path' => $path,
+                    'file_name' => method_exists($this->formFile, 'getClientOriginalName') ? $this->formFile->getClientOriginalName() : basename($path),
+                    'file_size' => method_exists($this->formFile, 'getSize') ? $this->formFile->getSize() : null,
+                    'mime_type' => method_exists($this->formFile, 'getMimeType') ? $this->formFile->getMimeType() : null,
+                    'sort_order' => $savedQuotation->files()->count(),
+                ]);
+            }
+
+            if (! empty($this->formFiles)) {
+                $currentSort = $savedQuotation->files()->count();
+                foreach ($this->formFiles as $file) {
+                    if ($file) {
+                        $path = $file->store(
+                            path: 'quotations/'.$savedQuotation->id,
+                            options: 'local',
+                        );
+
+                        $savedQuotation->files()->create([
+                            'file_path' => $path,
+                            'file_name' => method_exists($file, 'getClientOriginalName') ? $file->getClientOriginalName() : basename($path),
+                            'file_size' => method_exists($file, 'getSize') ? $file->getSize() : null,
+                            'mime_type' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
+                            'sort_order' => $currentSort++,
+                        ]);
+
+                        if (! $savedQuotation->file_path) {
+                            $savedQuotation->update(['file_path' => $path]);
+                        }
+                    }
+                }
             }
         } catch (DomainException $exception) {
             $this->addError('serviceRows', $exception->getMessage());
@@ -621,6 +675,49 @@ final class QuotationIndex extends Component
         return $disk->download($quotation->file_path, $fileName);
     }
 
+    public function removeFormFile(int $index): void
+    {
+        unset($this->formFiles[$index]);
+        $this->formFiles = array_values($this->formFiles);
+    }
+
+    public function deleteExistingFile(int $fileId): void
+    {
+        $file = QuotationFile::query()->findOrFail($fileId);
+        $quotation = $file->quotation;
+        Gate::authorize('update', $quotation);
+
+        if ($file->file_path && Storage::disk('local')->exists($file->file_path)) {
+            Storage::disk('local')->delete($file->file_path);
+        }
+
+        if ($quotation->file_path === $file->file_path) {
+            $remaining = $quotation->files()->where('id', '!=', $file->id)->first();
+            $quotation->update(['file_path' => $remaining?->file_path]);
+            $this->existingFilePath = $remaining?->file_path;
+        }
+
+        $file->delete();
+
+        $this->existingFiles = $quotation->fresh()->files
+            ->map(static fn (QuotationFile $f): array => [
+                'id' => $f->id,
+                'file_name' => $f->file_name,
+                'file_size' => $f->humanFileSize(),
+                'file_path' => $f->file_path,
+            ])
+            ->values()
+            ->all();
+
+        $this->dispatch('swal:alert', [
+            'icon' => 'success',
+            'title' => 'Đã xóa file đính kèm',
+            'toast' => true,
+            'position' => 'top-end',
+            'timer' => 2000,
+        ]);
+    }
+
     public function deleteFile(): void
     {
         if ($this->editingId > 0) {
@@ -631,8 +728,18 @@ final class QuotationIndex extends Component
                 Storage::disk('local')->delete($quotation->file_path);
             }
 
+            $quotation->files()->where('file_path', $quotation->file_path)->delete();
             $quotation->update(['file_path' => null]);
             $this->existingFilePath = null;
+            $this->existingFiles = $quotation->fresh()->files
+                ->map(static fn (QuotationFile $f): array => [
+                    'id' => $f->id,
+                    'file_name' => $f->file_name,
+                    'file_size' => $f->humanFileSize(),
+                    'file_path' => $f->file_path,
+                ])
+                ->values()
+                ->all();
 
             $this->dispatch('swal:alert', [
                 'icon' => 'success',
@@ -643,6 +750,7 @@ final class QuotationIndex extends Component
             ]);
         } else {
             $this->formFile = null;
+            $this->formFiles = [];
         }
     }
 
@@ -673,7 +781,7 @@ final class QuotationIndex extends Component
                 ? Quotation::query()->with('services')->find($this->convertingQuotationId)
                 : null,
             'detailQuotation' => $this->viewingId > 0
-                ? Quotation::query()->with(['customer', 'owner', 'services', 'contract'])->find($this->viewingId)
+                ? Quotation::query()->with(['customer', 'owner', 'services', 'contract', 'files'])->find($this->viewingId)
                 : null,
         ]);
     }
@@ -696,7 +804,9 @@ final class QuotationIndex extends Component
             'formStatus',
             'serviceRows',
             'formFile',
+            'formFiles',
             'existingFilePath',
+            'existingFiles',
         ]);
         $this->resetValidation();
     }

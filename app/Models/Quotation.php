@@ -88,4 +88,9 @@ final class Quotation extends Model
     {
         return $this->hasOne(Contract::class);
     }
+
+    public function files(): HasMany
+    {
+        return $this->hasMany(QuotationFile::class)->orderBy('sort_order')->orderBy('id');
+    }
 }

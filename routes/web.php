@@ -89,6 +89,9 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
     Route::get('/quotations/{quotation}/file', QuotationFileViewController::class)
         ->name('quotations.file.view');
 
+    Route::get('/quotation-files/{quotationFile}/view', QuotationAttachmentViewController::class)
+        ->name('quotations.attachments.view');
+
     Route::get('/contracts', ContractIndex::class)
         ->middleware('can:contract.view')
         ->name('contracts.index');

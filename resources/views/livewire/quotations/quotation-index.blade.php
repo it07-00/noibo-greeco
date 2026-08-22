@@ -128,18 +128,33 @@
                                 <div class="small text-primary text-nowrap mt-1" style="font-size: 0.76rem;">
                                     <i class="fi fi-rr-user me-1" style="font-size: 0.72rem;"></i>{{ $quotation->owner?->name ?: 'Chưa phân công' }}
                                 </div>
-                                @if ($quotation->file_path)
-                                    <div class="mt-1">
-                                        <a
-                                            href="{{ route('quotations.file.view', $quotation) }}"
-                                            target="_blank"
-                                            rel="noopener"
-                                            class="btn btn-link p-0 text-success text-decoration-none small text-start"
-                                            style="font-size: 0.76rem;"
-                                            title="Xem file báo giá"
-                                        >
-                                            <i class="fi fi-rr-document me-1" style="font-size: 0.72rem;"></i>File báo giá
-                                        </a>
+                                @if ($quotation->files->isNotEmpty() || $quotation->file_path)
+                                    <div class="mt-1 d-flex flex-wrap gap-1">
+                                        @if ($quotation->files->isNotEmpty())
+                                            @foreach ($quotation->files as $fileItem)
+                                                <a
+                                                    href="{{ route('quotations.attachments.view', $fileItem) }}"
+                                                    target="_blank"
+                                                    rel="noopener"
+                                                    class="btn btn-link p-0 text-success text-decoration-none small text-start d-inline-flex align-items-center me-2"
+                                                    style="font-size: 0.76rem;"
+                                                    title="{{ $fileItem->file_name }}"
+                                                >
+                                                    <i class="fi fi-rr-document me-1" style="font-size: 0.72rem;"></i>{{ \Illuminate\Support\Str::limit($fileItem->file_name, 20) }}
+                                                </a>
+                                            @endforeach
+                                        @elseif ($quotation->file_path)
+                                            <a
+                                                href="{{ route('quotations.file.view', $quotation) }}"
+                                                target="_blank"
+                                                rel="noopener"
+                                                class="btn btn-link p-0 text-success text-decoration-none small text-start"
+                                                style="font-size: 0.76rem;"
+                                                title="Xem file báo giá"
+                                            >
+                                                <i class="fi fi-rr-document me-1" style="font-size: 0.72rem;"></i>File báo giá
+                                            </a>
+                                        @endif
                                     </div>
                                 @endif
                             </td>
@@ -385,7 +400,15 @@
                     </div>
 
                     <div class="modal-footer">
-                        @if ($detailQuotation->file_path)
+                        @if ($detailQuotation->files->isNotEmpty())
+                            <div class="me-auto d-flex flex-wrap gap-2">
+                                @foreach ($detailQuotation->files as $fileItem)
+                                    <a href="{{ route('quotations.attachments.view', $fileItem) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success">
+                                        <i class="fi fi-rr-document me-1" aria-hidden="true"></i>{{ $fileItem->file_name }} @if($fileItem->humanFileSize()) <span class="text-muted small">({{ $fileItem->humanFileSize() }})</span> @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        @elseif ($detailQuotation->file_path)
                             <a href="{{ route('quotations.file.view', $detailQuotation) }}" target="_blank" rel="noopener" class="btn btn-outline-success">
                                 <i class="fi fi-rr-document me-1" aria-hidden="true"></i>Xem file báo giá
                             </a>
@@ -671,9 +694,34 @@
                     </div>
 
                     <div class="mt-3">
-                        <label for="formFile" class="form-label">File báo giá đính kèm</label>
+                        <label for="formFiles" class="form-label fw-semibold">File báo giá đính kèm (có thể chọn nhiều file)</label>
                         
-                        @if ($existingFilePath)
+                        @if (!empty($existingFiles))
+                            <div class="mb-2">
+                                <div class="small text-muted mb-1 fw-medium">File đã lưu:</div>
+                                <div class="d-flex flex-column gap-1">
+                                    @foreach ($existingFiles as $file)
+                                        <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light" wire:key="existing-file-{{ $file['id'] }}">
+                                            <div class="d-flex align-items-center me-2 text-truncate">
+                                                <i class="fi fi-rr-file text-primary fs-5 me-2 flex-shrink-0" aria-hidden="true"></i>
+                                                <span class="small text-truncate fw-medium" title="{{ $file['file_name'] }}">{{ $file['file_name'] }}</span>
+                                                @if (!empty($file['file_size']))
+                                                    <span class="badge bg-secondary-subtle text-secondary ms-2 flex-shrink-0">{{ $file['file_size'] }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="d-flex gap-1 flex-shrink-0">
+                                                <a href="{{ route('quotations.attachments.view', $file['id']) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2" title="Xem file">
+                                                    <i class="fi fi-rr-eye" aria-hidden="true"></i> Xem
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" wire:click="deleteExistingFile({{ $file['id'] }})" wire:confirm="Bạn có chắc chắn muốn xóa file đính kèm này?" title="Xóa file">
+                                                    <i class="fi fi-rr-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @elseif ($existingFilePath)
                             <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-light mb-2">
                                 <div class="d-flex align-items-center">
                                     <i class="fi fi-rr-file-pdf text-danger fs-5 me-2" aria-hidden="true"></i>
@@ -690,13 +738,36 @@
                             </div>
                         @endif
 
-                        <input type="file" id="formFile" class="form-control @error('formFile') is-invalid @enderror" wire:model="formFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
-                        @error('formFile') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        <div wire:loading wire:target="formFile" class="small text-success mt-2">
+                        @if (!empty($formFiles))
+                            <div class="mb-2">
+                                <div class="small text-muted mb-1 fw-medium">File mới đã chọn:</div>
+                                <div class="d-flex flex-column gap-1">
+                                    @foreach ($formFiles as $index => $upload)
+                                        <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-white" wire:key="new-upload-{{ $index }}">
+                                            <div class="d-flex align-items-center me-2 text-truncate">
+                                                <i class="fi fi-rr-file-upload text-success fs-5 me-2 flex-shrink-0" aria-hidden="true"></i>
+                                                <span class="small text-truncate" title="{{ method_exists($upload, 'getClientOriginalName') ? $upload->getClientOriginalName() : 'File mới' }}">
+                                                    {{ method_exists($upload, 'getClientOriginalName') ? $upload->getClientOriginalName() : 'File mới' }}
+                                                </span>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 flex-shrink-0" wire:click="removeFormFile({{ $index }})" title="Bỏ chọn file này">
+                                                <i class="fi fi-rr-cross-small" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <input type="file" id="formFiles" multiple class="form-control @error('formFiles.*') is-invalid @enderror @error('formFiles') is-invalid @enderror" wire:model="formFiles" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                        @error('formFiles') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        @error('formFiles.*') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        @error('formFile') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        <div wire:loading wire:target="formFiles" class="small text-success mt-2">
                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                             Đang tải file lên...
                         </div>
-                        <div class="form-text mt-1">Định dạng hỗ trợ: pdf, doc, docx, xls, xlsx, jpg, jpeg, png. Tối đa 20MB.</div>
+                        <div class="form-text mt-1">Định dạng hỗ trợ: pdf, doc, docx, xls, xlsx, jpg, jpeg, png. Tối đa 20MB / file. Giữ phím Ctrl/Shift để chọn nhiều file cùng lúc.</div>
                     </div>
                 </div>
 

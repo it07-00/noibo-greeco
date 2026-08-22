@@ -14,14 +14,28 @@ final class QuotationFileViewController extends Controller
     public function __invoke(Quotation $quotation): StreamedResponse
     {
         Gate::authorize('view', $quotation);
-        abort_unless($quotation->file_path && Storage::disk('local')->exists($quotation->file_path), 404);
 
-        $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
-        $fileName = 'Bao_gia_'.($quotation->quotation_number ?: $quotation->id)
-            .($extension !== '' ? '.'.$extension : '');
+        $filePath = $quotation->file_path;
+        $fileName = null;
+
+        if (! $filePath || ! Storage::disk('local')->exists($filePath)) {
+            $firstFile = $quotation->files()->first();
+            if ($firstFile && $firstFile->file_path && Storage::disk('local')->exists($firstFile->file_path)) {
+                $filePath = $firstFile->file_path;
+                $fileName = $firstFile->file_name;
+            }
+        }
+
+        abort_unless($filePath && Storage::disk('local')->exists($filePath), 404);
+
+        if (! $fileName) {
+            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+            $fileName = 'Bao_gia_'.($quotation->quotation_number ?: $quotation->id)
+                .($extension !== '' ? '.'.$extension : '');
+        }
 
         return Storage::disk('local')->response(
-            $quotation->file_path,
+            $filePath,
             $fileName,
             ['Content-Disposition' => 'inline; filename="'.$fileName.'"'],
         );

@@ -29,7 +29,7 @@ final class QuotationService
         int $perPage = 15,
     ): LengthAwarePaginator {
         return Quotation::query()
-            ->with(['customer', 'owner', 'contract', 'services'])
+            ->with(['customer', 'owner', 'contract', 'services', 'files'])
             ->withCount('services')
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($nested) use ($search): void {
