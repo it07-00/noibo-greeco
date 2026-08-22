@@ -319,15 +319,22 @@ final class QuotationIndex extends Component
             ], $validated['serviceRows'], Auth::user(), $quotation);
 
             if ($this->formFile) {
-                $path = $this->formFile->store(
+                $originalName = method_exists($this->formFile, 'getClientOriginalName')
+                    ? $this->formFile->getClientOriginalName()
+                    : 'file_' . time();
+
+                $safeDiskName = time() . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+
+                $path = $this->formFile->storeAs(
                     path: 'quotations/'.$savedQuotation->id,
+                    name: $safeDiskName,
                     options: 'local',
                 );
 
                 $savedQuotation->update(['file_path' => $path]);
                 $savedQuotation->files()->create([
                     'file_path' => $path,
-                    'file_name' => method_exists($this->formFile, 'getClientOriginalName') ? $this->formFile->getClientOriginalName() : basename($path),
+                    'file_name' => $originalName,
                     'file_size' => method_exists($this->formFile, 'getSize') ? $this->formFile->getSize() : null,
                     'mime_type' => method_exists($this->formFile, 'getMimeType') ? $this->formFile->getMimeType() : null,
                     'sort_order' => $savedQuotation->files()->count(),
@@ -336,16 +343,23 @@ final class QuotationIndex extends Component
 
             if (! empty($this->formFiles)) {
                 $currentSort = $savedQuotation->files()->count();
-                foreach ($this->formFiles as $file) {
+                foreach ($this->formFiles as $index => $file) {
                     if ($file) {
-                        $path = $file->store(
+                        $originalName = method_exists($file, 'getClientOriginalName')
+                            ? $file->getClientOriginalName()
+                            : 'file_' . time() . '_' . $index;
+
+                        $safeDiskName = time() . '_' . $index . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', $originalName);
+
+                        $path = $file->storeAs(
                             path: 'quotations/'.$savedQuotation->id,
+                            name: $safeDiskName,
                             options: 'local',
                         );
 
                         $savedQuotation->files()->create([
                             'file_path' => $path,
-                            'file_name' => method_exists($file, 'getClientOriginalName') ? $file->getClientOriginalName() : basename($path),
+                            'file_name' => $originalName,
                             'file_size' => method_exists($file, 'getSize') ? $file->getSize() : null,
                             'mime_type' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
                             'sort_order' => $currentSort++,
@@ -666,13 +680,20 @@ final class QuotationIndex extends Component
             return null;
         }
 
-        $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
-        $fileName = 'Bao_gia_'.($quotation->quotation_number ?: $quotation->id).'.'.$extension;
+        $filePath = $quotation->file_path;
+        $fileRecord = $quotation->files()->where('file_path', $filePath)->first() ?? $quotation->files()->first();
+
+        if ($fileRecord && $fileRecord->file_path && Storage::disk('local')->exists($fileRecord->file_path)) {
+            $filePath = $fileRecord->file_path;
+            $fileName = $fileRecord->file_name;
+        } else {
+            $fileName = basename((string) $filePath);
+        }
 
         /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
 
-        return $disk->download($quotation->file_path, $fileName);
+        return $disk->download($filePath, $fileName ?: basename((string) $filePath));
     }
 
     public function removeFormFile(int $index): void

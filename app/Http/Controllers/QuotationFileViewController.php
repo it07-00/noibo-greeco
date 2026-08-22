@@ -16,28 +16,21 @@ final class QuotationFileViewController extends Controller
         Gate::authorize('view', $quotation);
 
         $filePath = $quotation->file_path;
-        $fileName = null;
+        $fileRecord = $quotation->files()->where('file_path', $filePath)->first() ?? $quotation->files()->first();
 
-        if (! $filePath || ! Storage::disk('local')->exists($filePath)) {
-            $firstFile = $quotation->files()->first();
-            if ($firstFile && $firstFile->file_path && Storage::disk('local')->exists($firstFile->file_path)) {
-                $filePath = $firstFile->file_path;
-                $fileName = $firstFile->file_name;
-            }
+        if ($fileRecord && $fileRecord->file_path && Storage::disk('local')->exists($fileRecord->file_path)) {
+            $filePath = $fileRecord->file_path;
+            $fileName = $fileRecord->file_name;
+        } else {
+            $fileName = basename((string) $filePath);
         }
 
         abort_unless($filePath && Storage::disk('local')->exists($filePath), 404);
 
-        if (! $fileName) {
-            $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-            $fileName = 'Bao_gia_'.($quotation->quotation_number ?: $quotation->id)
-                .($extension !== '' ? '.'.$extension : '');
-        }
-
         return Storage::disk('local')->response(
             $filePath,
-            $fileName,
-            ['Content-Disposition' => 'inline; filename="'.$fileName.'"'],
+            $fileName ?: basename((string) $filePath),
+            ['Content-Disposition' => 'inline; filename="'.($fileName ?: basename((string) $filePath)).'"'],
         );
     }
 }

@@ -654,19 +654,26 @@ final class ContractShow extends Component
         $quotation = \App\Models\Quotation::findOrFail($id);
         Gate::authorize('view', $quotation);
 
-        if (! $quotation->file_path || ! Storage::disk('local')->exists($quotation->file_path)) {
+        $filePath = $quotation->file_path;
+        $fileRecord = $quotation->files()->where('file_path', $filePath)->first() ?? $quotation->files()->first();
+
+        if ($fileRecord && $fileRecord->file_path && Storage::disk('local')->exists($fileRecord->file_path)) {
+            $filePath = $fileRecord->file_path;
+            $fileName = $fileRecord->file_name;
+        } else {
+            $fileName = basename((string) $filePath);
+        }
+
+        if (! $filePath || ! Storage::disk('local')->exists($filePath)) {
             $this->errorAlert('Không tìm thấy file báo giá');
 
             return null;
         }
 
-        $extension = pathinfo($quotation->file_path, PATHINFO_EXTENSION);
-        $fileName = 'Bao_gia_' . ($quotation->quotation_number ?: $quotation->id) . '.' . $extension;
-
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk('local');
 
-        return $disk->download($quotation->file_path, $fileName);
+        return $disk->download($filePath, $fileName ?: basename((string) $filePath));
     }
 
     private function findSchedule(int $scheduleId): ContractPaymentSchedule
