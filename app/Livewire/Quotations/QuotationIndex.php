@@ -22,6 +22,7 @@ use App\Services\Quotations\QuotationService;
 use App\Services\Quotations\QuotationToContractService;
 use App\Services\Quotations\QuotationWorkflowService;
 use DomainException;
+use League\Flysystem\UnableToRetrieveMetadata;
 use Illuminate\Contracts\View\View;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Carbon;
@@ -268,39 +269,64 @@ final class QuotationIndex extends Component
             $this->formOwnerId = (int) Auth::id();
         }
 
-        $validated = $this->validate([
-            'formCustomerId' => ['required', 'integer', 'exists:customers,id'],
-            'formOwnerId' => ['required', 'integer', 'exists:users,id'],
-            'formContractType' => ['required', Rule::enum(ContractType::class)],
-            'formIssuedAt' => ['nullable', 'date'],
-            'formValidUntil' => ['nullable', 'date', 'after_or_equal:formIssuedAt'],
-            'formNotes' => ['nullable', 'string', 'max:3000'],
-            'formWorkingSituation' => ['nullable', 'string', 'max:3000'],
-            'formOriginalAmount' => ['nullable', 'numeric', 'min:0'],
-            'formCustomerCommission' => ['nullable', 'numeric', 'min:0'],
-            'formCommissionTax' => ['nullable', 'numeric', 'min:0'],
-            'formContractValue' => ['nullable', 'numeric', 'min:0'],
-            'formStatus' => ['required', Rule::enum(QuotationStatus::class)],
-            'formFile' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
-            'formFiles' => ['nullable', 'array'],
-            'formFiles.*' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
-            'serviceRows' => ['required', 'array', 'min:1'],
-            'serviceRows.*.service_type' => ['required', Rule::in($allowedServices)],
-            'serviceRows.*.description' => ['nullable', 'string', 'max:2000'],
-            'serviceRows.*.quantity' => ['required', 'integer', 'gt:0'],
-            'serviceRows.*.unit_price' => ['required', 'numeric', 'min:0'],
-        ], [
-            'formCustomerId.required' => 'Vui lòng chọn khách hàng.',
-            'formValidUntil.after_or_equal' => 'Ngày hết hiệu lực phải sau ngày báo giá.',
-            'formFile.max' => 'Dung lượng file không được vượt quá 20 MB.',
-            'formFile.mimes' => 'Định dạng file không hỗ trợ.',
-            'formFiles.*.max' => 'Dung lượng file không được vượt quá 20 MB.',
-            'formFiles.*.mimes' => 'Định dạng file không hỗ trợ.',
-            'formStatus.required' => 'Vui lòng chọn trạng thái báo giá.',
-            'serviceRows.*.service_type.in' => 'Dịch vụ không thuộc loại hợp đồng.',
-            'serviceRows.*.quantity.integer' => 'Số lượng phải là số nguyên.',
-            'serviceRows.*.quantity.gt' => 'Số lượng phải lớn hơn 0.',
-        ]);
+        // Filter out stale temporary files that no longer exist on disk.
+        // This prevents "Unable to retrieve the file_size" errors when
+        // Livewire's temp files get cleaned up before validation runs.
+        $this->formFiles = array_values(array_filter(
+            $this->formFiles,
+            static fn ($file): bool => $file && method_exists($file, 'exists') && $file->exists(),
+        ));
+
+        if ($this->formFile && method_exists($this->formFile, 'exists') && ! $this->formFile->exists()) {
+            $this->formFile = null;
+        }
+
+        try {
+            $validated = $this->validate([
+                'formCustomerId' => ['required', 'integer', 'exists:customers,id'],
+                'formOwnerId' => ['required', 'integer', 'exists:users,id'],
+                'formContractType' => ['required', Rule::enum(ContractType::class)],
+                'formIssuedAt' => ['nullable', 'date'],
+                'formValidUntil' => ['nullable', 'date', 'after_or_equal:formIssuedAt'],
+                'formNotes' => ['nullable', 'string', 'max:3000'],
+                'formWorkingSituation' => ['nullable', 'string', 'max:3000'],
+                'formOriginalAmount' => ['nullable', 'numeric', 'min:0'],
+                'formCustomerCommission' => ['nullable', 'numeric', 'min:0'],
+                'formCommissionTax' => ['nullable', 'numeric', 'min:0'],
+                'formContractValue' => ['nullable', 'numeric', 'min:0'],
+                'formStatus' => ['required', Rule::enum(QuotationStatus::class)],
+                'formFile' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
+                'formFiles' => ['nullable', 'array'],
+                'formFiles.*' => ['nullable', 'file', 'max:20480', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png'],
+                'serviceRows' => ['required', 'array', 'min:1'],
+                'serviceRows.*.service_type' => ['required', Rule::in($allowedServices)],
+                'serviceRows.*.description' => ['nullable', 'string', 'max:2000'],
+                'serviceRows.*.quantity' => ['required', 'integer', 'gt:0'],
+                'serviceRows.*.unit_price' => ['required', 'numeric', 'min:0'],
+            ], [
+                'formCustomerId.required' => 'Vui lòng chọn khách hàng.',
+                'formValidUntil.after_or_equal' => 'Ngày hết hiệu lực phải sau ngày báo giá.',
+                'formFile.max' => 'Dung lượng file không được vượt quá 20 MB.',
+                'formFile.mimes' => 'Định dạng file không hỗ trợ.',
+                'formFiles.*.max' => 'Dung lượng file không được vượt quá 20 MB.',
+                'formFiles.*.mimes' => 'Định dạng file không hỗ trợ.',
+                'formStatus.required' => 'Vui lòng chọn trạng thái báo giá.',
+                'serviceRows.*.service_type.in' => 'Dịch vụ không thuộc loại hợp đồng.',
+                'serviceRows.*.quantity.integer' => 'Số lượng phải là số nguyên.',
+                'serviceRows.*.quantity.gt' => 'Số lượng phải lớn hơn 0.',
+            ]);
+        } catch (UnableToRetrieveMetadata) {
+            $this->formFile = null;
+            $this->formFiles = [];
+
+            $this->dispatch('swal:alert', [
+                'icon' => 'error',
+                'title' => 'File tải lên đã hết hạn',
+                'text' => 'Vui lòng chọn lại file và thử lại.',
+            ]);
+
+            return;
+        }
 
         try {
             $savedQuotation = $service->saveDraft([
@@ -335,8 +361,8 @@ final class QuotationIndex extends Component
                 $savedQuotation->files()->create([
                     'file_path' => $path,
                     'file_name' => $originalName,
-                    'file_size' => method_exists($this->formFile, 'getSize') ? $this->formFile->getSize() : null,
-                    'mime_type' => method_exists($this->formFile, 'getMimeType') ? $this->formFile->getMimeType() : null,
+                    'file_size' => rescue(fn () => $this->formFile->getSize(), fn () => Storage::disk('local')->size($path), false),
+                    'mime_type' => rescue(fn () => $this->formFile->getMimeType(), fn () => Storage::disk('local')->mimeType($path), false),
                     'sort_order' => $savedQuotation->files()->count(),
                 ]);
             }
@@ -360,8 +386,8 @@ final class QuotationIndex extends Component
                         $savedQuotation->files()->create([
                             'file_path' => $path,
                             'file_name' => $originalName,
-                            'file_size' => method_exists($file, 'getSize') ? $file->getSize() : null,
-                            'mime_type' => method_exists($file, 'getMimeType') ? $file->getMimeType() : null,
+                            'file_size' => rescue(fn () => $file->getSize(), fn () => Storage::disk('local')->size($path), false),
+                            'mime_type' => rescue(fn () => $file->getMimeType(), fn () => Storage::disk('local')->mimeType($path), false),
                             'sort_order' => $currentSort++,
                         ]);
 
