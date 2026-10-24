@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ContractDocumentDownloadController;
+use App\Http\Controllers\ContractMilestoneFileDownloadController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\QuotationAttachmentViewController;
 use App\Http\Controllers\QuotationFileViewController;
 use App\Livewire\Commissions\CommissionRequestForm;
 use App\Livewire\Commissions\CommissionRequestIndex;
+use App\Livewire\Contracts\ContractForm;
 use App\Livewire\Contracts\ContractIndex;
 use App\Livewire\Contracts\ContractShow;
 use App\Livewire\Courses\CourseIndex;
@@ -17,9 +19,11 @@ use App\Livewire\DailyReports\DailyReportIndex;
 use App\Livewire\Departments\DepartmentIndex;
 use App\Livewire\DocumentRegulations\DocumentRegulationIndex;
 use App\Livewire\DutySchedules\DutyScheduleIndex;
-use App\Livewire\Marketing\MarketingPlanIndex;
 use App\Livewire\Finance\CashFlowDashboard;
+use App\Livewire\Handlers\HandlerContracts;
+use App\Livewire\Handlers\HandlerIndex;
 use App\Livewire\Mail\MailCenterIndex;
+use App\Livewire\Marketing\MarketingPlanIndex;
 use App\Livewire\Profile\ProfileEdit;
 use App\Livewire\Quotations\QuotationIndex;
 use App\Livewire\Reports\BusinessReportIndex;
@@ -79,6 +83,10 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
         ->middleware('can:customer.view')
         ->name('customers.index');
 
+    Route::get('/handlers', HandlerIndex::class)->middleware('can:handlers.view')->name('handlers.index');
+    Route::get('/handlers/{handler}/contracts', HandlerContracts::class)
+        ->middleware(['can:handlers.view', 'can:contract.view'])->name('handlers.contracts');
+
     Route::get('/courses', CourseIndex::class)
         ->middleware('can:course.view')
         ->name('courses.index');
@@ -97,9 +105,15 @@ Route::middleware(['auth', 'unlocked'])->group(function (): void {
         ->middleware('can:contract.view')
         ->name('contracts.index');
 
+    Route::get('/contracts/create', ContractForm::class)->middleware('can:contract.create')->name('contracts.create');
+    Route::get('/contracts/{contractId}/edit', ContractForm::class)->middleware('can:contract.update')->name('contracts.edit');
+
     Route::get('/contracts/{contract}', ContractShow::class)
         ->middleware('can:contract.view')
         ->name('contracts.show');
+
+    Route::get('/contracts/{contract}/milestone-files/{file}/download', ContractMilestoneFileDownloadController::class)
+        ->middleware('can:contract.view')->name('contracts.milestone-files.download');
 
     Route::get('/contracts/{contract}/documents/{document}/download', ContractDocumentDownloadController::class)
         ->middleware('can:contract-document.view')

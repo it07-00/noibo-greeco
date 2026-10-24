@@ -30,6 +30,10 @@ enum PermissionEnum: string
     case ScheduleViewPrivate = 'schedule.view-private';
     case CustomerView = 'customer.view';
     case CustomerManage = 'customer.manage';
+    case HandlerView = 'handlers.view';
+    case HandlerCreate = 'handlers.create';
+    case HandlerUpdate = 'handlers.edit';
+    case HandlerDelete = 'handlers.delete';
     case CourseView = 'course.view';
     case CourseManage = 'course.manage';
     case QuotationView = 'quotation.view';
@@ -38,6 +42,9 @@ enum PermissionEnum: string
     case QuotationSend = 'quotation.send';
     case QuotationConvert = 'quotation.convert';
     case ContractView = 'contract.view';
+    case ContractViewAll = 'contract.view-all';
+    case ContractExport = 'contract.export';
+    case ContractAssign = 'contract.assign';
     case ContractCreate = 'contract.create';
     case ContractUpdate = 'contract.update';
     case ContractApprove = 'contract.approve';
@@ -99,6 +106,10 @@ enum PermissionEnum: string
             self::ReportDelete => 'Xóa báo cáo ngày',
             self::CustomerView => 'Xem khách hàng',
             self::CustomerManage => 'Quản lý khách hàng',
+            self::HandlerView => 'Xem nhà thầu phụ',
+            self::HandlerCreate => 'Thêm nhà thầu phụ',
+            self::HandlerUpdate => 'Sửa nhà thầu phụ',
+            self::HandlerDelete => 'Xóa nhà thầu phụ',
             self::CourseView => 'Xem khóa học',
             self::CourseManage => 'Quản lý khóa học và học viên',
             self::QuotationView => 'Xem báo giá',
@@ -107,6 +118,9 @@ enum PermissionEnum: string
             self::QuotationSend => 'Gửi báo giá',
             self::QuotationConvert => 'Chuyển báo giá thành hợp đồng',
             self::ContractView => 'Xem hợp đồng',
+            self::ContractViewAll => 'Xem toàn bộ hợp đồng',
+            self::ContractExport => 'Xuất danh sách hợp đồng',
+            self::ContractAssign => 'Giao việc hợp đồng',
             self::ContractCreate => 'Tạo hợp đồng',
             self::ContractUpdate => 'Cập nhật hợp đồng',
             self::ContractApprove => 'Phê duyệt hợp đồng',

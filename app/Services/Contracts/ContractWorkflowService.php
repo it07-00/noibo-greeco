@@ -18,6 +18,18 @@ final class ContractWorkflowService
      */
     private const TRANSITIONS = [
         'draft' => [
+            ContractStatus::InternalReview,
+            ContractStatus::WaitingCustomerSignature,
+            ContractStatus::Cancelled,
+        ],
+        'internal_review' => [
+            ContractStatus::Draft,
+            ContractStatus::WaitingDirectorSignature,
+            ContractStatus::WaitingCustomerSignature,
+            ContractStatus::Cancelled,
+        ],
+        'waiting_director_signature' => [
+            ContractStatus::InternalReview,
             ContractStatus::WaitingCustomerSignature,
             ContractStatus::Cancelled,
         ],

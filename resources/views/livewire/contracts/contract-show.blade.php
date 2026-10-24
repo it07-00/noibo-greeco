@@ -31,6 +31,7 @@
 
         <div class="d-flex flex-wrap gap-2">
             @can('update', $contract)
+                <a class="btn btn-outline-primary" href="{{ route('contracts.edit', $contract->id) }}">Chỉnh sửa đầy đủ</a>
                 <button type="button" class="btn btn-outline-secondary sales-primary-action" wire:click="openContractInfo">
                     <i class="fi fi-rr-edit me-2" aria-hidden="true"></i>
                     Thông tin HĐ
@@ -47,6 +48,14 @@
                     >
                         Chờ khách ký
                     </button>
+                @endcan
+            @elseif ($contract->status === \App\Enums\ContractStatus::InternalReview)
+                @can('update', $contract)
+                    <button type="button" class="btn btn-primary" wire:click="transitionContract('waiting_director_signature')">Trình lãnh đạo ký</button>
+                @endcan
+            @elseif ($contract->status === \App\Enums\ContractStatus::WaitingDirectorSignature)
+                @can('approve', $contract)
+                    <button type="button" class="btn btn-primary" wire:click="transitionContract('waiting_customer_signature')">Duyệt và chờ khách ký</button>
                 @endcan
             @elseif ($contract->status === \App\Enums\ContractStatus::WaitingCustomerSignature)
                 @can('activate', $contract)
@@ -133,6 +142,22 @@
                     <dl class="row contract-facts mb-0">
                         <dt class="col-sm-4">Khách hàng</dt>
                         <dd class="col-sm-8">{{ $contract->customer->name }}</dd>
+                        <dt class="col-sm-4">Nhà thầu phụ</dt>
+                        <dd class="col-sm-8">{{ $contract->handler?->name ?: 'Chưa chọn nhà thầu phụ' }}</dd>
+                        <dt class="col-sm-4">Ngày trình</dt>
+                        <dd class="col-sm-8">{{ $contract->submitted_at?->format('d/m/Y') ?: 'Chưa cập nhật' }}</dd>
+                        <dt class="col-sm-4">Nơi nộp hồ sơ</dt>
+                        <dd class="col-sm-8">{{ $contract->submission_place ?: 'Chưa cập nhật' }}</dd>
+                        <dt class="col-sm-4">Số báo cáo</dt>
+                        <dd class="col-sm-8">{{ $contract->report_number ?: 'Chưa cập nhật' }}</dd>
+                        <dt class="col-sm-4">Tỉnh / Nguồn thông tin</dt>
+                        <dd class="col-sm-8">{{ $contract->province ?: '—' }} / {{ $contract->info_source ?: '—' }}</dd>
+                        <dt class="col-sm-4">Chứng từ</dt>
+                        <dd class="col-sm-8">{{ $contract->voucher_status?->label() ?: 'Chưa cập nhật' }}</dd>
+                        @if (\Illuminate\Support\Str::startsWith($contract->contract_drive_url ?? '', ['https://', 'http://']))
+                            <dt class="col-sm-4">Hồ sơ Drive</dt>
+                            <dd class="col-sm-8"><a href="{{ $contract->contract_drive_url }}" target="_blank" rel="noopener">Mở thư mục hồ sơ</a></dd>
+                        @endif
                         <dt class="col-sm-4">Người phụ trách</dt>
                         <dd class="col-sm-8">{{ $contract->owner?->name ?: 'Chưa phân công' }}</dd>
                         <dt class="col-sm-4">Ngày ký</dt>
@@ -195,69 +220,10 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-xl-8">
-            <div class="card border-0 shadow-sm h-100">
-                <livewire:contracts.contract-workflow-panel :contractId="$contract->id" />
-            </div>
-        </div>
-        <div class="col-12 col-xl-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white d-flex align-items-center justify-content-between py-3">
-                    <h2 class="h6 mb-0">Phân công thực hiện</h2>
-                    @if ($canAssign)
-                        <button type="button" class="btn btn-sm btn-outline-primary" wire:click="openAssign">
-                            <i class="fi fi-rr-user-add me-1"></i> Giao việc
-                        </button>
-                    @endif
-                </div>
-                <div class="card-body">
-                    @php
-                        $assignments = $contract->assignments;
-                    @endphp
-                    @if ($assignments->isNotEmpty())
-                        <div class="d-flex flex-column gap-3">
-                            <div>
-                                <span class="text-muted small d-block mb-2">Thành viên phụ trách:</span>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @foreach ($assignments->whereNotNull('user_id') as $assignment)
-                                        <span class="badge bg-light text-dark border px-2 py-1.5 rounded-2 d-flex align-items-center gap-1">
-                                            <i class="fi fi-rr-user text-primary" style="font-size: 0.8rem;"></i>
-                                            {{ $assignment->user->name }}
-                                        </span>
-                                    @endforeach
-                                    @if ($assignments->whereNull('user_id')->isNotEmpty())
-                                        @foreach ($assignments->whereNull('user_id') as $assignment)
-                                            <span class="badge bg-light text-warning border border-warning-subtle px-2 py-1.5 rounded-2 d-flex align-items-center gap-1">
-                                                <i class="fi fi-rr-envelope text-warning" style="font-size: 0.8rem;"></i>
-                                                {{ $assignment->external_assignee }} (Ngoài)
-                                            </span>
-                                        @endforeach
-                                    @endif
-                                </div>
-                            </div>
-                            
-                            @if ($assignments->first()?->deadline)
-                                <div>
-                                    <span class="text-muted small d-block mb-1">Hạn hoàn thành:</span>
-                                    <span class="fw-semibold text-danger">
-                                        <i class="fi fi-rr-calendar-clock me-1"></i>
-                                        {{ $assignments->first()->deadline->format('d/m/Y') }}
-                                    </span>
-                                </div>
-                            @endif
-                        </div>
-                    @else
-                        <div class="text-center py-4 text-muted">
-                            <i class="fi fi-rr-users d-block fs-3 mb-2"></i>
-                            <span class="small">Chưa phân công thành viên thực hiện hợp đồng.</span>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <livewire:contracts.contract-workflow-panel :contractId="$contract->id" />
     </div>
-
+    @include('livewire.contracts.partials.assignments-and-notes')
     @if ($showFinancials)
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 py-3">
@@ -623,6 +589,9 @@
         </div>
     </div>
 
+
+    <livewire:contracts.contract-attachments :contract-id="$contract->id" :key="'contract-attachments-'.$contract->id" />
+
     {{-- Contract information modal --}}
     <div wire:ignore.self class="modal fade" id="contractInfoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -645,6 +614,16 @@
                             <label for="contractTitle" class="form-label">Tên hợp đồng <span class="text-danger">*</span></label>
                             <input id="contractTitle" class="form-control @error('contractTitle') is-invalid @enderror" wire:model="contractTitle">
                             @error('contractTitle') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-12">
+                            <label for="contractHandlerId" class="form-label">Nhà thầu phụ</label>
+                            <select id="contractHandlerId" class="form-select @error('contractHandlerId') is-invalid @enderror" wire:model="contractHandlerId">
+                                <option value="">Chưa chọn nhà thầu phụ</option>
+                                @foreach ($handlerOptions as $handler)
+                                    <option value="{{ $handler->id }}">{{ $handler->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('contractHandlerId') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-12 col-md-4">
                             <label for="contractSignedAt" class="form-label">Ngày ký</label>

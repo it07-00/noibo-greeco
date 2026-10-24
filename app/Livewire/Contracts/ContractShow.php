@@ -12,13 +12,19 @@ use App\Enums\PaymentConditionType;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentTermUnit;
 use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use App\Models\Contract;
+use App\Models\ContractAssignment;
 use App\Models\ContractDocument;
 use App\Models\ContractPayment;
 use App\Models\ContractPaymentSchedule;
 use App\Models\Department;
+use App\Models\Handler;
+use App\Models\Quotation;
 use App\Models\User;
+use App\Services\Contracts\ContractAssignmentService;
 use App\Services\Contracts\ContractDocumentService;
+use App\Services\Contracts\ContractNoteService;
 use App\Services\Contracts\ContractService;
 use App\Services\Contracts\ContractWorkflowService;
 use App\Services\Payments\PaymentRecordingService;
@@ -26,6 +32,8 @@ use App\Services\Payments\PaymentScheduleService;
 use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -84,7 +92,11 @@ final class ContractShow extends Component
 
     public string $contractNumber = '';
 
+    public string $progressNote = '';
+
     public string $contractTitle = '';
+
+    public string $contractHandlerId = '';
 
     public string $contractSignedAt = '';
 
@@ -137,16 +149,22 @@ final class ContractShow extends Component
         $this->contract = $contract;
     }
 
+    public function hydrate(): void
+    {
+        Gate::authorize('view', $this->contract);
+    }
+
     public function openContractInfo(): void
     {
         Gate::authorize('update', $this->contract);
         $this->contractNumber = $this->contract->contract_number ?? '';
         $this->contractTitle = $this->contract->title;
-        /** @var \Illuminate\Support\Carbon|null $signedAt */
+        $this->contractHandlerId = (string) ($this->contract->handler_id ?? '');
+        /** @var Carbon|null $signedAt */
         $signedAt = $this->contract->signed_at;
-        /** @var \Illuminate\Support\Carbon|null $startsAt */
+        /** @var Carbon|null $startsAt */
         $startsAt = $this->contract->starts_at;
-        /** @var \Illuminate\Support\Carbon|null $endsAt */
+        /** @var Carbon|null $endsAt */
         $endsAt = $this->contract->ends_at;
         $this->contractSignedAt = $signedAt?->toDateString() ?? '';
         $this->contractStartsAt = $startsAt?->toDateString() ?? '';
@@ -157,6 +175,13 @@ final class ContractShow extends Component
         $this->contractStatus = $this->contract->status->value;
         $this->resetValidation();
         $this->dispatch('contract-info:show');
+    }
+
+    public function addProgressNote(ContractNoteService $service): void
+    {
+        $service->add($this->contract, $this->progressNote, $this->actor());
+        $this->progressNote = '';
+        $this->successToast('Đã thêm ghi chú tiến độ.');
     }
 
     public function saveContractInfo(): void
@@ -171,6 +196,7 @@ final class ContractShow extends Component
                 Rule::unique('contracts', 'contract_number')->ignore($this->contract->id),
             ],
             'contractTitle' => ['required', 'string', 'max:191'],
+            'contractHandlerId' => ['nullable', 'integer', Rule::exists('handlers', 'id')->whereNull('deleted_at')],
             'contractSignedAt' => ['nullable', 'date'],
             'contractStartsAt' => ['nullable', 'date'],
             'contractEndsAt' => ['nullable', 'date', 'after_or_equal:contractStartsAt'],
@@ -188,6 +214,7 @@ final class ContractShow extends Component
         $this->contract->update([
             'contract_number' => $validated['contractNumber'] ?: null,
             'title' => trim($validated['contractTitle']),
+            'handler_id' => $validated['contractHandlerId'] ?: null,
             'signed_at' => $validated['contractSignedAt'] ?: null,
             'starts_at' => $validated['contractStartsAt'] ?: null,
             'ends_at' => $validated['contractEndsAt'] ?: null,
@@ -224,14 +251,14 @@ final class ContractShow extends Component
         $this->scheduleAmount = (string) $schedule->amount;
         $this->scheduleConditionType = $schedule->condition_type->value;
         $this->scheduleCustomCondition = $schedule->custom_condition ?? '';
-        /** @var \Illuminate\Support\Carbon|null $expectedTriggerDate */
+        /** @var Carbon|null $expectedTriggerDate */
         $expectedTriggerDate = $schedule->expected_trigger_date;
         $this->scheduleExpectedTriggerDate = $expectedTriggerDate?->toDateString() ?? '';
         $this->schedulePaymentTermDays = $schedule->payment_term_days !== null
             ? (string) $schedule->payment_term_days
             : '';
         $this->schedulePaymentTermUnit = $schedule->payment_term_unit?->value ?? '';
-        /** @var \Illuminate\Support\Carbon|null $dueDate */
+        /** @var Carbon|null $dueDate */
         $dueDate = $schedule->due_date;
         $this->scheduleDueDate = $dueDate?->toDateString() ?? '';
         $this->scheduleNotes = $schedule->notes ?? '';
@@ -436,6 +463,7 @@ final class ContractShow extends Component
             ContractStatus::Active => 'activate',
             ContractStatus::Completed => 'complete',
             ContractStatus::Cancelled => 'cancel',
+            ContractStatus::WaitingCustomerSignature => $this->contract->status === ContractStatus::WaitingDirectorSignature ? 'approve' : 'update',
             default => 'update',
         };
         Gate::authorize($ability, $this->contract);
@@ -477,7 +505,7 @@ final class ContractShow extends Component
         $this->documentPaymentScheduleId = $document->payment_schedule_id
             ? (string) $document->payment_schedule_id
             : '';
-        /** @var \Illuminate\Support\Carbon|null $expiresAt */
+        /** @var Carbon|null $expiresAt */
         $expiresAt = $document->expires_at;
         $this->documentExpiresAt = $expiresAt?->toDateString() ?? '';
         $this->dispatch('contract-document:show');
@@ -613,7 +641,12 @@ final class ContractShow extends Component
 
     public function render(ContractService $service): View
     {
+        Gate::authorize('view', $this->contract);
         $this->contract->refresh()->load([
+            'progressNotes.creator',
+            'assignments.user',
+            'assignments.assigner',
+            'handler',
             'customer',
             'quotation',
             'owner',
@@ -631,6 +664,7 @@ final class ContractShow extends Component
         ]);
 
         return view('livewire.contracts.contract-show', [
+            'handlerOptions' => Handler::orderBy('name')->get(),
             'financial' => $service->financialSummary($this->contract),
             'conditionOptions' => PaymentConditionType::options(),
             'termUnitOptions' => PaymentTermUnit::options(),
@@ -643,15 +677,15 @@ final class ContractShow extends Component
             'documentTypeOptions' => DocumentType::options(),
             'canSubmitDocument' => $this->actor()->can(PermissionEnum::ContractDocumentSubmit->value),
             'canReviewDocument' => $this->actor()->can(PermissionEnum::ContractDocumentReview->value),
-            'assignable_users' => User::where('is_active', true)->orderBy('name')->get(),
+            'assignable_users' => User::whereNull('locked_at')->orderBy('name')->get(),
             'canAssign' => $this->canAssign(),
-            'showFinancials' => !auth()->user()->hasRole(\App\Enums\RoleEnum::Consultant->value),
+            'showFinancials' => ! auth()->user()->hasRole(RoleEnum::Consultant->value),
         ]);
     }
 
     public function downloadQuotation(int $id): mixed
     {
-        $quotation = \App\Models\Quotation::findOrFail($id);
+        $quotation = Quotation::findOrFail($id);
         Gate::authorize('view', $quotation);
 
         $filePath = $quotation->file_path;
@@ -670,7 +704,7 @@ final class ContractShow extends Component
             return null;
         }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('local');
 
         return $disk->download($filePath, $fileName ?: basename((string) $filePath));
@@ -748,88 +782,33 @@ final class ContractShow extends Component
 
     public function canAssign(): bool
     {
-        $user = auth()->user();
-        if (! $user) {
-            return false;
-        }
-        return $user->hasRole(\App\Enums\RoleEnum::SuperAdmin->value) || 
-            $user->hasRole(\App\Enums\RoleEnum::Director->value) || 
-            $user->hasRole(\App\Enums\RoleEnum::IT->value) || 
-            $user->hasRole(\App\Enums\RoleEnum::Sales->value);
+        return Gate::allows('assign', $this->contract);
     }
 
     public function openAssign(): void
     {
         if (! $this->canAssign()) {
             $this->errorAlert('Bạn không có quyền giao việc.');
+
             return;
         }
 
-        $existing = \App\Models\ContractAssignment::where('assignable_type', Contract::class)
+        $existing = ContractAssignment::where('assignable_type', Contract::class)
             ->where('assignable_id', $this->contract->id)
             ->get();
 
-        $this->assignUserIds = $existing->whereNotNull('user_id')->pluck('user_id')->map(fn($id) => (int) $id)->toArray();
+        $this->assignUserIds = $existing->whereNotNull('user_id')->pluck('user_id')->map(fn ($id) => (int) $id)->toArray();
         $this->assignExternal = $existing->whereNull('user_id')->first()?->external_assignee ?? '';
-        /** @var \Illuminate\Support\Carbon|null $deadline */
+        /** @var Carbon|null $deadline */
         $deadline = $existing->first()?->deadline;
         $this->assignDeadline = $deadline?->toDateString() ?? '';
         $this->resetValidation();
         $this->dispatch('contract-assign:show');
     }
 
-    public function saveAssign(): void
+    public function saveAssign(ContractAssignmentService $service): void
     {
-        if (! $this->canAssign()) {
-            $this->errorAlert('Bạn không có quyền giao việc.');
-            return;
-        }
-
-        $validated = $this->validate([
-            'assignUserIds' => ['array'],
-            'assignUserIds.*' => ['integer', 'exists:users,id'],
-            'assignExternal' => ['nullable', 'string', 'max:191'],
-            'assignDeadline' => ['nullable', 'date'],
-        ]);
-
-        \App\Models\ContractAssignment::where('assignable_type', Contract::class)
-            ->where('assignable_id', $this->contract->id)
-            ->delete();
-
-        foreach ($this->assignUserIds as $userId) {
-            \App\Models\ContractAssignment::create([
-                'assignable_type' => Contract::class,
-                'assignable_id' => $this->contract->id,
-                'user_id' => (int) $userId,
-                'assigned_by' => auth()->id(),
-                'deadline' => $this->assignDeadline ?: null,
-            ]);
-        }
-
-        if (! empty($this->assignExternal)) {
-            \App\Models\ContractAssignment::create([
-                'assignable_type' => Contract::class,
-                'assignable_id' => $this->contract->id,
-                'user_id' => null,
-                'external_assignee' => $this->assignExternal,
-                'assigned_by' => auth()->id(),
-                'deadline' => $this->assignDeadline ?: null,
-            ]);
-        }
-
-        $contractLabel = $this->contract->contract_number ?: $this->contract->title;
-
-        foreach ($this->assignUserIds as $userId) {
-            $user = User::find($userId);
-            if ($user && $user->id !== auth()->id()) {
-                $user->notify(new \App\Notifications\ContractAssigned(
-                    $this->contract->id,
-                    $contractLabel,
-                    auth()->user()->name
-                ));
-            }
-        }
-
+        $service->sync($this->contract, $this->assignUserIds, $this->assignExternal, $this->assignDeadline, $this->actor());
         $this->dispatch('contract-assign:hide');
         $this->successToast('Giao việc thành công!');
     }

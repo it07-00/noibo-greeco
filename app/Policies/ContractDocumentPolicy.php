@@ -23,7 +23,7 @@ final class ContractDocumentPolicy
 
     public function view(User $user, ContractDocument $document): bool
     {
-        return $user->can(PermissionEnum::ContractDocumentView->value);
+        return $user->can(PermissionEnum::ContractDocumentView->value) && $user->can('view', $document->contract);
     }
 
     public function create(User $user): bool
@@ -33,6 +33,6 @@ final class ContractDocumentPolicy
 
     public function review(User $user, ContractDocument $document): bool
     {
-        return $user->can(PermissionEnum::ContractDocumentReview->value);
+        return $user->can(PermissionEnum::ContractDocumentReview->value) && $user->can('view', $document->contract);
     }
 }

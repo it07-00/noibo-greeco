@@ -12,6 +12,7 @@ enum ContractStatus: string
 
     case Draft = 'draft';
     case InternalReview = 'internal_review';
+    case WaitingDirectorSignature = 'waiting_director_signature';
     case WaitingCustomerSignature = 'waiting_customer_signature';
     case Active = 'active';
     case Suspended = 'suspended';
@@ -29,6 +30,7 @@ enum ContractStatus: string
         return match ($this) {
             self::Draft => 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle',
             self::InternalReview => 'bg-info-subtle text-info-emphasis border border-info-subtle',
+            self::WaitingDirectorSignature => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
             self::WaitingCustomerSignature => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
             self::Active => 'bg-primary-subtle text-primary-emphasis border border-primary-subtle',
             self::Suspended => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',

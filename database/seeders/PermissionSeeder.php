@@ -216,6 +216,16 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::MarketingPlanDelete->value,
         ]);
 
+        foreach ([$director, $accountant, $it] as $role) {
+            $role->givePermissionTo(PermissionEnum::ContractViewAll->value);
+        }
+        foreach ([$director, $accountant, $sales] as $role) {
+            $role->givePermissionTo(PermissionEnum::ContractExport->value);
+        }
+        foreach ([$director, $sales, $it] as $role) {
+            $role->givePermissionTo(PermissionEnum::ContractAssign->value);
+        }
+
         $itDeptId = DB::table('departments')
             ->where('code', 'IT')
             ->value('id');

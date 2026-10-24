@@ -55,6 +55,7 @@ return [
     'contract_status' => [
         'draft' => 'Đang soạn HĐ',
         'internal_review' => 'Đang kiểm tra nội bộ',
+        'waiting_director_signature' => 'Đang trình lãnh đạo ký',
         'waiting_customer_signature' => 'Chờ khách hàng ký',
         'active' => 'Đang thực hiện',
         'suspended' => 'Tạm dừng',

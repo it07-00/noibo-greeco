@@ -114,6 +114,12 @@
 
                                 <td class="text-end">
                                     <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+                                        @can('manage', \App\Models\Role::class)
+                                            <button type="button" class="btn btn-sm btn-outline-info"
+                                                wire:click="$dispatchTo('users.user-permissions', 'user-permissions:open', { userId: {{ $user->id }} })">
+                                                <i class="fi fi-rr-key me-1"></i> Quyền riêng
+                                            </button>
+                                        @endcan
                                         @if (auth()->user()?->can('user.update'))
                                             <button
                                                 type="button"
@@ -187,4 +193,7 @@
     <livewire:users.user-edit />
     <livewire:users.user-reset-password />
     <livewire:users.user-delete />
+    @can('manage', \App\Models\Role::class)
+        <livewire:users.user-permissions />
+    @endcan
 </div>

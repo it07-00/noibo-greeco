@@ -538,3 +538,26 @@ Thông báo phải liên kết trực tiếp đến đúng báo giá, hợp đ�
 
 Mỗi giai đoạn phải có feature test cho quyền, chuyển trạng thái hợp lệ, chuyển trạng
 thái không hợp lệ và các bất biến về số tiền.
+
+## 16. Quản lý hợp đồng theo Bảo Châu (24/10/2026)
+
+- Tạo trực tiếp tại `/contracts/create`, sửa tại `/contracts/{id}/edit`; nhân bản
+  chỉ lấy thông tin biểu mẫu và dịch vụ, tạo số mới, không sao chép thanh toán,
+  chứng từ, phân công hoặc lịch sử tiến độ. Luồng chuyển từ báo giá vẫn sử dụng được.
+- Giữ năm nhóm hợp đồng/dịch vụ Greeco; bổ sung nhà thầu phụ, tỉnh, nguồn thông
+  tin, nơi nộp, số báo cáo, Drive, chứng từ và hợp đồng gốc khi tái ký.
+- `contract.view-all` mở phạm vi xem; `contract.export` cho phép xuất danh sách
+  theo bộ lọc; `contract.assign` cho phép giao việc. Quyền xem thông thường chỉ
+  bao phủ hợp đồng phụ trách hoặc có liên quan đến phân công. Quyền riêng của
+  từng người được cộng với quyền vai trò.
+- Workflow sáu bước lưu người, thời gian, ghi chú và tệp. Bổ sung tệp vào bước đã
+  xong yêu cầu còn được phân công; thao tác này không đổi tiến độ hay gửi lại
+  thông báo hoàn thành. Tệp mới được lưu private và tải qua route kiểm tra quyền.
+- Giới hạn tải tạm là 200MB/tệp; biểu mẫu có giới hạn riêng tiếp tục giữ giới hạn
+  đó. Hồ sơ hợp đồng và workflow tối đa 10 tệp/lần, mỗi tệp 200MB.
+- Biểu mẫu nghiệp vụ giữ nguyên dữ liệu chi NCC do luồng kế toán quản lý. Giá trị
+  hợp đồng có kế hoạch thanh toán phải khớp tổng kế hoạch khi thay đổi giá trị.
+- Chưa triển khai xóa hợp đồng theo quyết định của người dùng. Xóa tệp và xóa
+  dòng dịch vụ trong biểu mẫu là các thao tác riêng, có kiểm tra quyền/phạm vi.
+
+Bằng chứng nghiệm thu chi tiết ở `docs/contract-bao-chau-parity.md`.

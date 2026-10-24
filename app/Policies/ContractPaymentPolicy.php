@@ -23,11 +23,11 @@ final class ContractPaymentPolicy
 
     public function update(User $user, ContractPayment $payment): bool
     {
-        return $user->can(PermissionEnum::PaymentAdjust->value);
+        return $user->can(PermissionEnum::PaymentAdjust->value) && $user->can('view', $payment->contract);
     }
 
     public function void(User $user, ContractPayment $payment): bool
     {
-        return $user->can(PermissionEnum::PaymentAdjust->value);
+        return $user->can(PermissionEnum::PaymentAdjust->value) && $user->can('view', $payment->contract);
     }
 }

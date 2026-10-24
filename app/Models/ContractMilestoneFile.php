@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 
 final class ContractMilestoneFile extends Model
@@ -19,6 +20,7 @@ final class ContractMilestoneFile extends Model
         'contract_id',
         'milestone',
         'file_path',
+        'storage_disk',
         'original_name',
         'uploader_id',
     ];
@@ -45,13 +47,13 @@ final class ContractMilestoneFile extends Model
 
         $uploadDisk = config('filesystems.upload_disk', 'public');
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk($uploadDisk);
         if ($disk->exists($this->file_path)) {
             return $disk->url($this->file_path);
         }
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $publicDisk */
+        /** @var FilesystemAdapter $publicDisk */
         $publicDisk = Storage::disk('public');
         if ($uploadDisk !== 'public' && $publicDisk->exists($this->file_path)) {
             return $publicDisk->url($this->file_path);

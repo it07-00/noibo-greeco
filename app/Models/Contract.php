@@ -7,11 +7,16 @@ namespace App\Models;
 use App\Enums\ContractRenewalStatus;
 use App\Enums\ContractStatus;
 use App\Enums\ContractType;
+use App\Enums\ContractVoucherStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 final class Contract extends Model
@@ -22,11 +27,13 @@ final class Contract extends Model
     protected $fillable = [
         'quotation_id',
         'customer_id',
+        'handler_id',
         'owner_id',
         'department_id',
         'contract_number',
         'type',
         'status',
+        'workflow_status',
         'renewal_status',
         'title',
         'value',
@@ -52,6 +59,18 @@ final class Contract extends Model
         'ncc_payment_paid_at',
         'shd_greeco',
         'submitted_at',
+        'contract_drive_url',
+        'province',
+        'info_source',
+        'submission_place',
+        'report_number',
+        'voucher_status',
+        'payment_percentage',
+        'is_offset',
+        'has_room_fund',
+        'is_overdue',
+        'is_renewal',
+        'parent_contract_id',
     ];
 
     protected function casts(): array
@@ -76,12 +95,18 @@ final class Contract extends Model
             'ncc_payment_updated_at' => 'datetime',
             'ncc_payment_paid_at' => 'date',
             'submitted_at' => 'date',
+            'voucher_status' => ContractVoucherStatus::class,
+            'payment_percentage' => 'decimal:2',
+            'is_offset' => 'boolean',
+            'has_room_fund' => 'boolean',
+            'is_overdue' => 'boolean',
+            'is_renewal' => 'boolean',
         ];
     }
 
     protected static function booted(): void
     {
-        static::creating(static function (self $contract): void {
+        self::creating(static function (self $contract): void {
             if (empty($contract->revenue)) {
                 $contract->revenue = (int) ($contract->value ?? 0);
             }
@@ -104,6 +129,22 @@ final class Contract extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function handler(): BelongsTo
+    {
+        return $this->belongsTo(Handler::class)->withTrashed();
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->hasAnyRole([RoleEnum::SuperAdmin->value, RoleEnum::Director->value, RoleEnum::Accountant->value, RoleEnum::IT->value])
+            || $user->can(PermissionEnum::ContractViewAll->value)) {
+            return $query;
+        }
+
+        return $query->where(fn (Builder $query) => $query->where('owner_id', $user->id)
+            ->orWhereHas('assignments', fn (Builder $query) => $query->where('user_id', $user->id)->orWhere('assigned_by', $user->id)));
     }
 
     public function department(): BelongsTo
@@ -141,17 +182,17 @@ final class Contract extends Model
         return $this->hasMany(CommissionRequest::class)->latest();
     }
 
-    public function assignments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function assignments(): MorphMany
     {
         return $this->morphMany(ContractAssignment::class, 'assignable');
     }
 
-    public function workflowSteps(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function workflowSteps(): MorphMany
     {
         return $this->morphMany(ContractWorkflowStep::class, 'contract');
     }
 
-    public function milestoneFiles(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function milestoneFiles(): MorphMany
     {
         return $this->morphMany(ContractMilestoneFile::class, 'contract');
     }

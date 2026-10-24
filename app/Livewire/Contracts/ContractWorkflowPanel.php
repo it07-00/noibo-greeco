@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire\Contracts;
 
 use App\Models\Contract;
-use App\Models\ContractAssignment;
-use App\Models\ContractMilestoneFile;
 use App\Models\ContractWorkflowStep;
-use App\Models\User;
-use App\Notifications\ContractWorkflowUpdated;
+use App\Services\Contracts\ContractProgressService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -17,184 +18,111 @@ final class ContractWorkflowPanel extends Component
 {
     use WithFileUploads;
 
+    #[Locked]
     public int $contractId;
+
     public array $uploadFiles = [];
+
     public string $comment = '';
-    public ?string $activeStep = null; // step being confirmed
+
+    public ?string $activeStep = null;
+
+    #[Locked]
+    public ?string $supplementStep = null;
 
     public function mount(int $contractId): void
     {
         $this->contractId = $contractId;
+        Gate::authorize('view', $this->contract());
     }
 
     public function canEdit(): bool
     {
-        $user = auth()->user();
-        if (! $user) {
-            return false;
-        }
-
-        // Super Admin, Viện Trưởng, and IT can always edit
-        if ($user->hasRole(\App\Enums\RoleEnum::SuperAdmin->value) || 
-            $user->hasRole(\App\Enums\RoleEnum::Director->value) || 
-            $user->hasRole(\App\Enums\RoleEnum::IT->value)) {
-            return true;
-        }
-
-        // Assigned users can edit
-        return ContractAssignment::where('assignable_type', Contract::class)
-            ->where('assignable_id', $this->contractId)
-            ->where('user_id', $user->id)
-            ->exists();
+        return Gate::allows('updateProgress', $this->contract());
     }
 
-    public function openStep(string $step): void
+    public function openStep(string $step, ContractProgressService $service): void
     {
-        if (! $this->canEdit()) {
-            return;
-        }
+        $contract = $this->contract();
+        Gate::authorize('updateProgress', $contract);
+        abort_unless($service->nextStep($contract) === $step, 422);
+        $this->cancelStep();
         $this->activeStep = $step;
-        $this->uploadFiles = [];
-        $this->comment = '';
     }
 
-    public function completeStep(): void
+    public function openFileSupplement(string $step): void
     {
-        if (! $this->canEdit()) {
-            $this->dispatch('swal:toast', ['type' => 'error', 'message' => 'Bạn không có quyền thực hiện thao tác này.']);
+        $contract = $this->contract();
+        Gate::authorize('supplementFiles', $contract);
+        abort_unless(in_array($step, ContractWorkflowStep::STEP_KEYS, true)
+            && $contract->workflowSteps()->where('action', 'complete')->where('step_name', $step)->exists(), 422);
+        $this->cancelStep();
+        $this->activeStep = $step;
+        $this->supplementStep = $step;
+    }
+
+    public function completeStep(ContractProgressService $service): void
+    {
+        if ($this->supplementStep !== null) {
+            $this->saveSupplementFiles($service);
+
             return;
         }
+        $service->complete($this->contract(), $this->activeStep ?? '', $this->comment, $this->uploadFiles, auth()->user());
+        $this->cancelStep();
+        $this->success('Đã cập nhật tiến độ hợp đồng.');
+    }
 
-        $fileRequired = in_array($this->activeStep, ['processing', 'finished'], true);
+    public function saveSupplementFiles(ContractProgressService $service): void
+    {
+        $service->supplement($this->contract(), $this->supplementStep ?? '', $this->uploadFiles, auth()->user());
+        $this->cancelStep();
+        $this->success('Đã bổ sung file đính kèm.');
+    }
 
-        $rules = [
-            'uploadFiles' => ($fileRequired ? 'required|array|max:10|min:1' : 'nullable|array|max:10'),
-            'uploadFiles.*' => 'file|max:204800|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
-            'comment' => 'nullable|string|max:1000',
-        ];
-
-        $messages = [
-            'uploadFiles.required' => 'Vui lòng đính kèm ít nhất 1 file trước khi xác nhận bước này.',
-            'uploadFiles.min' => 'Vui lòng đính kèm ít nhất 1 file trước khi xác nhận bước này.',
-            'uploadFiles.*.max' => 'Mỗi file không được vượt quá 200MB.',
-            'uploadFiles.*.mimes' => 'Chỉ chấp nhận file PDF, Word, Excel, JPG, PNG.',
-        ];
-
-        $this->validate($rules, $messages);
-
-        $uploadDisk = config('filesystems.upload_disk', 'public');
-
-        if (! empty($this->uploadFiles)) {
-            foreach ($this->uploadFiles as $file) {
-                $path = $file->storePublicly(
-                    'contract-files/contract/' . $this->activeStep,
-                    $uploadDisk
-                );
-
-                ContractMilestoneFile::create([
-                    'contract_type' => Contract::class,
-                    'contract_id' => $this->contractId,
-                    'milestone' => $this->activeStep,
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploader_id' => auth()->id(),
-                ]);
-            }
-        }
-
-        ContractWorkflowStep::create([
-            'contract_type' => Contract::class,
-            'contract_id' => $this->contractId,
-            'user_id' => auth()->id(),
-            'step_name' => $this->activeStep,
-            'action' => 'complete',
-            'comment' => $this->comment ?: null,
-        ]);
-
-        $contract = Contract::findOrFail($this->contractId);
-        $contract->update([
-            'workflow_status' => $this->activeStep,
-        ]);
-
-        $stepLabel = ContractWorkflowStep::STEPS[$this->activeStep] ?? $this->activeStep;
-        $completedStep = $this->activeStep;
-
-        $this->activeStep = null;
-        $this->uploadFiles = [];
-        $this->comment = '';
-
-        $this->dispatch('swal:toast', [
-            'type' => 'success',
-            'message' => 'Đã hoàn thành bước: ' . $stepLabel,
-        ]);
-
-        $contractLabel = $contract->contract_number ?: $contract->title;
-
-        $recipients = User::role([\App\Enums\RoleEnum::Director->value, \App\Enums\RoleEnum::IT->value])->get();
-
-        $assignmentUserIds = ContractAssignment::where('assignable_type', Contract::class)
-            ->where('assignable_id', $this->contractId)
-            ->get(['user_id', 'assigned_by'])
-            ->flatMap(fn($assignment) => [(int) $assignment->user_id, (int) $assignment->assigned_by])
-            ->filter()
-            ->unique()
-            ->values();
-
-        if ($assignmentUserIds->isNotEmpty()) {
-            $recipients = $recipients->merge(User::whereIn('id', $assignmentUserIds)->get());
-        }
-
-        if ($contract->owner_id && $contract->owner_id !== auth()->id()) {
-            $owner = User::find($contract->owner_id);
-            if ($owner) {
-                $recipients->push($owner);
-            }
-        }
-
-        foreach ($recipients->unique('id') as $recipient) {
-            if ($recipient->id !== auth()->id()) {
-                $recipient->notify(new ContractWorkflowUpdated(
-                    $this->contractId,
-                    $contractLabel,
-                    $completedStep,
-                    $stepLabel,
-                    auth()->user()->name
-                ));
-            }
-        }
-
-        $this->dispatch('contract-workflow:updated');
+    public function deleteFile(int $fileId, ContractProgressService $service): void
+    {
+        $contract = $this->contract();
+        Gate::authorize('updateProgress', $contract);
+        $file = $contract->milestoneFiles()->find($fileId);
+        abort_unless($file, 404);
+        Storage::disk($service->fileDisk($file))->delete($file->file_path);
+        $file->delete();
+        $this->success('Đã xóa file đính kèm.');
     }
 
     public function cancelStep(): void
     {
-        $this->activeStep = null;
-        $this->uploadFiles = [];
-        $this->comment = '';
+        $this->reset('activeStep', 'supplementStep', 'uploadFiles', 'comment');
+        $this->resetValidation();
     }
 
-    public function render()
+    public function render(ContractProgressService $service): View
     {
-        $contract = Contract::find($this->contractId);
-        $currentStatus = $contract?->workflow_status;
-
-        $completedSteps = ContractWorkflowStep::where('contract_type', Contract::class)
-            ->where('contract_id', $this->contractId)
-            ->pluck('step_name')
-            ->toArray();
-
-        $filesByStep = ContractMilestoneFile::where('contract_type', Contract::class)
-            ->where('contract_id', $this->contractId)
-            ->get()
-            ->groupBy('milestone');
+        $contract = $this->contract();
+        Gate::authorize('view', $contract);
+        $history = $contract->workflowSteps()->where('action', 'complete')->with('user')->orderBy('id')->get();
 
         return view('livewire.contracts.contract-workflow-panel', [
+            'contract' => $contract,
             'steps' => ContractWorkflowStep::STEPS,
-            'stepKeys' => ContractWorkflowStep::STEP_KEYS,
-            'completedSteps' => $completedSteps,
-            'currentStatus' => $currentStatus,
-            'filesByStep' => $filesByStep,
+            'completedSteps' => $history->pluck('step_name')->unique()->all(),
+            'nextStep' => $service->nextStep($contract),
+            'savedNotes' => $history,
+            'filesByStep' => $contract->milestoneFiles()->whereIn('milestone', ContractWorkflowStep::STEP_KEYS)->with('uploader')->get()->groupBy('milestone'),
             'canEdit' => $this->canEdit(),
+            'canSupplement' => Gate::allows('supplementFiles', $contract),
         ]);
+    }
+
+    private function contract(): Contract
+    {
+        return Contract::findOrFail($this->contractId);
+    }
+
+    private function success(string $title): void
+    {
+        $this->dispatch('swal:alert', ['icon' => 'success', 'title' => $title, 'toast' => true, 'position' => 'top-end', 'timer' => 3000]);
+        $this->dispatch('contract-workflow:updated');
     }
 }

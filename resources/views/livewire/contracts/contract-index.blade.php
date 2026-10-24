@@ -9,10 +9,18 @@
             <h1 class="h3 mb-1">Hợp đồng</h1>
             <p class="sales-supporting-text mb-0">Theo dõi thực hiện, chứng từ và dòng tiền trên cùng một hồ sơ.</p>
         </div>
+        <div class="d-flex flex-wrap gap-2">
+            @can('contract.export')
+                <button type="button" class="btn btn-outline-success" wire:click="exportExcel" wire:loading.attr="disabled">Xuất Excel</button>
+            @endcan
+            @can('create', \App\Models\Contract::class)
+                <a href="{{ route('contracts.create') }}" class="btn btn-primary">Thêm hợp đồng</a>
+            @endcan
         <a href="{{ route('quotations.index') }}" class="btn btn-outline-secondary sales-primary-action">
             <i class="fi fi-rr-document-signed me-2" aria-hidden="true"></i>
             Theo dõi báo giá
         </a>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">
@@ -21,7 +29,7 @@
                 <div class="card-body">
                     <div class="sales-kpi-label">Tổng hợp đồng</div>
                     <div class="sales-kpi-value">{{ number_format($summary['total']) }}</div>
-                    <div class="small sales-supporting-text">Tất cả trạng thái</div>
+                    <div class="small sales-supporting-text">Theo bộ lọc hiện tại</div>
                 </div>
             </div>
         </div>
@@ -96,6 +104,8 @@
         </div>
     </div>
 
+    @include('livewire.contracts.partials.advanced-filters')
+
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table align-middle mb-0 sales-table">
@@ -121,10 +131,24 @@
                             <td>
                                 <div class="fw-semibold">{{ $contract->contract_number ?: 'Chưa có số HĐ' }}</div>
                                 <div class="small sales-supporting-text">{{ $contract->title }}</div>
+                                @can('update', $contract)
+                                    <label for="inlineReport-{{ $contract->id }}" class="form-label small mb-1">Số báo cáo</label>
+                                    <input id="inlineReport-{{ $contract->id }}" class="form-control form-control-sm mb-1" value="{{ $contract->report_number }}" maxlength="100"
+                                        wire:change="updateInlineReportNumber({{ $contract->id }}, $event.target.value)">
+                                @else
+                                    @if ($contract->report_number)<div class="small text-muted">Số báo cáo: {{ $contract->report_number }}</div>@endif
+                                @endcan
+                                <a class="small" href="{{ route('contracts.show', $contract) }}">Tiến độ: {{ min(6, $contract->workflow_steps_count) }}/6 bước</a>
+                                @if ($contract->assignments_max_deadline)
+                                    <div class="small text-muted">Hạn: {{ \Illuminate\Support\Carbon::parse($contract->assignments_max_deadline)->format('d/m/Y') }}</div>
+                                @endif
                             </td>
                             <td>
                                 <div class="fw-medium">{{ $contract->customer->name }}</div>
                                 <div class="small sales-supporting-text">{{ $contract->owner?->name ?: 'Chưa phân công' }}</div>
+                                @if ($contract->handler)
+                                    <div class="small sales-supporting-text">Nhà thầu phụ: {{ $contract->handler->name }}</div>
+                                @endif
                             </td>
                             <td class="d-none d-xl-table-cell">{{ $contract->type->label() }}</td>
                             @if ($showFinancials)
@@ -136,11 +160,26 @@
                                 </td>
                             @endif
                             <td>
+                                @can('update', $contract)
+                                    <select class="form-select form-select-sm" aria-label="Trạng thái hợp đồng {{ $contract->contract_number ?: $contract->title }}"
+                                        wire:change="updateStatus({{ $contract->id }}, $event.target.value)">
+                                        @foreach ($statusOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected($contract->status->value === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
                                 <span class="badge rounded-pill {{ $contract->status->badgeClass() }}">
                                     {{ $contract->status->label() }}
                                 </span>
+                                @endcan
                             </td>
                             <td class="text-end">
+                                @can('update', $contract)
+                                    <a href="{{ route('contracts.edit', $contract->id) }}" class="btn btn-sm btn-outline-primary mb-1">Sửa</a>
+                                @endcan
+                                @can('create', \App\Models\Contract::class)
+                                    <a href="{{ route('contracts.create', ['copy' => $contract->id]) }}" class="btn btn-sm btn-outline-secondary mb-1">Nhân bản</a>
+                                @endcan
                                 <button
                                     type="button"
                                     wire:click="openDetail({{ $contract->id }})"
@@ -156,7 +195,7 @@
                             <td colspan="7" class="text-center py-5">
                                 <i class="fi fi-rr-briefcase d-block fs-2 sales-supporting-text mb-2" aria-hidden="true"></i>
                                 <div class="fw-semibold">Chưa có hợp đồng phù hợp</div>
-                                <div class="small sales-supporting-text">Hợp đồng được tạo từ báo giá thành công.</div>
+                                <div class="small sales-supporting-text">Thêm hợp đồng mới hoặc chuyển từ báo giá thành công.</div>
                             </td>
                         </tr>
                     @endforelse
@@ -189,6 +228,7 @@
                                 <div class="small sales-supporting-text">Khách hàng</div>
                                 <div class="fw-semibold">{{ $detailContract->customer?->name ?: '—' }}</div>
                                 <div class="small sales-supporting-text">{{ $detailContract->title }}</div>
+                                <div class="small sales-supporting-text">Nhà thầu phụ: {{ $detailContract->handler?->name ?: 'Chưa chọn' }}</div>
                             </div>
                             <div class="col-md-3">
                                 <div class="small sales-supporting-text">Trạng thái</div>

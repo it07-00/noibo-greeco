@@ -20,42 +20,36 @@ final class ContractService
         string $status = '',
         string $type = '',
         int $perPage = 15,
+        array $filters = [],
+        string $sort = 'created_at',
+        string $direction = 'desc',
     ): LengthAwarePaginator {
-        return Contract::query()
-            ->with(['customer', 'owner'])
+        $listing = app(ContractListing::class);
+
+        return $listing->ordered($listing->query($search, $status, $type, $filters), $sort, $direction)
+            ->with(['customer', 'owner', 'handler', 'department', 'assignments.user', 'assignments.assigner'])
             ->withCount('paymentSchedules')
+            ->withCount(['workflowSteps' => fn ($query) => $query->where('action', 'complete')])
+            ->withMax('assignments', 'deadline')
             ->withSum([
                 'payments as received_amount' => static fn ($query) => $query->whereNull('voided_at'),
             ], 'amount')
-            ->when($search !== '', function ($query) use ($search): void {
-                $query->where(function ($nested) use ($search): void {
-                    $nested
-                        ->where('contract_number', 'like', "%{$search}%")
-                        ->orWhere('title', 'like', "%{$search}%")
-                        ->orWhereHas(
-                            'customer',
-                            static fn ($customerQuery) => $customerQuery
-                                ->where('name', 'like', "%{$search}%")
-                                ->orWhere('tax_code', 'like', "%{$search}%"),
-                        );
-                });
-            })
-            ->when($status !== '', static fn ($query) => $query->where('status', $status))
-            ->when($type !== '', static fn ($query) => $query->where('type', $type))
-            ->latest()
-            ->paginate($perPage);
+            ->paginate(in_array($perPage, [10, 15, 25, 50], true) ? $perPage : 15);
     }
 
     /**
      * @return array{total: int, active: int, total_value: int, received: int}
      */
-    public function summary(): array
+    public function summary(string $search = '', string $status = '', string $type = '', array $filters = []): array
     {
+        $query = app(ContractListing::class)->query($search, $status, $type, $filters);
+
         return [
-            'total' => Contract::query()->count(),
-            'active' => Contract::query()->where('status', ContractStatus::Active->value)->count(),
-            'total_value' => (float) Contract::query()->sum('value'),
+            'total' => (clone $query)->count(),
+            'active' => (clone $query)->where('status', ContractStatus::Active->value)->count(),
+            'total_value' => (float) (clone $query)->sum('value'),
             'received' => (float) ContractPayment::query()
+                ->whereIn('contract_id', (clone $query)->select('id'))
                 ->whereNull('voided_at')
                 ->sum('amount'),
         ];

@@ -59,7 +59,7 @@
                 </li>
             @endif
 
-            @if (auth()->user()?->can('customer.view') || auth()->user()?->can('course.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view') || auth()->user()?->hasRole(\App\Enums\RoleEnum::Sales->value) || auth()->user()?->can('commission.view'))
+            @if (auth()->user()?->can('handlers.view') || auth()->user()?->can('customer.view') || auth()->user()?->can('course.view') || auth()->user()?->can('quotation.view') || auth()->user()?->can('contract.view') || auth()->user()?->hasRole(\App\Enums\RoleEnum::Sales->value) || auth()->user()?->can('commission.view'))
                 <li class="menu-heading">
                     <span class="menu-label">Kinh doanh</span>
                 </li>
@@ -73,6 +73,15 @@
                     </a>
                 </li>
             @endif
+
+            @can('handlers.view')
+                <li class="menu-item">
+                    <a class="menu-link {{ request()->routeIs('handlers.*') ? 'active' : '' }}" href="{{ route('handlers.index') }}">
+                        <i class="fi fi-rr-building"></i>
+                        <span class="menu-label">Nhà thầu phụ</span>
+                    </a>
+                </li>
+            @endcan
 
             @if (auth()->user()?->can('course.view'))
                 <li class="menu-item">

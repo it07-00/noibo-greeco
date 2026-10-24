@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\RolesPermissions;
 
 use App\DTOs\RoleDTO;
-use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Models\Department;
 use App\Models\Role;
@@ -254,100 +253,7 @@ final class RolesPermissionsIndex extends Component
         $roles = $service->getRoles();
         $activeRole = $roles->firstWhere('id', $this->activeRoleId) ?? $roles->first();
 
-        $permissionsGrouped = [
-            'Quản lý người dùng' => [
-                PermissionEnum::UserView->value => 'Xem danh sách người dùng',
-                PermissionEnum::UserCreate->value => 'Thêm mới người dùng',
-                PermissionEnum::UserUpdate->value => 'Cập nhật người dùng',
-                PermissionEnum::UserDelete->value => 'Xóa người dùng',
-            ],
-            'Lịch công tác' => [
-                PermissionEnum::ScheduleView->value => 'Xem lịch công tác',
-                PermissionEnum::ScheduleCreate->value => 'Tạo lịch công tác',
-                PermissionEnum::ScheduleUpdate->value => 'Cập nhật lịch công tác',
-                PermissionEnum::ScheduleDelete->value => 'Xóa lịch công tác',
-                PermissionEnum::ScheduleViewPrivate->value => 'Xem lịch công tác riêng tư',
-            ],
-            'Báo cáo ngày' => [
-                PermissionEnum::ReportView->value => 'Xem báo cáo ngày',
-                PermissionEnum::ReportCreate->value => 'Tạo báo cáo ngày',
-                PermissionEnum::ReportUpdate->value => 'Sửa báo cáo ngày',
-                PermissionEnum::ReportDelete->value => 'Xóa báo cáo ngày',
-            ],
-            'Email nội bộ' => [
-                PermissionEnum::MailView->value => 'Xem hộp thư nội bộ',
-                PermissionEnum::MailSend->value => 'Gửi email nội bộ',
-                PermissionEnum::MailUpdate->value => 'Cập nhật cấu hình email',
-            ],
-            'Quy định tài liệu' => [
-                PermissionEnum::DocumentView->value => 'Xem quy định tài liệu',
-                PermissionEnum::DocumentManage->value => 'Quản lý quy định tài liệu',
-            ],
-            'Cài đặt hệ thống' => [
-                PermissionEnum::SettingView->value => 'Xem cài đặt hệ thống',
-                PermissionEnum::SettingUpdate->value => 'Cập nhật cài đặt hệ thống',
-            ],
-            'Bảo mật & Phân quyền' => [
-                PermissionEnum::RoleManage->value => 'Quản lý vai trò và phân quyền',
-            ],
-            'Truy cập chung' => [
-                PermissionEnum::DashboardView->value => 'Truy cập Dashboard chính',
-            ],
-            'Khách hàng' => [
-                PermissionEnum::CustomerView->value => 'Xem khách hàng',
-                PermissionEnum::CustomerManage->value => 'Quản lý khách hàng',
-            ],
-            'Khóa học' => [
-                PermissionEnum::CourseView->value => 'Xem khóa học và học viên',
-                PermissionEnum::CourseManage->value => 'Tạo, sửa, xóa khóa học và xếp học viên',
-            ],
-            'Theo dõi báo giá' => [
-                PermissionEnum::QuotationView->value => 'Xem báo giá',
-                PermissionEnum::QuotationCreate->value => 'Tạo báo giá',
-                PermissionEnum::QuotationUpdate->value => 'Cập nhật báo giá',
-                PermissionEnum::QuotationSend->value => 'Gửi báo giá',
-                PermissionEnum::QuotationConvert->value => 'Chuyển báo giá thành hợp đồng',
-            ],
-            'Hợp đồng' => [
-                PermissionEnum::ContractView->value => 'Xem hợp đồng',
-                PermissionEnum::ContractCreate->value => 'Tạo hợp đồng',
-                PermissionEnum::ContractUpdate->value => 'Cập nhật hợp đồng',
-                PermissionEnum::ContractApprove->value => 'Phê duyệt hợp đồng',
-                PermissionEnum::ContractActivate->value => 'Kích hoạt hợp đồng',
-                PermissionEnum::ContractComplete->value => 'Hoàn thành hợp đồng',
-                PermissionEnum::ContractCancel->value => 'Hủy hợp đồng',
-            ],
-            'Lịch thanh toán & Chứng từ' => [
-                PermissionEnum::PaymentScheduleView->value => 'Xem lịch thanh toán',
-                PermissionEnum::PaymentScheduleManage->value => 'Quản lý lịch thanh toán',
-                PermissionEnum::PaymentScheduleConfirm->value => 'Xác nhận lịch thanh toán',
-                PermissionEnum::PaymentRecord->value => 'Ghi nhận thanh toán',
-                PermissionEnum::PaymentAdjust->value => 'Điều chỉnh thanh toán',
-                PermissionEnum::ContractDocumentView->value => 'Xem chứng từ hợp đồng',
-                PermissionEnum::ContractDocumentSubmit->value => 'Gửi chứng từ hợp đồng',
-                PermissionEnum::ContractDocumentReview->value => 'Kiểm tra chứng từ hợp đồng',
-            ],
-            'Kinh doanh & Báo cáo' => [
-                PermissionEnum::BusinessDashboardView->value => 'Xem dashboard kinh doanh',
-                PermissionEnum::AccountingDashboardView->value => 'Xem dashboard kế toán',
-                PermissionEnum::ManagementDashboardView->value => 'Xem dashboard quản trị',
-                PermissionEnum::SalesReportView->value => 'Xem báo cáo kinh doanh',
-                PermissionEnum::SalesTargetManage->value => 'Thiết lập KPI kinh doanh',
-                PermissionEnum::CommissionView->value => 'Xem yêu cầu chi hoa hồng',
-                PermissionEnum::CommissionCreate->value => 'Tạo yêu cầu chi hoa hồng',
-                PermissionEnum::CommissionUpdate->value => 'Cập nhật yêu cầu chi hoa hồng',
-                PermissionEnum::CommissionDelete->value => 'Xóa yêu cầu chi hoa hồng',
-                PermissionEnum::CommissionApprove->value => 'Duyệt yêu cầu chi hoa hồng',
-                PermissionEnum::CommissionPay->value => 'Xác nhận đã chi hoa hồng',
-            ],
-            'Kế hoạch Marketing' => [
-                PermissionEnum::MarketingPlanView->value => 'Xem kế hoạch Marketing',
-                PermissionEnum::MarketingPlanCreate->value => 'Tạo kế hoạch Marketing',
-                PermissionEnum::MarketingPlanUpdate->value => 'Cập nhật kế hoạch Marketing',
-                PermissionEnum::MarketingPlanDelete->value => 'Xóa kế hoạch Marketing',
-                PermissionEnum::MarketingPlanApprove->value => 'Phê duyệt kế hoạch Marketing',
-            ],
-        ];
+        $permissionsGrouped = $service->permissionGroups();
 
         $activeRolePermissions = $activeRole ? $activeRole->permissions->pluck('name')->toArray() : [];
         $availableDepartments = Department::orderBy('name')->get();

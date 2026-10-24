@@ -23,7 +23,7 @@ final class ContractPaymentSchedulePolicy
 
     public function view(User $user, ContractPaymentSchedule $schedule): bool
     {
-        return $user->can(PermissionEnum::PaymentScheduleView->value);
+        return $user->can(PermissionEnum::PaymentScheduleView->value) && $user->can('view', $schedule->contract);
     }
 
     public function create(User $user): bool
@@ -33,11 +33,11 @@ final class ContractPaymentSchedulePolicy
 
     public function update(User $user, ContractPaymentSchedule $schedule): bool
     {
-        return $user->can(PermissionEnum::PaymentScheduleManage->value);
+        return $user->can(PermissionEnum::PaymentScheduleManage->value) && $user->can('view', $schedule->contract);
     }
 
     public function confirm(User $user, ContractPaymentSchedule $schedule): bool
     {
-        return $user->can(PermissionEnum::PaymentScheduleConfirm->value);
+        return $user->can(PermissionEnum::PaymentScheduleConfirm->value) && $user->can('view', $schedule->contract);
     }
 }
