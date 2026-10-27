@@ -15,6 +15,7 @@ final class DailyReportSubmitted extends Notification
     public function __construct(
         private readonly DailyReport $report,
         private readonly string $reporterName,
+        private readonly int $lateDays = 0,
     ) {}
 
     /**
@@ -32,10 +33,12 @@ final class DailyReportSubmitted extends Notification
     {
         return [
             'title' => 'Báo cáo ngày mới',
-            'message' => $this->reporterName . ' đã gửi báo cáo ngày ' . $this->report->report_date->format('d/m/Y'),
+            'message' => $this->reporterName.' đã gửi báo cáo ngày '.$this->report->report_date->format('d/m/Y')
+                .($this->lateDays > 0 ? " (nộp trễ {$this->lateDays} ngày)" : ''),
             'report_id' => $this->report->id,
             'reporter_name' => $this->reporterName,
             'report_date' => $this->report->report_date->toDateString(),
+            'late_days' => $this->lateDays,
             'icon' => 'fi-rr-document',
             'url' => '/daily-reports',
         ];

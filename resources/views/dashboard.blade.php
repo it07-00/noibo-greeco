@@ -369,6 +369,7 @@
                                                 <small class="sales-supporting-text text-nowrap">{{ $report['date'] }}</small>
                                             </span>
                                             <small class="sales-supporting-text d-block text-truncate">{{ $report['summary'] }}</small>
+                                            <small class="sales-supporting-text d-block">Nộp lúc: {{ $report['submitted_at'] }}</small>
                                         </span>
                                     </a>
                                 @empty

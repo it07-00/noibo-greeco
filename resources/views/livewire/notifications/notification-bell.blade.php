@@ -89,7 +89,14 @@
                             </div>
                             <div class="notification-text">
                                 <p class="notification-title mb-0">{{ $data['title'] ?? 'Thông báo' }}</p>
-                                <p class="notification-message mb-0">{{ $data['message'] ?? '' }}</p>
+                                <p class="notification-message mb-0">
+                                    @if (($data['late_days'] ?? 0) > 0)
+                                        {{ $data['reporter_name'] ?? 'Nhân viên' }} đã gửi báo cáo ngày {{ \Carbon\Carbon::parse($data['report_date'])->format('d/m/Y') }}
+                                        <strong class="text-danger">(nộp trễ {{ $data['late_days'] }} ngày)</strong>
+                                    @else
+                                        {{ $data['message'] ?? '' }}
+                                    @endif
+                                </p>
                                 <span class="notification-time">
                                     <i class="fi fi-rr-clock me-1"></i>{{ $notification->created_at->diffForHumans() }}
                                 </span>

@@ -24,6 +24,7 @@ enum PermissionEnum: string
     case DocumentManage = 'document.manage';
     case RoleManage = 'role.manage';
     case ReportView = 'report.view';
+    case ReportViewAll = 'report.view-all';
     case ReportCreate = 'report.create';
     case ReportUpdate = 'report.update';
     case ReportDelete = 'report.delete';
@@ -101,6 +102,7 @@ enum PermissionEnum: string
             self::DocumentManage => 'Quản lý quy định tài liệu',
             self::RoleManage => 'Quản lý vai trò và phân quyền',
             self::ReportView => 'Xem báo cáo ngày',
+            self::ReportViewAll => 'Xem tất cả báo cáo ngày',
             self::ReportCreate => 'Tạo báo cáo ngày',
             self::ReportUpdate => 'Sửa báo cáo ngày',
             self::ReportDelete => 'Xóa báo cáo ngày',

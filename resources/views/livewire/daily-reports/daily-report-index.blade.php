@@ -175,8 +175,13 @@
                                             {{ $report->report_date->format('d/m/Y') }}
                                         </span>
                                         <div class="text-muted text-xs mt-1">
-                                            {{ $report->created_at->diffForHumans() }}
+                                            Nộp lúc: {{ $report->created_at->format('H:i d/m/Y') }}
                                         </div>
+                                        @if ($report->lateDays() > 0)
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold mt-1">
+                                                Nộp trễ {{ $report->lateDays() }} ngày
+                                            </span>
+                                        @endif
                                     </td>
 
                                     @if ($canViewAll && $viewMode === 'all')
@@ -276,6 +281,9 @@
                     <span class="d-flex align-items-center">
                         <span class="d-inline-block rounded-circle bg-warning-subtle border border-warning me-2" style="width: 12px; height: 12px; flex-shrink: 0;"></span> Báo cáo có vấn đề phát sinh
                     </span>
+                    <span class="d-flex align-items-center fw-semibold text-danger">
+                        <span class="d-inline-block rounded-circle bg-danger-subtle border border-danger me-2" style="width: 12px; height: 12px; flex-shrink: 0;"></span> Báo cáo nộp trễ từ 3 ngày
+                    </span>
                 </div>
                 <div id="calendar-reports"></div>
             </div>
@@ -305,7 +313,10 @@
                                 <td class="fw-medium">{{ $assignment->report->user?->name ?: '—' }}</td>
                                 <td style="min-width: 280px; max-width: 420px;"><div class="text-wrap">{{ $assignment->report->issues }}</div></td>
                                 <td>{{ $assignment->assignee?->name ?: '—' }}</td>
-                                <td>{{ $assignment->report->report_date->format('d/m/Y') }}</td>
+                                <td class="text-nowrap">
+                                    {{ $assignment->report->report_date->format('d/m/Y') }}
+                                    <div class="text-muted text-xs mt-1">Nộp lúc: {{ $assignment->report->created_at->format('H:i d/m/Y') }}</div>
+                                </td>
                                 <td><span class="badge rounded-pill {{ $assignment->status->badgeClass() }}">{{ $assignment->status->label() }}</span></td>
                                 <td class="text-end">
                                     <div class="d-inline-flex gap-1">
@@ -479,6 +490,11 @@
                                         <i class="fi fi-rr-calendar"></i>
                                         {{ $viewingReport->report_date->format('d/m/Y') }} ({{ $viewingReport->report_date->isoFormat('dddd') }})
                                     </div>
+                                    @if ($viewingReport->lateDays() > 0)
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold mt-1">
+                                            Nộp trễ {{ $viewingReport->lateDays() }} ngày
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -513,7 +529,7 @@
 
                         <div class="text-muted text-xs mt-3 pt-3 border-top">
                             <i class="fi fi-rr-clock me-1"></i>
-                            Tạo lúc: {{ $viewingReport->created_at->format('H:i d/m/Y') }}
+                            Nộp lúc: {{ $viewingReport->created_at->format('H:i d/m/Y') }}
                             @if ($viewingReport->updated_at->ne($viewingReport->created_at))
                                 · Cập nhật: {{ $viewingReport->updated_at->format('H:i d/m/Y') }}
                             @endif
@@ -578,8 +594,13 @@
                                                     <div class="report-user-name">{{ $report['user_name'] }}</div>
                                                     <div class="report-time">
                                                         <i class="fi fi-rr-clock"></i>
-                                                        Tạo lúc: {{ $report['created_at_formatted'] }}
+                                                        Nộp lúc: {{ $report['created_at_formatted'] }}
                                                     </div>
+                                                    @if ($report['late_days'] > 0)
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-semibold mt-1">
+                                                            Nộp trễ {{ $report['late_days'] }} ngày
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
                                             <div class="d-flex align-items-center gap-1">
@@ -737,9 +758,10 @@
                 // Create DOM structure
                 const card = document.createElement('div');
                 const hasIssues = !!props.issues;
-                const themeClass = hasIssues ? 'event-theme-warning' : 'event-theme-success';
+                const isLate = Number(props.late_days || 0) > 0;
+                const themeClass = isLate ? 'event-theme-danger' : (hasIssues ? 'event-theme-warning' : 'event-theme-success');
                 card.className = `greeco-event-card ${themeClass}`;
-                card.title = `${props.user_name} · ${props.work_done}`;
+                card.title = `${props.user_name} · Nộp lúc: ${props.created_at_formatted || ''} · ${props.work_done}`;
 
                 const contextEl = document.createElement('span');
                 contextEl.className = 'greeco-event-context';
@@ -751,7 +773,11 @@
 
                 const badgeEl = document.createElement('span');
                 badgeEl.className = 'greeco-event-time';
-                if (hasIssues) {
+                if (isLate) {
+                    badgeEl.classList.add('bg-danger', 'text-white', 'border', 'border-danger', 'fw-bold');
+                    badgeEl.style.fontSize = '8px';
+                    badgeEl.innerText = `Trễ ${props.late_days} ngày`;
+                } else if (hasIssues) {
                     badgeEl.classList.add('bg-warning', 'text-dark-emphasis', 'border', 'border-warning');
                     badgeEl.style.fontSize = '8px';
                     badgeEl.innerText = 'Phát sinh';
@@ -767,6 +793,11 @@
                 titleEl.className = 'greeco-event-title';
                 titleEl.innerText = props.work_done;
                 card.appendChild(titleEl);
+
+                const submittedEl = document.createElement('span');
+                submittedEl.className = 'd-block small text-muted';
+                submittedEl.innerText = `Nộp lúc: ${props.created_at_formatted || '—'}`;
+                card.appendChild(submittedEl);
 
                 return { domNodes: [card] };
             },

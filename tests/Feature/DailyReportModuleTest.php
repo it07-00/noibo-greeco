@@ -12,9 +12,12 @@ use App\Livewire\DailyReports\DailyReportIndex;
 use App\Models\DailyReport;
 use App\Models\DailyReportSupportAssignment;
 use App\Models\User;
+use App\Notifications\DailyReportSubmitted;
 use App\Services\DailyReportService;
+use Carbon\Carbon;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -42,6 +45,55 @@ final class DailyReportModuleTest extends TestCase
             'report_date' => '2026-06-02 00:00:00',
             'work_done' => 'Hoàn thành tích hợp tính năng báo cáo ngày.',
         ]);
+    }
+
+    public function test_report_is_late_only_when_submitted_at_least_three_days_after_report_date(): void
+    {
+        $oneDayLate = DailyReport::factory()->create(['report_date' => '2026-06-01']);
+        $oneDayLate->forceFill(['created_at' => '2026-06-02 08:00:00'])->saveQuietly();
+
+        $twoDaysLate = DailyReport::factory()->create(['report_date' => '2026-06-01']);
+        $twoDaysLate->forceFill(['created_at' => '2026-06-03 08:00:00'])->saveQuietly();
+
+        $threeDaysLate = DailyReport::factory()->create(['report_date' => '2026-06-01']);
+        $threeDaysLate->forceFill(['created_at' => '2026-06-04 08:00:00'])->saveQuietly();
+
+        $this->assertSame(0, $oneDayLate->refresh()->lateDays());
+        $this->assertSame(0, $twoDaysLate->refresh()->lateDays());
+        $this->assertSame(3, $threeDaysLate->refresh()->lateDays());
+    }
+
+    public function test_director_notification_marks_report_submitted_three_days_late(): void
+    {
+        $this->seed(PermissionSeeder::class);
+        Notification::fake();
+        Carbon::setTestNow('2026-06-04 08:00:00');
+
+        $reporter = User::factory()->create();
+        $director = User::factory()->create();
+        $director->assignRole(RoleEnum::Director->value);
+
+        $report = app(DailyReportService::class)->createReport(DailyReportDTO::fromArray([
+            'user_id' => $reporter->id,
+            'report_date' => '2026-06-01',
+            'work_done' => 'Hoàn thành báo cáo kiểm kê.',
+            'plan_tomorrow' => null,
+            'issues' => null,
+        ]));
+
+        Notification::assertSentTo(
+            $director,
+            DailyReportSubmitted::class,
+            function (DailyReportSubmitted $notification) use ($director): bool {
+                $data = $notification->toArray($director);
+
+                return $data['late_days'] === 3
+                    && str_contains($data['message'], '(nộp trễ 3 ngày)');
+            },
+        );
+
+        $this->assertSame(3, $report->lateDays());
+        Carbon::setTestNow();
     }
 
     public function test_authorized_user_can_access_reports_index(): void

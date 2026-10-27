@@ -94,6 +94,7 @@ final class PermissionSeeder extends Seeder
         $superAdmin->syncPermissions(Permission::all());
 
         $directorPermissions = [
+            PermissionEnum::ReportViewAll->value,
             PermissionEnum::DashboardView->value,
             PermissionEnum::ScheduleView->value,
             PermissionEnum::ScheduleCreate->value,

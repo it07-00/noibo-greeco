@@ -6,7 +6,6 @@ namespace App\Livewire\DailyReports;
 
 use App\DTOs\DailyReportDTO;
 use App\Enums\PermissionEnum;
-use App\Enums\RoleEnum;
 use App\Enums\SupportRequestStatus;
 use App\Models\DailyReport;
 use App\Models\DailyReportSupportAssignment;
@@ -92,8 +91,6 @@ final class DailyReportIndex extends Component
         $this->formDate = now()->toDateString();
         $this->filterDate = now()->toDateString();
 
-        // Viewer-only (e.g. Director): has report.view but NOT report.create → see all
-        // Staff: has report.create → see own only by default
         $canViewAll = $this->resolveCanViewAll();
         $this->viewMode = $canViewAll ? 'all' : 'mine';
         if (request()->query('view') === 'support') {
@@ -101,25 +98,9 @@ final class DailyReportIndex extends Component
         }
     }
 
-    /**
-     * A user can view ALL reports when they have report.view
-     * but do NOT have report.create (e.g. Director).
-     * SuperAdmin bypasses everything via before() in policies.
-     */
     private function resolveCanViewAll(): bool
     {
-        $user = Auth::user();
-        if (! $user) {
-            return false;
-        }
-        // SuperAdmin or Director → always yes
-        if ($user->hasRole(RoleEnum::SuperAdmin->value) || $user->hasRole(RoleEnum::Director->value)) {
-            return true;
-        }
-
-        // View-only role (Director/Leadership): has report.view but NOT report.create
-        return $user->can(PermissionEnum::ReportView->value)
-            && ! $user->can(PermissionEnum::ReportCreate->value);
+        return Gate::allows('viewAll', DailyReport::class);
     }
 
     public function updatedFilterDate(): void
@@ -310,7 +291,7 @@ final class DailyReportIndex extends Component
         $canViewAll = $this->resolveCanViewAll();
 
         $userId = match (true) {
-            $this->viewMode === 'mine' => (int) Auth::id(),
+            ! $canViewAll || $this->viewMode === 'mine' => (int) Auth::id(),
             $canViewAll && $this->filterUserId > 0 => $this->filterUserId,
             default => null,
         };
@@ -325,6 +306,7 @@ final class DailyReportIndex extends Component
                 'plan_tomorrow' => $report->plan_tomorrow ?? '',
                 'issues' => $report->issues ?? '',
                 'created_at_formatted' => $report->created_at->format('H:i d/m/Y'),
+                'late_days' => $report->lateDays(),
                 'can_edit' => auth()->user()?->can('update', $report) ?? false,
                 'can_delete' => auth()->user()?->can('delete', $report) ?? false,
             ];
@@ -394,7 +376,7 @@ final class DailyReportIndex extends Component
         $canViewAll = $this->resolveCanViewAll();
 
         $userId = match (true) {
-            $this->viewMode === 'mine' => (int) Auth::id(),
+            ! $canViewAll || $this->viewMode === 'mine' => (int) Auth::id(),
             $canViewAll && $this->filterUserId > 0 => $this->filterUserId,
             default => null,
         };
@@ -420,6 +402,8 @@ final class DailyReportIndex extends Component
                 'plan_tomorrow' => $report->plan_tomorrow ?? '',
                 'issues' => $report->issues ?? '',
                 'report_date_formatted' => $report->report_date->format('d/m/Y'),
+                'created_at_formatted' => $report->created_at->format('H:i d/m/Y'),
+                'late_days' => $report->lateDays(),
                 'can_edit' => auth()->user()?->can('update', $report) ?? false,
                 'can_delete' => auth()->user()?->can('delete', $report) ?? false,
             ];
@@ -440,7 +424,7 @@ final class DailyReportIndex extends Component
         $canViewAll = $this->resolveCanViewAll();
 
         $userId = match (true) {
-            $this->viewMode === 'mine' => (int) Auth::id(),
+            ! $canViewAll || $this->viewMode === 'mine' => (int) Auth::id(),
             $canViewAll && $this->filterUserId > 0 => $this->filterUserId,
             default => null,
         };
@@ -454,6 +438,10 @@ final class DailyReportIndex extends Component
         $viewingReport = $this->viewingId > 0
             ? DailyReport::with('user')->find($this->viewingId)
             : null;
+
+        if ($viewingReport !== null) {
+            Gate::authorize('view', $viewingReport);
+        }
 
         $users = $canViewAll
             ? User::permission(PermissionEnum::ReportCreate->value)

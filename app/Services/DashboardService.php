@@ -7,12 +7,13 @@ namespace App\Services;
 use App\Enums\RoleEnum;
 use App\Models\DailyReport;
 use App\Models\DutySchedule;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
-use App\Models\Role;
 
 final class DashboardService
 {
@@ -121,7 +122,7 @@ final class DashboardService
     }
 
     /**
-     * @return Collection<int, array{user: string, date: string, summary: string}>
+     * @return Collection<int, array{user: string, date: string, submitted_at: string, summary: string}>
      */
     public function recentReports(): Collection
     {
@@ -131,8 +132,7 @@ final class DashboardService
             return collect();
         }
 
-        $canViewAll = $user->hasRole(RoleEnum::SuperAdmin->value)
-            || ($user->can('report.view') && ! $user->can('report.create'));
+        $canViewAll = Gate::allows('viewAll', DailyReport::class);
 
         $query = DailyReport::query()
             ->with('user:id,name')
@@ -146,6 +146,7 @@ final class DashboardService
         return $query->take(5)->get()->map(static fn (DailyReport $report): array => [
             'user' => $report->user?->name ?? 'N/A',
             'date' => $report->report_date->format('d/m/Y'),
+            'submitted_at' => $report->created_at->format('H:i d/m/Y'),
             'summary' => Str::limit($report->work_done, 78),
         ]);
     }

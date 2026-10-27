@@ -15,6 +15,8 @@ final class DailyReport extends Model
     use HasFactory;
     use SoftDeletes;
 
+    public const LATE_SUBMISSION_THRESHOLD_DAYS = 3;
+
     protected $fillable = [
         'user_id',
         'report_date',
@@ -41,5 +43,19 @@ final class DailyReport extends Model
     public function supportAssignments(): HasMany
     {
         return $this->hasMany(DailyReportSupportAssignment::class);
+    }
+
+    public function lateDays(): int
+    {
+        if ($this->created_at === null || $this->report_date === null) {
+            return 0;
+        }
+
+        $days = (int) $this->report_date
+            ->copy()
+            ->startOfDay()
+            ->diffInDays($this->created_at->copy()->startOfDay(), false);
+
+        return $days >= self::LATE_SUBMISSION_THRESHOLD_DAYS ? $days : 0;
     }
 }

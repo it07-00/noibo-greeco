@@ -121,7 +121,11 @@ final class DailyReportService
         $directors = User::role(RoleEnum::Director->value)->get();
 
         if ($directors->isNotEmpty()) {
-            Notification::send($directors, new DailyReportSubmitted($report, $reporterName));
+            Notification::send($directors, new DailyReportSubmitted(
+                $report,
+                $reporterName,
+                $report->lateDays(),
+            ));
         }
     }
 

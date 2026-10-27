@@ -35,6 +35,7 @@ final class RolePermissionService
         PermissionEnum::ScheduleUpdate->value => PermissionEnum::ScheduleView->value,
         PermissionEnum::ScheduleDelete->value => PermissionEnum::ScheduleView->value,
         PermissionEnum::ReportView->value => PermissionEnum::DashboardView->value,
+        PermissionEnum::ReportViewAll->value => PermissionEnum::ReportView->value,
         PermissionEnum::ReportCreate->value => PermissionEnum::ReportView->value,
         PermissionEnum::ReportUpdate->value => PermissionEnum::ReportView->value,
         PermissionEnum::ReportDelete->value => PermissionEnum::ReportView->value,
@@ -72,6 +73,7 @@ final class RolePermissionService
             ],
             'Báo cáo ngày' => [
                 PermissionEnum::ReportView->value => 'Xem báo cáo ngày',
+                PermissionEnum::ReportViewAll->value => 'Xem tất cả báo cáo ngày',
                 PermissionEnum::ReportCreate->value => 'Tạo báo cáo ngày',
                 PermissionEnum::ReportUpdate->value => 'Sửa báo cáo ngày',
                 PermissionEnum::ReportDelete->value => 'Xóa báo cáo ngày',
