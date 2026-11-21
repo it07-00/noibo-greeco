@@ -33,7 +33,6 @@ final class BusinessPermissionTest extends TestCase
         self::assertTrue($sales->can(PermissionEnum::CommissionCreate->value));
         self::assertFalse($sales->can(PermissionEnum::PaymentRecord->value));
 
-        self::assertTrue($accountant->can(PermissionEnum::PaymentScheduleConfirm->value));
         self::assertTrue($accountant->can(PermissionEnum::PaymentRecord->value));
         self::assertTrue($accountant->can(PermissionEnum::CommissionApprove->value));
         self::assertTrue($accountant->can(PermissionEnum::CommissionPay->value));

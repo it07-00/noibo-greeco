@@ -127,7 +127,6 @@ final class RolePermissionService
             'Lịch thanh toán & Chứng từ' => [
                 PermissionEnum::PaymentScheduleView->value => 'Xem lịch thanh toán',
                 PermissionEnum::PaymentScheduleManage->value => 'Quản lý lịch thanh toán',
-                PermissionEnum::PaymentScheduleConfirm->value => 'Xác nhận lịch thanh toán',
                 PermissionEnum::PaymentRecord->value => 'Ghi nhận thanh toán',
                 PermissionEnum::PaymentAdjust->value => 'Điều chỉnh thanh toán',
                 PermissionEnum::ContractDocumentView->value => 'Xem chứng từ hợp đồng',

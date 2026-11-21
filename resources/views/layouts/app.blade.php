@@ -245,8 +245,6 @@
                 'payment-schedule:hide': ['paymentScheduleModal', 'hide'],
                 'payment-record:show': ['paymentRecordModal', 'show'],
                 'payment-record:hide': ['paymentRecordModal', 'hide'],
-                'payment-return:show': ['paymentReturnModal', 'show'],
-                'payment-return:hide': ['paymentReturnModal', 'hide'],
                 'sales-target:show': ['salesTargetModal', 'show'],
                 'sales-target:hide': ['salesTargetModal', 'hide'],
                 'contract-document:show': ['contractDocumentModal', 'show'],

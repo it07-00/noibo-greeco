@@ -54,7 +54,6 @@ enum PermissionEnum: string
     case ContractCancel = 'contract.cancel';
     case PaymentScheduleView = 'payment-schedule.view';
     case PaymentScheduleManage = 'payment-schedule.manage';
-    case PaymentScheduleConfirm = 'payment-schedule.confirm';
     case PaymentRecord = 'payment.record';
     case PaymentAdjust = 'payment.adjust';
     case ContractDocumentView = 'contract-document.view';
@@ -131,7 +130,6 @@ enum PermissionEnum: string
             self::ContractCancel => 'Hủy hợp đồng',
             self::PaymentScheduleView => 'Xem lịch thanh toán',
             self::PaymentScheduleManage => 'Quản lý lịch thanh toán',
-            self::PaymentScheduleConfirm => 'Xác nhận lịch thanh toán',
             self::PaymentRecord => 'Ghi nhận thanh toán',
             self::PaymentAdjust => 'Điều chỉnh thanh toán',
             self::ContractDocumentView => 'Xem chứng từ hợp đồng',

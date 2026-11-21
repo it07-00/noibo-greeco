@@ -35,9 +35,4 @@ final class ContractPaymentSchedulePolicy
     {
         return $user->can(PermissionEnum::PaymentScheduleManage->value) && $user->can('view', $schedule->contract);
     }
-
-    public function confirm(User $user, ContractPaymentSchedule $schedule): bool
-    {
-        return $user->can(PermissionEnum::PaymentScheduleConfirm->value) && $user->can('view', $schedule->contract);
-    }
 }

@@ -18,7 +18,6 @@ use App\Models\ContractAssignment;
 use App\Models\ContractDocument;
 use App\Models\ContractPayment;
 use App\Models\ContractPaymentSchedule;
-use App\Models\Department;
 use App\Models\Handler;
 use App\Models\Quotation;
 use App\Models\User;
@@ -72,8 +71,6 @@ final class ContractShow extends Component
     public string $scheduleDueDate = '';
 
     public string $scheduleNotes = '';
-
-    public string $returnReason = '';
 
     public string $paymentPaidAt = '';
 
@@ -331,52 +328,6 @@ final class ContractShow extends Component
         }
 
         $this->successToast('Đã xóa đợt thanh toán');
-    }
-
-    public function submitPaymentPlan(PaymentScheduleService $service): void
-    {
-        Gate::authorize('create', ContractPaymentSchedule::class);
-
-        try {
-            $accountingDepartmentId = Department::query()->where('code', 'TCKT')->value('id');
-            $service->submitPlan($this->contract, $accountingDepartmentId);
-        } catch (DomainException $exception) {
-            $this->errorAlert($exception->getMessage());
-
-            return;
-        }
-
-        $this->successToast('Đã gửi kế hoạch sang Kế toán');
-    }
-
-    public function confirmPaymentPlan(PaymentScheduleService $service): void
-    {
-        Gate::authorize(PermissionEnum::PaymentScheduleConfirm->value);
-
-        try {
-            $service->confirmPlan($this->contract, $this->actor());
-        } catch (DomainException $exception) {
-            $this->errorAlert($exception->getMessage());
-
-            return;
-        }
-
-        $this->successToast('Kế toán đã xác nhận lịch thanh toán');
-    }
-
-    public function returnPaymentPlan(PaymentScheduleService $service): void
-    {
-        Gate::authorize(PermissionEnum::PaymentScheduleConfirm->value);
-        $this->validate([
-            'returnReason' => ['required', 'string', 'max:1000'],
-        ], [
-            'returnReason.required' => 'Vui lòng nhập nội dung cần Kinh doanh bổ sung.',
-        ]);
-
-        $service->returnPlan($this->contract, $this->returnReason);
-        $this->returnReason = '';
-        $this->dispatch('payment-return:hide');
-        $this->successToast('Đã trả kế hoạch về Kinh doanh');
     }
 
     public function triggerSchedule(
@@ -671,7 +622,6 @@ final class ContractShow extends Component
             'paymentMethodOptions' => PaymentMethod::options(),
             'renewalStatusOptions' => ContractRenewalStatus::options(),
             'statusOptions' => ContractStatus::options(),
-            'canConfirmPlan' => $this->actor()->can(PermissionEnum::PaymentScheduleConfirm->value),
             'canRecordPayment' => $this->actor()->can(PermissionEnum::PaymentRecord->value),
             'canManagePlan' => $this->actor()->can(PermissionEnum::PaymentScheduleManage->value),
             'documentTypeOptions' => DocumentType::options(),

@@ -25,7 +25,7 @@ final class ContractUiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_sales_can_create_and_submit_dynamic_payment_plan(): void
+    public function test_sales_can_create_and_edit_dynamic_payment_plan(): void
     {
         [$contract, $sales] = $this->contractForSales(1_000_000_000);
         $this->actingAs($sales);
@@ -42,19 +42,33 @@ final class ContractUiTest extends TestCase
             ->set('scheduleAmount', '700000000')
             ->set('scheduleConditionType', PaymentConditionType::AfterAcceptance->value)
             ->call('saveSchedule')
-            ->assertHasNoErrors()
-            ->call('submitPaymentPlan')
             ->assertHasNoErrors();
 
         self::assertSame(2, $contract->paymentSchedules()->count());
         self::assertFalse(
             $contract->paymentSchedules()
-                ->where('handover_status', '!=', PaymentHandoverStatus::SubmittedToAccounting->value)
+                ->where('handover_status', '!=', PaymentHandoverStatus::WaitingForCustomerPayment->value)
                 ->exists(),
         );
     }
 
-    public function test_accounting_can_confirm_plan_and_record_one_payment_for_multiple_installments(): void
+    public function test_sales_can_update_previously_confirmed_schedule_without_payments(): void
+    {
+        [$contract, $sales] = $this->contractForSales(100_000_000);
+        $schedule = $this->schedule($contract, 1, 100_000_000, '100.00');
+        $schedule->update(['confirmed_at' => now()]);
+        $this->actingAs($sales);
+
+        Livewire::test(ContractShow::class, ['contract' => $contract])
+            ->call('openScheduleEdit', $schedule->id)
+            ->set('scheduleAmount', '70200000')
+            ->call('saveSchedule')
+            ->assertHasNoErrors();
+
+        self::assertSame(70_200_000, (int) $schedule->refresh()->amount);
+    }
+
+    public function test_accounting_can_record_one_payment_for_multiple_installments(): void
     {
         [$contract] = $this->contractForSales(1_000_000_000);
         $accountant = $this->userWithRole(RoleEnum::Accountant);
@@ -63,8 +77,6 @@ final class ContractUiTest extends TestCase
         $this->actingAs($accountant);
 
         Livewire::test(ContractShow::class, ['contract' => $contract])
-            ->call('confirmPaymentPlan')
-            ->assertHasNoErrors()
             ->set('paymentPaidAt', '2026-07-04')
             ->set('paymentAmount', '500000000')
             ->set('paymentMethod', PaymentMethod::BankTransfer->value)
@@ -83,8 +95,6 @@ final class ContractUiTest extends TestCase
         ]);
         self::assertSame(300_000_000, (int) $first->allocations()->sum('allocated_amount'));
         self::assertSame(200_000_000, (int) $second->allocations()->sum('allocated_amount'));
-        self::assertNotNull($first->refresh()->confirmed_at);
-        self::assertNotNull($second->refresh()->confirmed_at);
     }
 
     public function test_sales_cannot_record_customer_payment(): void
@@ -168,7 +178,7 @@ final class ContractUiTest extends TestCase
             'percentage' => $percentage,
             'amount' => $amount,
             'condition_type' => PaymentConditionType::AfterContractSigned,
-            'handover_status' => PaymentHandoverStatus::SubmittedToAccounting,
+            'handover_status' => PaymentHandoverStatus::WaitingForCustomerPayment,
         ]);
     }
 

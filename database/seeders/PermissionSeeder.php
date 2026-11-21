@@ -196,7 +196,6 @@ final class PermissionSeeder extends Seeder
             PermissionEnum::ContractView->value,
             PermissionEnum::PaymentScheduleView->value,
             PermissionEnum::PaymentScheduleManage->value,
-            PermissionEnum::PaymentScheduleConfirm->value,
             PermissionEnum::PaymentRecord->value,
             PermissionEnum::PaymentAdjust->value,
             PermissionEnum::ContractDocumentView->value,

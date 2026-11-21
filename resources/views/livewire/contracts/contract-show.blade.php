@@ -5,7 +5,6 @@
 
     @php
         $activeSchedules = $contract->paymentSchedules->whereNull('cancelled_at');
-        $planState = $activeSchedules->first()?->handover_status;
         $paymentProgress = $contract->value > 0
             ? min(100, round(($financial['allocated'] / $contract->value) * 100, 1))
             : 0;
@@ -116,11 +115,11 @@
                     <div class="card-body">
                         <div class="sales-kpi-label">Kế hoạch thanh toán</div>
                         <div class="sales-kpi-value">{{ $activeSchedules->count() }} đợt</div>
-                        <div class="small">
-                            @if ($planState)
-                                <span class="badge rounded-pill {{ $planState->badgeClass() }}">{{ $planState->label() }}</span>
+                        <div class="small sales-supporting-text">
+                            @if ($activeSchedules->isNotEmpty())
+                                Tổng {{ number_format($activeSchedules->sum('amount'), 0, ',', '.') }}₫
                             @else
-                                <span class="sales-supporting-text">Chưa lập kế hoạch</span>
+                                Chưa lập kế hoạch
                             @endif
                         </div>
                     </div>
@@ -230,9 +229,6 @@
                 <div>
                     <div class="d-flex align-items-center gap-2">
                         <h2 class="h6 mb-0">Lịch thanh toán</h2>
-                        @if ($planState)
-                            <span class="badge rounded-pill {{ $planState->badgeClass() }}">{{ $planState->label() }}</span>
-                        @endif
                     </div>
                     <div class="small sales-supporting-text mt-1">Kế hoạch phải thu; ngày đến hạn có thể được tính sau khi đạt điều kiện.</div>
                 </div>
@@ -241,19 +237,6 @@
                         <button type="button" class="btn btn-sm btn-outline-success sales-action-button" wire:click="openScheduleCreate">
                             <i class="fi fi-rr-plus me-1" aria-hidden="true"></i>
                             Thêm đợt
-                        </button>
-                        @if ($activeSchedules->isNotEmpty() && ! $activeSchedules->contains(fn ($item) => $item->confirmed_at !== null))
-                            <button type="button" class="btn btn-sm btn-primary sales-action-button" wire:click="submitPaymentPlan">
-                                Gửi Kế toán
-                            </button>
-                        @endif
-                    @endif
-                    @if ($canConfirmPlan && $planState === \App\Enums\PaymentHandoverStatus::SubmittedToAccounting)
-                        <button type="button" class="btn btn-sm btn-outline-danger sales-action-button" wire:click="$dispatch('payment-return:show')">
-                            Trả lại
-                        </button>
-                        <button type="button" class="btn btn-sm btn-success sales-action-button" wire:click="confirmPaymentPlan">
-                            Xác nhận kế hoạch
                         </button>
                     @endif
                     @if ($canRecordPayment)
@@ -333,7 +316,7 @@
                                                 Đạt điều kiện
                                             </button>
                                         @endif
-                                        @if ($canManagePlan && $schedule->confirmed_at === null)
+                                        @if ($canManagePlan && $allocated === 0)
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-outline-secondary sales-icon-button"
@@ -836,27 +819,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
                     <button type="submit" class="btn btn-success">Ghi nhận giao dịch</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Return plan modal --}}
-    <div wire:ignore.self class="modal fade" id="paymentReturnModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content" wire:submit.prevent="returnPaymentPlan">
-                <div class="modal-header">
-                    <h2 class="h5 modal-title">Trả lại Kinh doanh</h2>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="returnReason" class="form-label">Nội dung cần bổ sung <span class="text-danger">*</span></label>
-                    <textarea id="returnReason" rows="4" class="form-control @error('returnReason') is-invalid @enderror" wire:model="returnReason"></textarea>
-                    @error('returnReason') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-danger">Trả lại kế hoạch</button>
                 </div>
             </form>
         </div>
